@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Settings</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --blue:#3aa0ff; --deep:#3c3270;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px; text-decoration:none}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line); border-radius:999px; padding:8px 12px}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px; flex-wrap:wrap}
+.k-actions .btn{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
+.k-actions .btn.primary{background:#f2e9ff; border-color:#e6def7}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=7') center/cover no-repeat;border:1px solid var(--line)}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:var(--deep)}
+
+/* Panels */
+.grid{display:grid; grid-template-columns:2fr 1fr; gap:16px}
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+.stretch{grid-column:1/-1}
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.pb{padding:14px; display:grid; gap:12px}
+
+/* Forms */
+.row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+@media (max-width:720px){ .row{grid-template-columns:1fr} }
+.field{display:grid; gap:6px}
+label{font-size:12px; color:var(--muted)}
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="url"], select, textarea{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px; width:100%;
+}
+textarea{min-height:80px}
+
+/* Switch */
+.switch{display:inline-flex; align-items:center; gap:8px}
+.switch input{
+  appearance:none; width:42px; height:24px; background:#cfd3e0; border-radius:999px; position:relative; cursor:pointer; transition:.2s;
+}
+.switch input:checked{background:#7a1ea1}
+.switch input::after{
+  content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.25)
+}
+.switch input:checked::after{ transform:translateX(18px) }
+.help{font-size:12px; color:var(--muted)}
+
+/* Avatar/logo preview */
+.logo-preview{
+  width:72px; height:72px; border-radius:12px; border:1px dashed #e0d8f5; display:flex; align-items:center; justify-content:center; color:var(--purple); background:#faf8ff;
+  background-position:center; background-size:cover; background-repeat:no-repeat;
+}
+
+/* Table-ish list */
+.list{display:grid; gap:10px}
+.item{
+  display:grid; grid-template-columns:36px 1fr auto; align-items:center; gap:10px;
+  border:1px solid var(--line); background:#fff; border-radius:12px; padding:8px 10px;
+}
+.item .l{width:36px;height:36px;border-radius:10px;background:#faf8ff;border:1px solid #e6def7; display:flex;align-items:center;justify-content:center;color:var(--purple)}
+.item .m .t{font-weight:800}
+.item .m .s{font-size:12px;color:var(--muted)}
+.item .r{display:flex; gap:8px; align-items:center}
+.badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; color:#fff; background:#7a1ea1}
+
+/* Toast */
+.toast{
+  position:fixed; right:16px; bottom:16px; background:#1f2033; color:#fff; padding:10px 12px; border-radius:12px; box-shadow:var(--shadow); opacity:0; transform:translateY(8px); transition:.25s; z-index:9999;
+}
+.toast.show{opacity:1; transform:none}
+.danger{border:1px solid #ffd1d1; background:#fff5f5}
+.danger .btn{background:#fff}
+.btn.small{padding:6px 8px; font-size:12px; border-radius:8px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <a class="brand" href="admin.html" title="Dashboard">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/><div class="t">GoBuy Admin</div>
+    </a>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-open-cases.html"><i class="fa-regular fa-life-ring"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a class="active" href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="search" type="search" placeholder="Search settings… (tip: use browser find)"/>
+      </div>
+      <div class="k-actions">
+        <button class="btn primary" id="saveAll"><i class="fa-regular fa-floppy-disk"></i> Save</button>
+        <button class="btn" id="resetAll"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="h1">Settings</div>
+
+      <section class="grid">
+        <!-- LEFT COLUMN -->
+        <div class="panel">
+          <div class="ph"><div class="t">Store</div></div>
+          <div class="pb">
+            <div class="row">
+              <div class="field">
+                <label for="storeName">Store name</label>
+                <input id="storeName" type="text" placeholder="GoBuy Nepal" data-key="store.name"/>
+              </div>
+              <div class="field">
+                <label for="storeURL">Store URL</label>
+                <input id="storeURL" type="url" placeholder="https://gobuynepal.com" data-key="store.url"/>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="supportEmail">Support email</label>
+                <input id="supportEmail" type="email" placeholder="support@gobuynepal.com" data-key="store.supportEmail"/>
+              </div>
+              <div class="field">
+                <label for="supportPhone">Support phone</label>
+                <input id="supportPhone" type="tel" placeholder="+977-98xxxxxxx" data-key="store.supportPhone"/>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="currency">Currency</label>
+                <select id="currency" data-key="store.currency">
+                  <option value="NPR" selected>NPR (₨)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="INR">INR (₹)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="timezone">Timezone</label>
+                <select id="timezone" data-key="store.timezone">
+                  <option>Asia/Kathmandu (GMT+5:45)</option>
+                  <option>Asia/Kolkata (GMT+5:30)</option>
+                  <option>UTC</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="address">Address</label>
+              <textarea id="address" placeholder="Street, City, Province, ZIP" data-key="store.address"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ph"><div class="t">Appearance</div></div>
+          <div class="pb">
+            <div class="row">
+              <div class="field">
+                <label>Logo</label>
+                <div style="display:flex; gap:12px; align-items:center">
+                  <div id="logoPrev" class="logo-preview"><i class="fa-solid fa-image"></i></div>
+                  <input id="logoFile" type="file" accept="image/*"/>
+                </div>
+                <div class="help">PNG/SVG recommended. Stored locally for demo.</div>
+              </div>
+              <div class="field">
+                <label for="accent">Accent color</label>
+                <input id="accent" type="color" value="#7a1ea1" data-key="appearance.accent"/>
+                <div class="help">Updates some highlights immediately.</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>Compact sidebar</label>
+                <div class="switch">
+                  <input id="compactNav" type="checkbox" data-key="appearance.compactNav"/>
+                  <span class="help">Use condensed sidebar on desktop</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Dark header</label>
+                <div class="switch">
+                  <input id="darkHeader" type="checkbox" data-key="appearance.darkHeader"/>
+                  <span class="help">Top bar with darker tone</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="panel">
+          <div class="ph"><div class="t">Payments</div></div>
+          <div class="pb">
+            <div class="row">
+              <div class="field">
+                <label>Cash on Delivery</label>
+                <div class="switch"><input id="cod" type="checkbox" data-key="payments.cod"/><span>Enable COD</span></div>
+              </div>
+              <div class="field">
+                <label>eSewa</label>
+                <div class="switch"><input id="esewa" type="checkbox" data-key="payments.esewa.enabled"/><span>Enable eSewa</span></div>
+                <input type="text" placeholder="Merchant ID" data-key="payments.esewa.merchantId"/>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>Khalti</label>
+                <div class="switch"><input id="khalti" type="checkbox" data-key="payments.khalti.enabled"/><span>Enable Khalti</span></div>
+                <input type="text" placeholder="Public Key" data-key="payments.khalti.publicKey"/>
+              </div>
+              <div class="field">
+                <label>Bank transfer note</label>
+                <input type="text" placeholder="Instructions shown at checkout" data-key="payments.bank.note"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ph"><div class="t">Notifications</div></div>
+          <div class="pb">
+            <div class="row">
+              <div class="field">
+                <label>Email alerts</label>
+                <div class="switch"><input id="emailAlerts" type="checkbox" data-key="notify.email"/><span>Enable</span></div>
+              </div>
+              <div class="field">
+                <label>SMS alerts</label>
+                <div class="switch"><input id="smsAlerts" type="checkbox" data-key="notify.sms"/><span>Enable</span></div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>SMTP Host</label>
+                <input type="text" placeholder="smtp.mailprovider.com" data-key="notify.smtp.host"/>
+              </div>
+              <div class="field">
+                <label>SMTP Port</label>
+                <input type="number" placeholder="587" data-key="notify.smtp.port"/>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>SMTP User</label>
+                <input type="text" placeholder="apikey / username" data-key="notify.smtp.user"/>
+              </div>
+              <div class="field">
+                <label>From email</label>
+                <input type="email" placeholder="no-reply@gobuynepal.com" data-key="notify.smtp.from"/>
+              </div>
+            </div>
+
+            <div>
+              <button class="btn small" id="testEmail"><i class="fa-regular fa-paper-plane"></i> Send test (demo)</button>
+              <span class="help">Demo only: shows a toast instead of sending.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users / Roles (full width) -->
+        <div class="panel stretch">
+          <div class="ph"><div class="t">Users & Roles</div></div>
+          <div class="pb">
+            <div id="usersList" class="list" aria-label="Users list"><!-- JS --></div>
+            <div style="display:flex; gap:8px; margin-top:8px">
+              <input id="newUserEmail" type="email" placeholder="user@company.com" style="flex:1"/>
+              <select id="newUserRole">
+                <option>Admin</option><option>Manager</option><option>Agent</option>
+              </select>
+              <button class="btn" id="addUser"><i class="fa-solid fa-user-plus"></i> Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security + Data -->
+        <div class="panel">
+          <div class="ph"><div class="t">Security</div></div>
+          <div class="pb">
+            <div class="field">
+              <label>Enforce 2FA</label>
+              <div class="switch"><input id="enforce2fa" type="checkbox" data-key="security.enforce2fa"/><span>Require for admins</span></div>
+            </div>
+            <div class="field">
+              <label for="sessionMins">Session timeout (minutes)</label>
+              <input id="sessionMins" type="number" min="5" step="5" data-key="security.sessionMins" placeholder="60"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel danger">
+          <div class="ph"><div class="t">Data & Backups (Demo)</div></div>
+          <div class="pb">
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button class="btn" id="exportJSON"><i class="fa-regular fa-file"></i> Export settings</button>
+              <label class="btn" for="importJSON"><i class="fa-solid fa-file-arrow-up"></i> Import</label>
+              <input id="importJSON" type="file" accept="application/json" style="display:none"/>
+              <button class="btn" id="clearDemo"><i class="fa-solid fa-broom"></i> Clear demo data</button>
+            </div>
+            <div class="help">“Clear demo” removes local demo datasets like orders/cases/customers and settings.</div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite">Saved</div>
+
+<script>
+/* ---------------- Defaults + storage ---------------- */
+const KEY = 'ADMIN_SETTINGS';
+const DEFAULTS = {
+  store:{ name:'GoBuy Nepal', url:'https://example.com', supportEmail:'support@example.com', supportPhone:'+977-9800000000', currency:'NPR', timezone:'Asia/Kathmandu (GMT+5:45)', address:'' },
+  appearance:{ accent:'#7a1ea1', compactNav:false, darkHeader:false, logoDataUrl:'' },
+  payments:{ cod:true, esewa:{enabled:false, merchantId:''}, khalti:{enabled:false, publicKey:''}, bank:{note:''} },
+  notify:{ email:true, sms:false, smtp:{host:'', port:587, user:'', from:'no-reply@example.com'} },
+  users:[ {name:'Aps Admin', email:'admin@gobuynepal.com', role:'Admin'},
+          {name:'R. Khadka', email:'ram.k@gobuynepal.com', role:'Manager'},
+          {name:'P. Gurung', email:'puja@gobuynepal.com', role:'Agent'} ],
+  security:{ enforce2fa:false, sessionMins:60 }
+};
+const get = (obj,path)=> path.split('.').reduce((o,k)=> (o||{})[k], obj);
+const set = (obj,path,val)=>{ const keys=path.split('.'); let cur=obj; keys.forEach((k,i)=>{ if(i===keys.length-1){ cur[k]=val; } else { cur[k]=cur[k]??{}; cur=cur[k]; } }); };
+
+function load(){ return JSON.parse(localStorage.getItem(KEY)||'null') || DEFAULTS; }
+function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); toast('Settings saved'); }
+
+let SETTINGS = load();
+
+/* ---------------- Bind inputs to settings ---------------- */
+document.querySelectorAll('[data-key]').forEach(el=>{
+  const path = el.dataset.key;
+  const val = get(SETTINGS, path);
+  if(el.type==='checkbox') el.checked = !!val;
+  else if(el.type==='color') el.value = val || '#7a1ea1';
+  else el.value = (val ?? '');
+
+  el.addEventListener('input', ()=>{
+    const newVal = (el.type==='checkbox') ? el.checked :
+                   (el.type==='number') ? Number(el.value) : el.value;
+    set(SETTINGS, path, newVal);
+    // live accent preview
+    if(path==='appearance.accent'){ document.documentElement.style.setProperty('--purple', newVal); }
+    // live header tone (demo)
+    if(path==='appearance.darkHeader'){
+      document.querySelector('.topbar').style.background = el.checked ? '#f0f1f7' : '#fff';
+    }
+  });
+});
+
+/* Logo upload preview */
+const logoPrev = document.getElementById('logoPrev');
+if(SETTINGS.appearance.logoDataUrl){ logoPrev.style.backgroundImage = `url(${SETTINGS.appearance.logoDataUrl})`; logoPrev.innerHTML=''; }
+document.getElementById('logoFile').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    SETTINGS.appearance.logoDataUrl = reader.result;
+    logoPrev.style.backgroundImage = `url(${reader.result})`;
+    logoPrev.innerHTML='';
+  };
+  reader.readAsDataURL(f);
+});
+
+/* Users list */
+function renderUsers(){
+  const box = document.getElementById('usersList'); box.innerHTML='';
+  SETTINGS.users.forEach((u,idx)=>{
+    const item = document.createElement('div'); item.className='item';
+    item.innerHTML = `
+      <div class="l"><i class="fa-regular fa-user"></i></div>
+      <div class="m"><div class="t">${u.name||u.email}</div><div class="s">${u.email}</div></div>
+      <div class="r">
+        <select data-user-role="${idx}">
+          <option ${u.role==='Admin'?'selected':''}>Admin</option>
+          <option ${u.role==='Manager'?'selected':''}>Manager</option>
+          <option ${u.role==='Agent'?'selected':''}>Agent</option>
+        </select>
+        <button class="btn small" data-remove="${idx}"><i class="fa-regular fa-trash-can"></i></button>
+      </div>`;
+    box.appendChild(item);
+  });
+}
+renderUsers();
+
+document.getElementById('usersList').addEventListener('change', e=>{
+  const i = e.target.getAttribute('data-user-role'); if(i===null) return;
+  SETTINGS.users[i].role = e.target.value; toast('Role updated (not saved yet)');
+});
+document.getElementById('usersList').addEventListener('click', e=>{
+  const i = e.target.closest('[data-remove]')?.getAttribute('data-remove'); if(i===null) return;
+  if(!confirm('Remove this user?')) return; SETTINGS.users.splice(Number(i),1); renderUsers();
+});
+
+document.getElementById('addUser').addEventListener('click', ()=>{
+  const email = document.getElementById('newUserEmail').value.trim();
+  const role  = document.getElementById('newUserRole').value;
+  if(!email) return alert('Enter an email');
+  SETTINGS.users.push({name:'', email, role}); document.getElementById('newUserEmail').value='';
+  renderUsers();
+});
+
+/* Topbar actions */
+document.getElementById('saveAll').addEventListener('click', ()=> save(SETTINGS));
+document.getElementById('resetAll').addEventListener('click', ()=>{
+  if(!confirm('Reset settings to defaults?')) return;
+  SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
+  localStorage.setItem(KEY, JSON.stringify(SETTINGS));
+  location.reload();
+});
+
+/* Notifications demo */
+document.getElementById('testEmail').addEventListener('click', ()=>{
+  toast(`(Demo) Would send a test email from ${SETTINGS.notify.smtp.from||'no-reply@example.com'}`);
+});
+
+/* Export / Import / Clear */
+document.getElementById('exportJSON').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(SETTINGS,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gobuy-settings.json'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById('importJSON').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{ const loaded = JSON.parse(reader.result); SETTINGS = {...DEFAULTS, ...loaded}; save(SETTINGS); location.reload(); }
+    catch(err){ alert('Invalid JSON'); }
+  };
+  reader.readAsText(f);
+});
+document.getElementById('clearDemo').addEventListener('click', ()=>{
+  if(!confirm('Clear demo data (orders, cases, customers, settings)?')) return;
+  ['ADMIN_SETTINGS','ADMIN_ORDERS','ADMIN_CASES','ADMIN_CUSTOMERS'].forEach(k=>localStorage.removeItem(k));
+  toast('Cleared local demo data'); setTimeout(()=>location.reload(),700);
+});
+
+/* Accent live on load */
+document.documentElement.style.setProperty('--purple', SETTINGS.appearance.accent || '#7a1ea1');
+
+/* Tiny toast helper */
+function toast(msg){
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 1400);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Learn More • GoBuy Nepal</title>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88;
+      --shadow:0 10px 18px rgba(0,0,0,.08); --radius:14px;
+      --green:#2ecc71; --orange:#d35400; --blue:#3aa0ff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:3; background:#fff;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px 10px;
+    }
+    .top-btn{ color:var(--purple); font-size:18px; text-decoration:none; }
+    .title{ font-weight:900; color:#444 }
+    .right{ width:28px }
+
+    /* Hero */
+    .hero{
+      padding:16px 14px 6px; display:grid; gap:8px; text-align:center;
+    }
+    .hero .h1{ color:var(--purple); font-weight:900; font-size:22px; letter-spacing:.2px }
+    .hero .sub{ color:#666; font-size:13px }
+
+    /* Card */
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:12px; box-shadow:var(--shadow); margin:10px 12px; padding:14px;
+    }
+    .section-title{
+      margin:14px 14px 6px; font-size:12px; text-transform:uppercase; color:var(--muted); letter-spacing:.4px
+    }
+
+    /* Stepper */
+    .steps{ display:grid; gap:12px }
+    .step{ display:flex; align-items:flex-start; gap:12px }
+    .s-icon{
+      width:36px;height:36px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+      color:#222;background:#fafafa;font-size:16px;flex:0 0 36px
+    }
+    .s-body{ flex:1 }
+    .s-title{ font-weight:900 }
+    .s-sub{ color:#666; font-size:13px }
+    .arrow{ text-align:center; color:#b0b3bb }
+
+    /* Benefits grid */
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+    .benefit{ border:1px solid var(--line); border-radius:12px; background:#fff; padding:12px; display:grid; gap:6px }
+    .b-icon{ color:var(--green) }
+    .b-title{ font-weight:900 }
+    .b-sub{ color:#666; font-size:13px }
+
+    /* Security */
+    .badge{
+      display:inline-block; background:#f5f5fb; border:1px solid #e5def3; color:#6b5ea3;
+      padding:5px 10px; border-radius:999px; font-weight:800; font-size:12px; margin-right:6px
+    }
+    .list{ display:grid; gap:8px; margin-top:8px }
+    .li{ display:flex; align-items:flex-start; gap:8px; color:#333 }
+    .li i{ color:var(--green); margin-top:2px }
+
+    /* Coverage */
+    .branch{ border:1px dashed #d9c9ee; background:#faf8ff; border-radius:12px; padding:12px; display:flex; gap:10px; align-items:center }
+    .pin{ width:28px;height:28px;border-radius:6px;border:1px solid #d9c9ee; display:flex; align-items:center; justify-content:center; color:#6b5ea3 }
+
+    /* Stats */
+    .stats{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+    .stat{
+      border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center; background:#fff;
+    }
+    .stat .num{ font-weight:900; font-size:22px; color:#222 }
+    .stat .label{ color:#666; font-size:12px }
+
+    /* CTA */
+    .cta{ display:flex; gap:10px; margin-top:6px }
+    .btn{ border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; flex:1 }
+    .btn-primary{ background:var(--purple); color:#fff }
+    .btn-outline{ background:#fff; color:var(--purple); border:2px solid var(--purple) }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid var(--line);
+      display:flex; justify-content:space-around; align-items:center; padding:8px 0; z-index:999;
+      box-shadow:0 -2px 8px rgba(0,0,0,.05);
+    }
+    .nav-item{ color:var(--purple); text-decoration:none; font-size:12px; display:flex; flex-direction:column; align-items:center }
+    .nav-item i{ font-size:20px; margin-bottom:4px }
+    .nav-item.active span{ font-weight:800 }
+
+    /* Small helpers */
+    .hint{ font-size:12px; color:#777 }
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="help.html" aria-label="Back to Help"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Learn More</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="h1">Shop Globally, Receive Locally</div>
+    <div class="sub">GoBuy Nepal helps you order from top international stores and get your items safely in Nepal.</div>
+  </section>
+
+  <!-- How it works -->
+  <div class="section-title">How it works</div>
+  <section class="card">
+    <div class="steps">
+      <div class="step">
+        <div class="s-icon"><i class="fa-solid fa-link"></i></div>
+        <div class="s-body">
+          <div class="s-title">1) Request Order</div>
+          <div class="s-sub">Paste a product link (Amazon, AliExpress, etc.), choose quantity & specs, and submit.</div>
+        </div>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-angles-down"></i></div>
+      <div class="step">
+        <div class="s-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="s-body">
+          <div class="s-title">2) Confirm & Pay</div>
+          <div class="s-sub">We confirm the price & ETA. Pay securely using your saved card or wallet.</div>
+        </div>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-angles-down"></i></div>
+      <div class="step">
+        <div class="s-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <div class="s-body">
+          <div class="s-title">3) Track</div>
+          <div class="s-sub">Follow status from <em>Placed</em> → <em>Confirmed</em> → <em>Shipped</em> → <em>Delivered</em> in real-time.</div>
+        </div>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-angles-down"></i></div>
+      <div class="step">
+        <div class="s-icon"><i class="fa-solid fa-store"></i></div>
+        <div class="s-body">
+          <div class="s-title">4) Pickup or Delivery</div>
+          <div class="s-sub">Choose home delivery or pickup from a nearby branch and time slot that suits you.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cta" style="margin-top:10px">
+      <button class="btn btn-outline" onclick="location.href='request-order.html'"><i class="fa-solid fa-plus"></i> Start Request</button>
+      <button class="btn btn-primary" onclick="location.href='confirm-order.html'"><i class="fa-solid fa-credit-card"></i> Go to Orders</button>
+    </div>
+  </section>
+
+  <!-- Why GoBuy Nepal -->
+  <div class="section-title">Why choose GoBuy Nepal</div>
+  <section class="card">
+    <div class="grid">
+      <div class="benefit">
+        <div class="b-icon"><i class="fa-solid fa-shield-heart"></i></div>
+        <div class="b-title">Trusted & Transparent</div>
+        <div class="b-sub">Clear pricing, tracked steps, and proactive updates at each stage.</div>
+      </div>
+      <div class="benefit">
+        <div class="b-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="b-title">Fast Handling</div>
+        <div class="b-sub">Priority processing with Plus/Pro plans for urgent orders.</div>
+      </div>
+      <div class="benefit">
+        <div class="b-icon"><i class="fa-solid fa-globe"></i></div>
+        <div class="b-title">Global Reach</div>
+        <div class="b-sub">Order from the world’s top marketplaces with one simple form.</div>
+      </div>
+      <div class="benefit">
+        <div class="b-icon"><i class="fa-solid fa-headset"></i></div>
+        <div class="b-title">Human Support</div>
+        <div class="b-sub">Chat with our team anytime from the app’s Quick Chat.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security & Payments -->
+  <div class="section-title">Security & payments</div>
+  <section class="card">
+    <span class="badge"><i class="fa-solid fa-lock"></i> Secure payments</span>
+    <span class="badge"><i class="fa-regular fa-credit-card"></i> Cards & Wallets</span>
+    <div class="list">
+      <div class="li"><i class="fa-solid fa-check"></i> Only store <strong>brand + last 4 + expiry</strong> on your device for display.</div>
+      <div class="li"><i class="fa-solid fa-check"></i> Choose a <strong>default method</strong> for 1-tap checkout.</div>
+      <div class="li"><i class="fa-solid fa-check"></i> Shipment protection included with Plus/Pro plans.</div>
+    </div>
+    <div class="cta" style="margin-top:10px">
+      <button class="btn btn-outline" onclick="location.href='payments.html'"><i class="fa-regular fa-credit-card"></i> Manage Payments</button>
+      <button class="btn btn-outline" onclick="location.href='membership.html'"><i class="fa-solid fa-crown"></i> View Plans</button>
+    </div>
+  </section>
+
+  <!-- Coverage -->
+  <div class="section-title">Coverage & pickup points</div>
+  <section class="card">
+    <div class="branch">
+      <div class="pin"><i class="fa-solid fa-location-dot"></i></div>
+      <div><strong>Kathmandu</strong> — Durbar Marg<br><span class="hint">Pickup hours: 10:00–19:00</span></div>
+    </div>
+    <div class="branch" style="margin-top:8px">
+      <div class="pin"><i class="fa-solid fa-location-dot"></i></div>
+      <div><strong>Pokhara</strong> — Lakeside<br><span class="hint">Pickup hours: 10:00–19:00</span></div>
+    </div>
+    <div class="branch" style="margin-top:8px">
+      <div class="pin"><i class="fa-solid fa-location-dot"></i></div>
+      <div><strong>Lalitpur</strong> — Jawalakhel<br><span class="hint">Pickup hours: 10:00–19:00</span></div>
+    </div>
+    <div class="cta" style="margin-top:10px">
+      <button class="btn btn-outline" onclick="location.href='pickup-delivery.html'"><i class="fa-solid fa-truck"></i> Set Delivery Options</button>
+    </div>
+  </section>
+
+  <!-- Mini stats -->
+  <div class="section-title">At a glance</div>
+  <section class="card">
+    <div class="stats">
+      <div class="stat">
+        <div class="num" data-count="2500">0</div>
+        <div class="label">Orders handled</div>
+      </div>
+      <div class="stat">
+        <div class="num" data-count="98">0%</div>
+        <div class="label">On-time delivery</div>
+      </div>
+      <div class="stat">
+        <div class="num" data-count="24">0/7</div>
+        <div class="label">Support hours</div>
+      </div>
+      <div class="stat">
+        <div class="num" data-count="3">0+</div>
+        <div class="label">Pickup branches</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Need more help -->
+  <section class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="width:36px;height:36px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--purple)">
+        <i class="fa-regular fa-circle-question"></i>
+      </div>
+      <div style="font-weight:900">Still need help?</div>
+    </div>
+    <div class="cta">
+      <button class="btn btn-outline" onclick="location.href='faqs.html'"><i class="fa-regular fa-rectangle-list"></i> FAQs</button>
+      <button class="btn btn-primary" onclick="location.href='chat.html'"><i class="fa-regular fa-message"></i> Quick Chat</button>
+    </div>
+  </section>
+</main>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help</span></a>
+</nav>
+
+<script>
+  // Simple animated counters for the stats section
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const counters = document.querySelectorAll('.num');
+    const opts = { threshold: 0.25 };
+    const once = new WeakSet();
+
+    function animate(el){
+      if(once.has(el)) return;
+      once.add(el);
+      const target = parseInt(el.getAttribute('data-count'),10) || 0;
+      const isPercent = el.textContent.includes('%');
+      const isPlus = el.textContent.endsWith('+');
+      const isSlash = el.textContent.includes('/');
+
+      const start = 0;
+      const dur = 900;
+      const t0 = performance.now();
+
+      function tick(now){
+        const p = Math.min(1, (now - t0)/dur);
+        const val = Math.floor(start + (target - start) * p);
+        if(isPercent) el.textContent = val + '%';
+        else if(isPlus) el.textContent = val + '+';
+        else if(isSlash) {
+          // keep the suffix (e.g., "/7")
+          const suffix = el.textContent.replace(/^\d+/, '');
+          el.textContent = val + suffix;
+        } else el.textContent = String(val);
+        if(p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting) animate(e.target); });
+    }, opts);
+
+    counters.forEach(c=> io.observe(c));
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Login • GoBuy Nepal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--purple:#7a1ea1; --ink:#1f2033; --muted:#7e8190; --bg:#fafbff; --card:#fff; --line:#ececf3; --bad:#e74c3c; --radius:14px}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 10px 18px rgba(0,0,0,.08);padding:22px;max-width:380px;width:100%}
+    h1{font-size:22px;font-weight:900;color:var(--purple);margin:0 0 10px;text-align:center}
+    .label{display:block;margin:10px 0 6px;font-size:13px;color:#444}
+    .input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:15px}
+    .btn{width:100%;margin-top:12px;border:0;background:var(--purple);color:#fff;font-weight:800;padding:12px;border-radius:12px;cursor:pointer}
+    .error{color:var(--bad);font-size:13px;margin-top:8px;display:none;text-align:center}
+    .alt{margin-top:12px;font-size:13px;text-align:center}
+    .alt a{color:var(--purple);text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <section class="card">
+    <h1>Vendor Login</h1>
+    <form id="loginForm" novalidate>
+      <label class="label" for="email">Email</label>
+      <input class="input" id="email" type="email" required placeholder="vendor@example.com"/>
+
+      <label class="label" for="password">Password</label>
+      <input class="input" id="password" type="password" required placeholder="Your password"/>
+
+      <div class="error" id="err">Invalid email or password.</div>
+      <button class="btn" type="submit">Log In</button>
+      <p class="alt">New vendor? <a href="vendor-signup.html">Create account</a></p>
+    </form>
+  </section>
+
+  <script>
+    async function sha256(text){
+      try{
+        const enc = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest('SHA-256', enc);
+        return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+      }catch(_){
+        let h=0; for (let i=0;i<text.length;i++){ h=(h<<5)-h+text.charCodeAt(i); h|=0; }
+        return 'weak_'+(h>>>0).toString(16);
+      }
+    }
+    const form = document.getElementById('loginForm');
+    const err  = document.getElementById('err');
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      err.style.display='none';
+
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const pwd   = document.getElementById('password').value;
+
+      const vendors = JSON.parse(localStorage.getItem('vendors')||'[]');
+      const v = vendors.find(x=>x.email===email);
+      if(!v){ err.style.display='block'; return; }
+
+      const hash = await sha256(pwd);
+      if (hash !== v.passwordHash){ err.style.display='block'; return; }
+
+      localStorage.setItem('vendorAuth', v.vendorId);
+      location.href = 'vendor-dashboard.html';
+    });
+  </script>
+</body>
+</html>

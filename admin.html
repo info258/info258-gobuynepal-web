@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --blue:#3aa0ff;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+/* small count bubble on nav */
+.nav .count{
+  background:#6c40ad; color:#fff; font-size:12px; font-weight:800;
+  padding:2px 8px; border-radius:999px; line-height:1;
+}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px;
+}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions .btn{
+  border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+}
+.k-actions .btn i{font-size:14px}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{
+  width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=15') center/cover no-repeat;
+  border:1px solid var(--line)
+}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* KPI cards */
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+@media (max-width:1100px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:560px){ .kpis{grid-template-columns:1fr} }
+.kpi{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:14px; display:grid; gap:8px
+}
+.kpi .row{display:flex; align-items:center; justify-content:space-between}
+.kpi .label{color:var(--muted); font-size:12px}
+.kpi .value{font-size:28px; font-weight:900}
+.kpi .trend{font-size:12px}
+.kpi .icon{
+  width:38px;height:38px;border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff;
+}
+.i1{background:linear-gradient(135deg,var(--purple),#a060ff)}
+.i2{background:linear-gradient(135deg,#ff8a1f,#ffb36c)}
+.i3{background:linear-gradient(135deg,#3aa0ff,#7bc1ff)}
+.i4{background:linear-gradient(135deg,#2ecc71,#58d68d)}
+.kpi[role="link"]{ cursor:pointer; }
+.kpi[role="link"]:hover{ box-shadow:var(--shadow), 0 0 0 2px rgba(122,30,161,.08) inset; }
+
+/* Panels */
+.grid{ display:grid; grid-template-columns:2fr 1fr; gap:16px }
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+.panel .ph{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; border-bottom:1px solid var(--line)
+}
+.panel .ph .t{font-weight:900}
+.panel .ph .mini-btn{
+  border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; font-size:12px; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+}
+.panel .pb{padding:12px; overflow:auto}
+
+/* Table */
+.table{width:100%; border-collapse:collapse}
+.table th,.table td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap}
+.table th{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+.badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; color:#fff}
+.b-pending{background:#a97a00}
+.b-await{background:#ff8a1f}
+.b-paid{background:var(--ok)}
+.b-ship{background:#3aa0ff}
+.b-cancel{background:#b83b3b}
+.actions{display:flex; gap:6px; flex-wrap:wrap}
+.btn-row{
+  border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 8px; font-size:12px; cursor:pointer
+}
+.btn-row.view{color:var(--purple)}
+.btn-row.pay{color:#ff8a1f}
+.btn-row.cancel{color:#e74c3c}
+.btn-row:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+
+/* Lists */
+.list{display:grid; gap:10px}
+.item{
+  display:grid; grid-template-columns:36px 1fr auto; align-items:center; gap:10px;
+  border:1px solid var(--line); background:#fff; border-radius:12px; padding:8px 10px;
+}
+.item .l{
+  width:36px;height:36px;border-radius:10px;background:#faf8ff;border:1px solid #e6def7; display:flex;align-items:center;justify-content:center;color:var(--purple)
+}
+.item .m .t{font-weight:800}
+.item .m .s{font-size:12px;color:var(--muted)}
+.item a{color:inherit; text-decoration:none}
+.item .r{font-size:12px;color:var(--muted)}
+.link{cursor:pointer}
+.link:hover{background:#fafafa}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <a class="brand" href="admin.html" title="Dashboard">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/>
+      <div class="t">GoBuy Admin</div>
+    </a>
+    <nav class="nav">
+      <a class="active" href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span><small id="navNew" class="count" title="New requests (24h)">0</small></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-open-cases.html"><i class="fa-regular fa-life-ring"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="globalSearch" type="search" placeholder="Search orders, customers, cases…"/>
+      </div>
+      <div class="k-actions">
+        <button id="newOrder" class="btn"><i class="fa-solid fa-plus"></i> New order</button>
+        <button id="broadcast" class="btn" title="Broadcast"><i class="fa-solid fa-bullhorn"></i></button>
+        <button id="notif" class="btn" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="h1">Dashboard</div>
+
+      <!-- KPIs (tiles are links via data-link) -->
+      <section class="kpis" aria-label="Key metrics">
+        <article class="kpi" data-link="admin-new-orders.html" title="Open new requests">
+          <div class="row">
+            <div class="label">New Orders (24h)</div>
+            <div class="icon i1"><i class="fa-solid fa-bag-shopping"></i></div>
+          </div>
+          <div class="row">
+            <div class="value" id="kNew">0</div>
+            <div class="trend" id="kNewHint" style="color:var(--ok)"></div>
+          </div>
+        </article>
+
+        <article class="kpi" data-link="admin-pending-payments.html">
+          <div class="row">
+            <div class="label">Pending Payments</div>
+            <div class="icon i2"><i class="fa-solid fa-credit-card"></i></div>
+          </div>
+          <div class="row">
+            <div class="value" id="kPending">0</div>
+            <div class="trend" style="color:#ff8a1f">● watch</div>
+          </div>
+        </article>
+
+        <article class="kpi" data-link="admin-in-transit.html">
+          <div class="row">
+            <div class="label">In Transit</div>
+            <div class="icon i3"><i class="fa-solid fa-truck-fast"></i></div>
+          </div>
+          <div class="row">
+            <div class="value" id="kTransit">42</div>
+            <div class="trend" style="color:var(--blue)">● moving</div>
+          </div>
+        </article>
+
+        <article class="kpi" data-link="admin-open-cases.html">
+          <div class="row">
+            <div class="label">Open Cases</div>
+            <div class="icon i4"><i class="fa-regular fa-life-ring"></i></div>
+          </div>
+          <div class="row">
+            <div class="value" id="kCases">5</div>
+            <div class="trend" style="color:var(--bad)">● action</div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Panels -->
+      <section class="grid">
+
+        <!-- Recent Orders -->
+        <div class="panel" aria-labelledby="recentOrdersTitle">
+          <div class="ph">
+            <div class="t" id="recentOrdersTitle">Recent Orders</div>
+            <div>
+              <select id="statusFilter" aria-label="Filter by status">
+                <option value="">All</option>
+                <option value="Awaiting Payment">Awaiting Payment</option>
+                <option value="Paid">Paid</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="pb">
+            <table class="table" id="ordersTable">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody><!-- filled by JS --></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right column: Chats + Cases -->
+        <div class="panel" aria-labelledby="liveChatsTitle">
+          <div class="ph">
+            <div class="t" id="liveChatsTitle">Live Chats</div>
+            <button class="mini-btn" onclick="location.href='admin-chat.html'"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+          </div>
+          <div class="pb">
+            <div id="chatList" class="list" aria-label="Active conversations"><!-- filled by JS --></div>
+          </div>
+
+          <div class="ph" style="border-top:1px solid var(--line)">
+            <div class="t">Open Cases</div>
+            <button class="mini-btn" onclick="location.href='admin-cases.html'"><i class="fa-solid fa-plus"></i> New</button>
+          </div>
+          <div class="pb">
+            <div id="caseList" class="list" aria-label="Support cases"><!-- filled by JS --></div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------------- Demo seeds (table filler only) ---------------- */
+const ORDERS_SEED = [
+  {id:8101, customer:'Kriti S',  status:'Awaiting Payment', total:220.50, updated:'10 min'},
+  {id:8102, customer:'Roshan P', status:'Paid',             total: 99.00, updated:'1 h'},
+  {id:8103, customer:'Mira L',   status:'Shipped',          total:340.10, updated:'3 h'},
+  {id:8104, customer:'Rabin T',  status:'Awaiting Payment', total: 59.99, updated:'2 h'},
+  {id:8105, customer:'Anu R',    status:'Paid',             total:190.00, updated:'4 h'}
+];
+
+const CHATS = [
+  {user:'Helena Hills', last:'Can I change address?', unread:2},
+  {user:'Sare K', last:'Paid now ✅', unread:0},
+  {user:'Anil L', last:'Any update?', unread:1},
+];
+
+const CASES = [
+  {id:'C-1029', user:'Sunil K', topic:'Refund request', priority:'High'},
+  {id:'C-1033', user:'Puja R', topic:'Size mismatch',   priority:'Medium'},
+  {id:'C-1037', user:'Ravi M', topic:'Delay follow-up', priority:'Low'}
+];
+
+/* ---------------- Helpers ---------------- */
+function statusBadge(s){
+  const map = {'Awaiting Payment':'b-await','Paid':'b-paid','Shipped':'b-ship','Cancelled':'b-cancel'};
+  return `<span class="badge ${map[s]||'b-await'}">${s}</span>`;
+}
+function getAllOrders(){
+  const local = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]');
+  const mapped = local.map(o => ({
+    id: o.id,
+    customer: o.customer?.name || 'Customer',
+    status: o.status || o.payment?.status || 'Awaiting Payment',
+    total: Number(o.charges?.total || 0),
+    updated: 'now'
+  }));
+  return [...mapped, ...ORDERS_SEED];
+}
+
+/* ---------------- Render Orders ---------------- */
+function renderOrders(filter=''){
+  const orders = getAllOrders();
+  const tbody = document.querySelector('#ordersTable tbody');
+  tbody.innerHTML = '';
+  orders
+    .filter(o => !filter || o.status===filter)
+    .forEach(o=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="admin-orders.html?order=${encodeURIComponent(o.id)}" class="link">#${o.id}</a></td>
+        <td>${o.customer}</td>
+        <td>${statusBadge(o.status)}</td>
+        <td>NPR ${o.total.toFixed(2)}</td>
+        <td>${o.updated} ago</td>
+        <td class="actions">
+          <button class="btn-row view" onclick="location.href='admin-orders.html?order=${encodeURIComponent(o.id)}'"><i class="fa-regular fa-eye"></i> View</button>
+          ${o.status==='Awaiting Payment' ? `<button class="btn-row pay" onclick="markPaid('${o.id}')"><i class="fa-solid fa-receipt"></i> Mark paid</button>`:''}
+          ${o.status!=='Cancelled' ? `<button class="btn-row cancel" onclick="cancelOrder('${o.id}')"><i class="fa-regular fa-circle-xmark"></i></button>`:''}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+}
+
+/* ---------------- Render Chats & Cases ---------------- */
+function renderChats(){
+  const box = document.getElementById('chatList');
+  box.innerHTML = '';
+  CHATS.forEach(c=>{
+    const a = document.createElement('a');
+    a.href = `admin-chat.html?user=${encodeURIComponent(c.user)}`;
+    a.className = 'item link';
+    a.innerHTML = `
+      <div class="l"><i class="fa-solid fa-user"></i></div>
+      <div class="m">
+        <div class="t">${c.user} ${c.unread?`<span class="badge b-pending" style="margin-left:6px;background:#6c40ad">${c.unread}</span>`:''}</div>
+        <div class="s">${c.last}</div>
+      </div>
+      <div class="r">Open</div>
+    `;
+    box.appendChild(a);
+  });
+}
+function pill(pr){
+  const colours = {High:'var(--bad)', Medium:'var(--warn)', Low:'var(--ok)'};
+  return `<span class="badge" style="background:${colours[pr]||'#999'}">${pr}</span>`;
+}
+function renderCases(){
+  const box = document.getElementById('caseList');
+  box.innerHTML = '';
+  CASES.forEach(c=>{
+    const a = document.createElement('a');
+    a.href = `admin-open-cases.html?case=${encodeURIComponent(c.id)}`;
+    a.className = 'item link';
+    a.innerHTML = `
+      <div class="l"><i class="fa-regular fa-life-ring"></i></div>
+      <div class="m">
+        <div class="t">${c.id} • ${c.user} ${pill(c.priority)}</div>
+        <div class="s">${c.topic}</div>
+      </div>
+      <div class="r">Manage</div>
+    `;
+    box.appendChild(a);
+  });
+}
+
+/* ---------------- Row Actions ---------------- */
+function markPaid(id){
+  const local = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]');
+  const found = local.find(o=>o.id==id);
+  if(found){ found.status='Paid'; found.payment = found.payment||{}; found.payment.status='Paid'; localStorage.setItem('ADMIN_ORDERS', JSON.stringify(local)); }
+  renderOrders(document.getElementById('statusFilter').value);
+  alert(`Order #${id} marked as paid.`);
+}
+function cancelOrder(id){
+  if(!confirm(`Cancel Order #${id}?`)) return;
+  const local = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]');
+  const found = local.find(o=>o.id==id);
+  if(found){ found.status='Cancelled'; localStorage.setItem('ADMIN_ORDERS', JSON.stringify(local)); }
+  renderOrders(document.getElementById('statusFilter').value);
+}
+
+/* ---------------- Filters & Search ---------------- */
+document.getElementById('statusFilter')?.addEventListener('change', e=>{
+  renderOrders(e.target.value);
+});
+document.getElementById('globalSearch')?.addEventListener('input', e=>{
+  const q = e.target.value.trim().toLowerCase();
+  const rows = document.querySelectorAll('#ordersTable tbody tr');
+  rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+});
+
+/* ---------------- Topbar buttons (navigation) ---------------- */
+document.getElementById('newOrder')?.addEventListener('click', ()=>{ location.href = 'admin-order-builder.html'; });
+document.getElementById('broadcast')?.addEventListener('click', ()=>{ location.href = 'admin-broadcast.html'; });
+document.getElementById('notif')    ?.addEventListener('click', ()=>{ location.href = 'admin-notifications.html'; });
+document.querySelector('.avatar')?.addEventListener('click', ()=>location.href='admin-account.html');
+
+/* ---------------- Make KPI tiles clickable ---------------- */
+document.querySelectorAll('.kpi[data-link]').forEach(k => {
+  k.setAttribute('role','link');
+  k.setAttribute('tabindex','0');
+  const go = () => location.href = k.dataset.link;
+  k.addEventListener('click', go);
+  k.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); go(); }});
+});
+
+/* ---------------- Boot base UI ---------------- */
+renderOrders();
+renderChats();
+renderCases();
+</script>
+
+<!-- LIVE COUNTERS: New Requests (Firestore) + Pending Payments (local) -->
+<script type="module">
+  // --- Elements
+  const kNewEl     = document.getElementById('kNew');
+  const navNew     = document.getElementById('navNew');
+  const kNewHint   = document.getElementById('kNewHint');
+  const kPendingEl = document.getElementById('kPending');
+
+  // --- Pending Payments from local ADMIN_ORDERS
+  function calcPending(){
+    try{
+      return (JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]')
+        .filter(o => (o.status || o?.payment?.status) === 'Awaiting Payment')).length;
+    }catch{ return 0; }
+  }
+  function refreshPending(){ kPendingEl.textContent = String(calcPending()); }
+  refreshPending();
+
+  // React to other tabs updating localStorage
+  window.addEventListener('storage', ev=>{
+    if (ev.key === 'ADMIN_ORDERS')     refreshPending();
+    if (ev.key === 'ADMIN_NEW_REQUESTS'){
+      const v = String(ev.newValue || '0');
+      kNewEl.textContent = v; navNew.textContent = v; kNewHint.textContent = (v!=='0') ? '● live' : '';
+    }
+  });
+
+  // --- Firestore live count for requests.status == "new" in last 24h
+  try{
+    // You can swap this block to import('./firebase-init.js') if you prefer your shared init.
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js');
+    const { getAuth, connectAuthEmulator, signInAnonymously, onAuthStateChanged }
+      = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js');
+    const { getFirestore, connectFirestoreEmulator, collection, onSnapshot, where, query }
+      = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js');
+
+    const cfg = {
+      apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+      authDomain:"customer-login-e5ecd.firebaseapp.com",
+      projectId:"customer-login-e5ecd",
+      storageBucket:"customer-login-e5ecd.appspot.com",
+      messagingSenderId:"569269085839",
+      appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+    };
+    const app  = initializeApp(cfg);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    if (["localhost","127.0.0.1"].includes(location.hostname)) {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings:true });
+      connectFirestoreEmulator(db, "127.0.0.1", 8080);
+    }
+    onAuthStateChanged(auth, async u => { if (!u) { try{ await signInAnonymously(auth); }catch{} }});
+
+    // Listen to all "new" requests; filter 24h client-side (avoids compound index)
+    const qNew = query(collection(db, "requests"), where("status","==","new"));
+    onSnapshot(qNew, (snap)=>{
+      const cutoff = Date.now() - 24*60*60*1000;
+      let count = 0;
+      snap.forEach(doc=>{
+        const d = doc.data() || {};
+        const ts = d.createdAt;
+        const ms = ts?.toMillis ? ts.toMillis() : (ts?.seconds ? ts.seconds*1000 : 0);
+        if (ms >= cutoff) count++;
+      });
+      const v = String(count);
+      kNewEl.textContent = v;
+      navNew.textContent = v;
+      kNewHint.textContent = (count>0) ? '● live' : '';
+      // also mirror to localStorage so other tabs (or fallback) stay in sync
+      localStorage.setItem('ADMIN_NEW_REQUESTS', v);
+    });
+  }catch(e){
+    console.warn('Firestore counters unavailable; using stored fallback.', e);
+    const v = localStorage.getItem('ADMIN_NEW_REQUESTS') || '0';
+    kNewEl.textContent = v; navNew.textContent = v; kNewHint.textContent = (v!=='0') ? '● live' : '';
+  }
+</script>
+</body>
+</html>

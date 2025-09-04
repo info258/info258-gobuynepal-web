@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create Account • GoBuy</title>
+  <meta name="description" content="Create your GoBuy Nepal account to track orders, pay securely, and manage your profile." />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680; --ink:#1f2033; --muted:#7e8190; --bg:#fafbff; --card:#ffffff;
+      --line:#ececf3; --ok:#2ecc71; --bad:#e74c3c; --warn:#e67e22; --shadow:0 12px 24px rgba(27,31,35,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .page{max-width:520px;margin:0 auto;padding:16px 16px 96px}
+    .topbar{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px 8px}
+    .title{flex:1;text-align:center;font-weight:900;color:var(--purple);font-size:22px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .h1{font-weight:900;font-size:26px;margin:8px 0 6px;color:var(--ink)}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:14px}
+
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .field{width:100%}
+    .label{display:block;font-size:13px;color:#555;margin:10px 2px 6px}
+    .input{
+      width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;
+      font-size:15px;outline:none;transition:.15s;border-color:var(--line)
+    }
+    .input:focus{border-color:var(--purple)}
+    .pwd-wrap{position:relative}
+    .toggle-eye{
+      position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;color:#666
+    }
+    .error{color:var(--bad);font-size:12px;margin-top:6px;display:none}
+    .ok{color:var(--ok);font-size:12px;margin-top:6px;display:none}
+
+    .terms{display:flex;align-items:flex-start;gap:10px;margin:10px 0 2px;font-size:13px;color:#444}
+    .btn{
+      width:100%;border:0;background:var(--purple);color:#fff;font-weight:800;border-radius:12px;
+      padding:12px 14px;font-size:15px;cursor:pointer;margin-top:10px;box-shadow:0 8px 18px rgba(122,30,161,.18)
+    }
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .alt{margin-top:12px;font-size:13px;color:#555}
+    .alt a{color:var(--purple);text-decoration:none;font-weight:700}
+
+    /* Bottom nav (optional) */
+    .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+      display:grid;grid-template-columns:repeat(5,1fr);padding:8px 8px env(safe-area-inset-bottom,0);z-index:50}
+    .nav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;
+      padding:6px 4px 8px;text-decoration:none;color:var(--purple);font-size:12px}
+    .nav a .fa-solid{font-size:18px}
+    .nav a.active span{font-weight:800}
+
+    /* Tiny banner for general form errors */
+    .banner{border:1px solid var(--bad); background:#ffecec; color:#a11616; border-radius:12px; padding:10px 12px; font-size:13px; display:none; margin:8px 0 0}
+    @media (min-width:560px){
+      .page{padding-bottom:120px}
+    }
+  </style>
+  <!-- NOTE: removed your old <script src="index.js"> to avoid conflicts -->
+</head>
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" aria-label="Back" style="color:var(--purple)"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Create Account</div>
+    <span style="width:18px"></span>
+  </header>
+
+  <main class="page">
+    <section class="card" aria-labelledby="create-title">
+      <h1 id="create-title" class="h1">Welcome to GoBuy</h1>
+      <p class="sub">Create your account to track orders, pay securely, and manage deliveries.</p>
+
+      <div id="formError" class="banner"></div>
+
+      <form id="signupForm" novalidate>
+        <div class="field">
+          <label class="label" for="fullName">Full Name</label>
+          <input class="input" id="fullName" name="fullName" type="text" placeholder="e.g., Ramesh Shrestha" required />
+          <div class="error" id="errName">Please enter your full name.</div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="email">Email</label>
+          <input class="input" id="email" name="email" type="email" placeholder="you@example.com" required />
+          <div class="error" id="errEmail">Enter a valid email address.</div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1 1 140px">
+            <label class="label" for="phone">Phone (Nepal)</label>
+            <input class="input" id="phone" name="phone" type="tel" placeholder="+977 98XXXXXXXX" />
+            <div class="error" id="errPhone">Enter a valid phone number.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1 1 220px">
+            <label class="label" for="password">Password</label>
+            <div class="pwd-wrap">
+              <input class="input" id="password" name="password" type="password" placeholder="At least 8 characters" required />
+              <button class="toggle-eye" type="button" data-target="password" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div class="error" id="errPwd">Min 8 chars, include a number.</div>
+            <div class="ok" id="okPwd"><i class="fa-solid fa-check"></i> Strong enough.</div>
+          </div>
+
+          <div class="field" style="flex:1 1 220px">
+            <label class="label" for="confirm">Confirm Password</label>
+            <div class="pwd-wrap">
+              <input class="input" id="confirm" name="confirm" type="password" placeholder="Re-enter password" required />
+              <button class="toggle-eye" type="button" data-target="confirm" aria-label="Show password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <div class="error" id="errConfirm">Passwords do not match.</div>
+          </div>
+        </div>
+
+        <label class="terms">
+          <input type="checkbox" id="terms" />
+          <span>I agree to the <a href="terms.html" style="color:var(--purple);text-decoration:none;font-weight:700">Terms & Privacy</a>.</span>
+        </label>
+        <div class="error" id="errTerms" style="margin-top:4px">You must accept the terms.</div>
+
+        <button id="btnCreate" class="btn" type="submit" disabled>
+          <i class="fa-solid fa-user-plus"></i> &nbsp;Create Account
+        </button>
+
+        <p class="alt">Already have an account? <a href="index.html">Log in</a></p>
+      </form>
+    </section>
+  </main>
+
+  <!-- Firebase + Signup Logic -->
+  <script type="module">
+    // ===== Firebase SDKs (ES Modules) =====
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth, setPersistence, browserLocalPersistence,
+      createUserWithEmailAndPassword, updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    // 1) Paste YOUR Firebase config here (from Firebase Console > Project settings)
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+      authDomain: "customer-login-e5ecd.firebaseapp.com",
+      projectId: "customer-login-e5ecd",
+      appId: "1:569269085839:web:0192c9f28b8eb24ea2f2fa",
+      // Optional but useful if you later add Firestore/Storage:
+      // storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      // messagingSenderId: "YOUR_SENDER_ID",
+    };
+
+    // 2) Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    await setPersistence(auth, browserLocalPersistence); // keep users signed in on this device
+
+    // ===== Your existing UI/validation code (kept) =====
+    const $ = (sel) => document.querySelector(sel);
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    // Nepal mobile: +977 97/98 + 8 digits OR 97/98 + 8 digits
+    const npPhoneRx = /^(?:\+?977[-\s]?)?(?:97|98)\d{8}$/;
+
+    const form = $('#signupForm');
+    const btn  = $('#btnCreate');
+
+    const fullName = $('#fullName');
+    const email    = $('#email');
+    const phone    = $('#phone');
+    const pwd      = $('#password');
+    const confirm  = $('#confirm');
+    const terms    = $('#terms');
+
+    const errName   = $('#errName');
+    const errEmail  = $('#errEmail');
+    const errPhone  = $('#errPhone');
+    const errPwd    = $('#errPwd');
+    const okPwd     = $('#okPwd');
+    const errConfirm= $('#errConfirm');
+    const errTerms  = $('#errTerms');
+    const formError = $('#formError');
+
+    // Password strength rule: >=8 chars and contains a number
+    function validPwd(v){ return v.length >= 8 && /\d/.test(v); }
+    function show(el){ el.style.display = 'block'; }
+    function hide(el){ el.style.display = 'none'; }
+
+    function validate(){
+      let good = true;
+
+      // Name
+      if (!fullName.value.trim()){
+        show(errName); good = false;
+      } else hide(errName);
+
+      // Email
+      if (!emailRx.test(email.value.trim())){
+        show(errEmail); good = false;
+      } else hide(errEmail);
+
+      // Phone (optional) – if filled, validate Nepal format
+      if (phone.value.trim() && !npPhoneRx.test(phone.value.trim().replace(/\s+/g,''))){
+        show(errPhone); good = false;
+      } else hide(errPhone);
+
+      // Password
+      if (!validPwd(pwd.value)){
+        show(errPwd); hide(okPwd); good = false;
+      } else { hide(errPwd); show(okPwd); }
+
+      // Confirm
+      if (confirm.value !== pwd.value || !confirm.value){
+        show(errConfirm); good = false;
+      } else hide(errConfirm);
+
+      // Terms
+      if (!terms.checked){ show(errTerms); good = false; } else hide(errTerms);
+
+      btn.disabled = !good;
+      return good;
+    }
+
+    // Live validation
+    ['input','change','blur'].forEach(evt=>{
+      form.addEventListener(evt, validate);
+    });
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-eye').forEach(btnEye=>{
+      btnEye.addEventListener('click', ()=>{
+        const targetId = btnEye.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = btnEye.querySelector('i');
+        if (input.type === 'password'){
+          input.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash');
+          btnEye.setAttribute('aria-label','Hide password');
+        } else {
+          input.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
+          btnEye.setAttribute('aria-label','Show password');
+        }
+        input.focus();
+      });
+    });
+
+    // Map Firebase auth errors to friendly messages
+    function showFirebaseError(err){
+      let msg = 'Something went wrong. Please try again.';
+      if (err?.code){
+        switch (err.code) {
+          case 'auth/email-already-in-use': msg = 'An account with this email already exists. Try logging in.'; break;
+          case 'auth/invalid-email':        msg = 'Please enter a valid email address.'; break;
+          case 'auth/weak-password':        msg = 'Your password is too weak. Use at least 8 characters with a number.'; break;
+          case 'auth/network-request-failed': msg = 'Network error. Check your connection and try again.'; break;
+          default: msg = err.message || msg;
+        }
+      }
+      formError.textContent = msg;
+      show(formError);
+      // surface on specific fields as well where it makes sense
+      if (err?.code === 'auth/invalid-email' || err?.code === 'auth/email-already-in-use') show(errEmail);
+      if (err?.code === 'auth/weak-password') show(errPwd);
+    }
+
+    // Submit handler — Firebase Auth
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      hide(formError);
+      if (!validate()) return;
+
+      btn.disabled = true;
+      const oldBtnHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> &nbsp;Creating...';
+
+      try {
+        const emailVal = email.value.trim().toLowerCase();
+        const pwdVal   = pwd.value;
+
+        const cred = await createUserWithEmailAndPassword(auth, emailVal, pwdVal);
+
+        // Set display name
+        if (fullName.value.trim()){
+          await updateProfile(cred.user, { displayName: fullName.value.trim() });
+        }
+
+        // (Optional) You can store phone in Firestore later if needed.
+
+        // Redirect target after signup
+        const redirectTo = new URLSearchParams(location.search).get('next') || 'home.html';
+        // You’re signed in here; many apps go straight to dashboard:
+        location.href = redirectTo + '?welcome=1';
+
+      } catch (err){
+        console.error(err);
+        showFirebaseError(err);
+        btn.disabled = false;
+        btn.innerHTML = oldBtnHtml;
+      }
+    });
+
+    // Initial state
+    validate();
+  </script>
+</body>
+</html>

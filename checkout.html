@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout</title>
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1;
+      --purple-700:#5b1680;
+      --card:#1f1f1f;
+      --bg:#ffffff;
+      --text:#111;
+      --muted:#9aa0a6;
+      --orange:#d35400;
+      --shadow:0 10px 18px rgba(0,0,0,.12);
+      --radius:14px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding-bottom:88px; /* space for bottom nav */
+    }
+
+    /* Header */
+    .topbar{
+      max-width:450px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 14px 6px;
+    }
+    .topbar .left, .topbar .right{ width:64px; display:flex; align-items:center; gap:10px; }
+    .topbar .center{ flex:1; text-align:center; font-weight:800; color:var(--purple); font-size:22px; }
+    .avatar{ width:28px;height:28px;border-radius:50%; background:#ddd; display:inline-block; overflow:hidden; }
+
+    /* Page wrapper */
+    .page{ max-width:450px; margin:0 auto; padding:10px 14px 20px; }
+
+    /* Cart item card */
+    .card{
+      background:var(--card); color:#fff;
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:16px; margin:12px 0;
+    }
+    .item-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+    .item-title{ font-weight:800; font-size:18px; }
+    .item-price{ color:#cfcfcf; font-size:14px; margin-bottom:8px; }
+
+    .qty-row{ display:flex; align-items:center; gap:10px; }
+    .qty-btn{ width:28px;height:28px;border-radius:50%; border:none; background:#3a3a3a; color:#fff; font-weight:800; cursor:pointer; }
+    .qty{ min-width:24px; text-align:center; font-weight:800; }
+    .delete{ color:#ff4d4f; font-size:20px; cursor:pointer; }
+
+    /* Summary */
+    .summary{
+      background:var(--card); color:#fff;
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:16px; margin:12px 0 20px;
+    }
+    .row{ display:flex; justify-content:space-between; margin:6px 0; color:#e8e8e8; }
+    .row.total{ font-size:18px; font-weight:900; color:#fff; margin-top:10px; }
+
+    .checkout-btn{
+      width:100%; border:none; cursor:pointer;
+      background:var(--orange); color:#fff;
+      font-weight:800; font-size:16px; padding:12px 0; border-radius:10px;
+      margin-top:12px;
+    }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      display:flex; justify-content:space-around; align-items:center;
+      background:#fff; border-top:1px solid #e5e5e5;
+      padding:8px 0; box-shadow:0 -2px 8px rgba(0,0,0,.06); z-index:999;
+    }
+    .nav-item{
+      color:var(--purple); text-decoration:none; font-size:12px;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .nav-item i{ font-size:20px; margin-bottom:4px; }
+    .nav-item.active span{ font-weight:800; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="topbar">
+    <div class="left">
+      <i class="fas fa-bars" style="font-size:20px;color:var(--purple)"></i>
+    </div>
+    <div class="center">Checkout</div>
+    <div class="right" style="justify-content:flex-end">
+      <span class="avatar"></span>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <!-- Item Card -->
+    <section id="itemCard" class="card" aria-label="Cart item">
+      <div class="item-top">
+        <div class="item-title">Wireless Earbuds</div>
+        <i id="deleteItem" class="fa-solid fa-xmark delete" title="Remove"></i>
+      </div>
+      <div class="item-price">$<span id="price">25.00</span></div>
+
+      <div class="qty-row" aria-label="Quantity controls">
+        <button class="qty-btn" id="decrease" aria-label="Decrease">–</button>
+        <div id="qty" class="qty" role="status" aria-live="polite">1</div>
+        <button class="qty-btn" id="increase" aria-label="Increase">+</button>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="summary" aria-label="Order summary">
+      <div class="row"><span>Subtotal:</span> <span id="subtotal">$25.00</span></div>
+      <div class="row"><span>Shipping:</span> <span id="shipping">$5.00</span></div>
+      <div class="row total"><span>Total:</span> <span id="total">$30.00</span></div>
+
+      <button class="checkout-btn" onclick="proceedCheckout()">Checkout</button>
+    </section>
+
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+    <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+    <a class="nav-item active" href="confirm-order.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+    <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+  </nav>
+
+  <script>
+    // Pricing config
+    const ITEM_PRICE = 25.00;
+    const SHIPPING_FLAT = 5.00;
+
+    // DOM refs
+    const qtyEl       = document.getElementById('qty');
+    const priceEl     = document.getElementById('price');
+    const subtotalEl  = document.getElementById('subtotal');
+    const shippingEl  = document.getElementById('shipping');
+    const totalEl     = document.getElementById('total');
+    const itemCard    = document.getElementById('itemCard');
+
+    // order id from confirm page (query) or localStorage
+    const params  = new URLSearchParams(location.search);
+    const orderId = params.get('orderId') || localStorage.getItem('currentOrderId') || '1234';
+
+    let qty = 1;
+
+    function money(n){ return `$${n.toFixed(2)}`; }
+
+    function recalc(){
+      const sub = ITEM_PRICE * qty;
+      const ship = qty > 0 ? SHIPPING_FLAT : 0;
+      const total = sub + ship;
+
+      priceEl.textContent = ITEM_PRICE.toFixed(2);
+      qtyEl.textContent = qty;
+      subtotalEl.textContent = money(sub);
+      shippingEl.textContent = money(ship);
+      totalEl.textContent = money(total);
+    }
+
+    document.getElementById('increase').addEventListener('click', () => {
+      qty++; recalc();
+    });
+
+    document.getElementById('decrease').addEventListener('click', () => {
+      if(qty > 1){ qty--; recalc(); }
+    });
+
+    document.getElementById('deleteItem').addEventListener('click', () => {
+      // remove item from view and zero totals
+      itemCard.style.display = 'none';
+      qty = 0; recalc();
+    });
+
+    // Redirect to payments.html with details
+    function proceedCheckout(){
+      const totalAmount = totalEl.textContent.replace('$','');
+      // keep order id available for the next page too
+      localStorage.setItem('currentOrderId', orderId);
+      // build URL
+      const url = new URL('payments.html', location.href);
+      url.searchParams.set('orderId', orderId);
+      url.searchParams.set('items', String(qty));
+      url.searchParams.set('total', totalAmount);
+      url.searchParams.set('from', 'checkout');
+      window.location.href = url.toString();
+    }
+
+    // initial calc
+    recalc();
+  </script>
+</body>
+</html>

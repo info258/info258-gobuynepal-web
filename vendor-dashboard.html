@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Vendor Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<!-- Guard: only vendors can access this page -->
+<script type="module" src="app/guard.js" data-require-role="VENDOR"></script>
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --blue:#3aa0ff;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px;
+}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions .btn{
+  border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+}
+.k-actions .btn i{font-size:14px}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{
+  width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=15') center/cover no-repeat;
+  border:1px solid var(--line)
+}
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+@media (max-width:1100px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:560px){ .kpis{grid-template-columns:1fr} }
+.kpi{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:14px; display:grid; gap:8px
+}
+.kpi .row{display:flex; align-items:center; justify-content:space-between}
+.kpi .label{color:var(--muted); font-size:12px}
+.kpi .value{font-size:28px; font-weight:900}
+.kpi .trend{font-size:12px}
+.kpi .icon{
+  width:38px;height:38px;border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff;
+}
+.i1{background:linear-gradient(135deg,var(--purple),#a060ff)}
+.i2{background:linear-gradient(135deg,#ff8a1f,#ffb36c)}
+.i3{background:linear-gradient(135deg,#3aa0ff,#7bc1ff)}
+.i4{background:linear-gradient(135deg,#2ecc71,#58d68d)}
+.kpi[role="link"]{ cursor:pointer; }
+.kpi[role="link"]:hover{ box-shadow:var(--shadow), 0 0 0 2px rgba(122,30,161,.08) inset; }
+.grid{ display:grid; grid-template-columns:2fr 1fr; gap:16px }
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  padding:16px; display:flex; flex-direction:column; gap:12px;
+}
+.panel-title{font-weight:700; color:var(--purple);}
+.orders-list{list-style:none; margin:0; padding:0; overflow-y:auto; max-height:300px;}
+.orders-list li{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.orders-list li:last-child{border-bottom:none;}
+.orders-list .status{padding:2px 6px; border-radius:6px; font-size:12px;}
+.status-paid{background:#eafaf1; color:#27ae60;}
+.status-pending{background:#fff8e6; color:#e67e22;}
+.status-shipped{background:#f0f9ff; color:#3498db;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/>
+      <span class="t">GoBuy Nepal</span>
+    </div>
+    <nav class="nav">
+      <a href="vendor-dashboard.html" class="active"><i class="fa fa-home"></i><span>Dashboard</span></a>
+      <a href="#"><i class="fa fa-box"></i><span>Orders</span></a>
+      <a href="#"><i class="fa fa-tags"></i><span>Products</span></a>
+      <a href="#"><i class="fa fa-wallet"></i><span>Payouts</span></a>
+      <a href="chat.html"><i class="fa fa-comments"></i><span>Chat</span></a>
+      <a href="#"><i class="fa fa-cog"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a href="#" class="nav logout" id="logoutLink"><i class="fa fa-sign-out-alt"></i><span>Logout</span></a>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="search"><input type="search" placeholder="Search orders..."/></div>
+      <div class="k-actions">
+        <button class="btn"><i class="fa fa-bell"></i></button>
+        <button class="btn"><i class="fa fa-user"></i></button>
+      </div>
+    </div>
+    <div class="content">
+      <h1 class="h1">Vendor Dashboard</h1>
+      <div class="kpis">
+        <div class="kpi">
+          <div class="row"><span class="label">Total Sales</span><span class="icon i1"><i class="fa fa-dollar-sign"></i></span></div>
+          <div class="value" id="totalSales">₹0</div>
+          <div class="trend" id="salesTrend">0% vs last month</div>
+        </div>
+        <div class="kpi">
+          <div class="row"><span class="label">Orders</span><span class="icon i2"><i class="fa fa-shopping-bag"></i></span></div>
+          <div class="value" id="totalOrders">0</div>
+          <div class="trend" id="ordersTrend">0% vs last month</div>
+        </div>
+        <div class="kpi">
+          <div class="row"><span class="label">Products</span><span class="icon i3"><i class="fa fa-cube"></i></span></div>
+          <div class="value" id="totalProducts">0</div>
+          <div class="trend" id="productsTrend">0 new products</div>
+        </div>
+        <div class="kpi">
+          <div class="row"><span class="label">Balance</span><span class="icon i4"><i class="fa fa-wallet"></i></span></div>
+          <div class="value" id="totalBalance">₹0</div>
+          <div class="trend" id="balanceTrend">Pending payout</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-title">Recent Orders</div>
+          <ul class="orders-list" id="ordersList">
+            <!-- Orders will be injected here -->
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Announcements</div>
+          <div id="announcements"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+  import { apiFetch } from './app/api.js';
+  import { logout, currentUser } from './app/auth.js';
+
+  const user = currentUser();
+  const totalSalesEl = document.getElementById('totalSales');
+  const totalOrdersEl = document.getElementById('totalOrders');
+  const totalProductsEl = document.getElementById('totalProducts');
+  const totalBalanceEl = document.getElementById('totalBalance');
+  const ordersListEl = document.getElementById('ordersList');
+  const announcementsEl = document.getElementById('announcements');
+  const logoutLink = document.getElementById('logoutLink');
+  logoutLink.addEventListener('click', () => {
+    logout();
+    window.location.replace('vendor-login.html');
+  });
+
+  async function loadDashboard() {
+    // This example uses placeholder numbers. Replace with real API calls.
+    totalSalesEl.textContent = '₹1,00,000';
+    totalOrdersEl.textContent = '250';
+    totalProductsEl.textContent = '48';
+    totalBalanceEl.textContent = '₹12,500';
+    // Load orders (stub)
+    const orders = [
+      { id: 'ORD123', amount: '₹1500', status: 'Paid' },
+      { id: 'ORD124', amount: '₹2000', status: 'Pending' },
+      { id: 'ORD125', amount: '₹1800', status: 'Shipped' },
+    ];
+    ordersListEl.innerHTML = '';
+    orders.forEach(o => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${o.id}</span><span>${o.amount}</span><span class="status status-${o.status.toLowerCase()}">${o.status}</span>`;
+      ordersListEl.appendChild(li);
+    });
+    // Load announcements from API
+    try {
+      const res = await apiFetch(`${window.location.origin}/api/v1/announcements`);
+      if (res.ok) {
+        const anns = await res.json();
+        announcementsEl.innerHTML = anns.map(a => `<p>${a.text}</p>`).join('');
+      }
+    } catch (e) {
+      console.error('Failed to load announcements', e);
+    }
+  }
+  loadDashboard();
+</script>
+</body>
+</html>

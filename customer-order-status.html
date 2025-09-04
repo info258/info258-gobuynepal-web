@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Order Status</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--purple:#7a1ea1;--ok:#2ecc71;--warn:#f1c40f;--bad:#e74c3c;--line:#ececf3;--card:#fff;--bg:#fafbff;--ink:#1f2033;--shadow:0 12px 24px rgba(27,31,35,.06);--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.h .t{font-weight:900;font-size:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:12px}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px}
+.btn{border:none;background:#e67e22;color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:#999}
+.b-paid{background:var(--ok)} .b-await{background:#ff8a1f}
+.tbl{width:100%;border-collapse:collapse}
+.tbl td{padding:7px 4px;border-bottom:1px solid var(--line)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.gal img,.gal video{width:100%;border-radius:10px;border:1px solid var(--line)}
+.small{color:#6a6d7a;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="t">Order Status</div>
+    <div id="idBadge" class="small"></div>
+  </div>
+
+  <section class="card">
+    <div class="row">
+      <div>
+        <div><strong id="cName">Customer</strong></div>
+        <div class="small" id="cNote"></div>
+      </div>
+      <div>
+        <div id="statusBadge" class="badge">—</div>
+      </div>
+    </div>
+    <table class="tbl" id="itemsTbl"></table>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <div>Total: <strong id="total">NPR 0.00</strong></div>
+      <div id="paySlot"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin-bottom:8px">Shipment</h3>
+    <div class="small" id="shipLine">—</div>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+      <input id="trk" class="small" style="border:1px solid var(--line);padding:8px;border-radius:10px;width:100%" disabled/>
+      <button id="trackBtn" class="btn" style="background:#d35400"><i class="fa-solid fa-location-crosshairs"></i> Track</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin-bottom:8px">Updates (Photos & Videos)</h3>
+    <div id="updates" class="gal"></div>
+    <div id="noUpd" class="small">No updates yet.</div>
+  </section>
+</div>
+
+<script>
+const q = new URLSearchParams(location.search);
+const orderId = q.get('order');
+const PUB = JSON.parse(localStorage.getItem('PUBLIC_ORDERS')||'{}');
+const O = PUB[orderId];
+
+if(!O){
+  document.body.innerHTML = '<div class="wrap"><h2>Order not found</h2><div class="small">It may have been created from another device.</div></div>';
+}else{
+  document.getElementById('idBadge').textContent = '#'+O.id;
+  document.getElementById('cName').textContent = O.customerName || 'Customer';
+  document.getElementById('statusBadge').textContent = O.payment.status;
+  document.getElementById('statusBadge').className = 'badge ' + (O.payment.status==='Paid'?'b-paid':'b-await');
+  document.getElementById('total').textContent = 'NPR '+Number(O.charges.total||0).toFixed(2);
+
+  // items
+  const tbl = document.getElementById('itemsTbl');
+  tbl.innerHTML = (O.items||[]).map(it=>`<tr><td>${it.name||'-'}</td><td>x ${it.qty||1}</td><td style="text-align:right">NPR ${(Number(it.price||0)*(Number(it.qty||1))).toFixed(2)}</td></tr>`).join('');
+
+  // pay
+  const paySlot = document.getElementById('paySlot');
+  const bal = Number(O.charges.balance||0);
+  if(O.payment.status!=='Paid' && bal>0){
+    const btn = document.createElement('button');
+    btn.className='btn'; btn.textContent='Pay now';
+    btn.addEventListener('click', ()=> alert('Demo: integrate your checkout here. Amount due: NPR '+bal.toFixed(2)));
+    paySlot.appendChild(btn);
+  }else{
+    paySlot.innerHTML = '<span class="small">No payment due.</span>';
+  }
+
+  // shipping
+  const shipLine = document.getElementById('shipLine');
+  shipLine.textContent = `${O.logistics.mode} • ${O.logistics.type}` + (O.logistics.city?` • ${O.logistics.city}`:'');
+  document.getElementById('trk').value = (O.shippingInfo.awb||'');
+  document.getElementById('trackBtn').addEventListener('click', ()=>{
+    if(O.shippingInfo.trackUrl){ window.open(O.shippingInfo.trackUrl,'_blank'); }
+    else alert('Tracking link not available yet.');
+  });
+
+  // updates
+  const list = O.updates||[];
+  const box = document.getElementById('updates');
+  const empty = document.getElementById('noUpd');
+  if(list.length){
+    empty.style.display='none';
+    list.forEach(u=>{
+      const node = (u.type==='video')?document.createElement('video'):document.createElement('img');
+      if(node.tagName==='VIDEO'){ node.controls=true; node.src=u.dataUrl; } else { node.src=u.dataUrl; }
+      node.title = u.caption||'';
+      box.appendChild(node);
+    });
+  }
+}
+</script>
+</body>
+</html>

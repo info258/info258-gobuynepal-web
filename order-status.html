@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Order Status</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+  :root{
+    --purple:#7a1ea1; --purple-700:#5b1680; --bg:#ffffff; --text:#111;
+    --line:#e6e7ef; --card:#fff; --muted:#7b7f88;
+    --chip-green:#2ecc71; --chip-purple:#7a1ea1; --chip-gray:#6b6f76; --chip-red:#e74c3c; --orange:#d35400;
+    --radius:14px; --shadow:0 10px 18px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);padding-bottom:96px}
+  .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+  /* Topbar */
+  .topbar{position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 12px 10px}
+  .top-btn{color:var(--purple);font-size:18px;text-decoration:none}
+  .title{font-weight:900;color:#444}
+  .right{width:28px}
+
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin:12px 12px 14px;padding:12px}
+  .h{font-weight:900;margin-bottom:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row{display:flex;justify-content:space-between;gap:8px;margin:6px 0}
+  .label{color:#666;font-size:13px}
+  .val{font-weight:800}
+
+  /* Chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{display:inline-block;padding:8px 12px;border-radius:999px;color:#fff;font-weight:800;font-size:13px}
+  .chip.green{background:var(--chip-green)}
+  .chip.purple{background:var(--purple)}
+  .chip.gray{background:var(--chip-gray)}
+
+  /* Track box */
+  .track{display:grid;gap:10px}
+  .btn{border:none;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer}
+  .btn-primary{background:var(--orange);color:#fff}
+  .btn-ghost{background:#fff;border:2px solid #ddd;color:#444}
+  .btn-danger{background:var(--chip-red);color:#fff}
+
+  /* Updates (gallery) */
+  .updates{display:grid;gap:10px}
+  .gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .media{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fafafa}
+  .media img,.media video{width:100%;height:160px;object-fit:cover;display:block}
+  .cap{padding:6px 8px;font-size:12px}
+  .del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:1px solid #eee;background:#fff;color:#e74c3c;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .muted{font-size:12px;color:#777}
+
+  .admin-box{border:1px dashed #d9c9ee;background:#faf8ff;padding:12px;border-radius:12px;display:grid;gap:8px}
+  .admin-box input[type="file"]{display:none}
+  .admin-actions{display:flex;gap:8px}
+
+  /* Customer resolution */
+  .verify{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
+  .verify input{margin-top:3px}
+  .actions{display:flex;gap:8px;margin-top:8px}
+
+  /* Toast */
+  .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;z-index:9999}
+  .toast.show{opacity:1}
+
+  /* Bottom nav */
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;align-items:center;padding:8px 0;z-index:9}
+  .nav-item{color:var(--purple);text-decoration:none;font-size:12px;display:flex;flex-direction:column;align-items:center}
+  .nav-item i{font-size:20px;margin-bottom:4px}
+  .nav-item.active span{font-weight:800}
+</style>
+</head>
+<body>
+
+<main class="page">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="track-order.html" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Order Status</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Header / status -->
+  <section class="card">
+    <div class="h" id="orderTitle">Order #—</div>
+    <div class="chips">
+      <span class="chip green">Order Confirmed</span>
+      <span class="chip purple">Order Placed</span>
+      <span class="chip purple">Confirmed</span>
+      <span class="chip gray">Shipped</span>
+      <span class="chip gray">Delivered</span>
+    </div>
+  </section>
+
+  <!-- Order details -->
+  <section class="card">
+    <div class="h">Order Details</div>
+    <div class="row"><div class="label">Product</div><div class="val" id="pName">Wireless Earbuds</div></div>
+    <div class="row"><div class="label">Quantity</div><div class="val" id="pQty">1</div></div>
+    <div class="row"><div class="label">Price</div><div class="val" id="pPrice">$25.00</div></div>
+    <div class="row"><div class="label">Seller</div><div class="val" id="pSeller">Amazon</div></div>
+    <div class="row"><div class="label">Country</div><div class="val" id="pCountry">USA</div></div>
+    <div class="row"><div class="label">Weight</div><div class="val" id="pWeight">0.5 kg</div></div>
+  </section>
+
+  <!-- Tracking -->
+  <section class="card track">
+    <div class="h">Shipment</div>
+    <div class="row"><div class="label">Courier</div><div class="val" id="courier">—</div></div>
+    <div class="row"><div class="label">AWB / Tracking ID</div><div class="val" id="awb">—</div></div>
+    <button class="btn btn-primary" id="trackBtn"><i class="fa-solid fa-location-arrow"></i> Track Shipment</button>
+    <div class="muted">If tracking is not yet available, we’ll update this section once the courier provides the AWB.</div>
+  </section>
+
+  <!-- Updates (Admin uploads, visible to all; upload box shows only for admin=1) -->
+  <section class="card updates">
+    <div class="h">Updates (Photos & Videos)</div>
+
+    <!-- Admin-only uploader -->
+    <div id="adminBox" class="admin-box" style="display:none">
+      <div class="muted"><i class="fa-solid fa-shield"></i> Admin Mode — upload product photos/videos for the customer.</div>
+      <input id="fileInput" type="file" accept="image/*,video/*" multiple>
+      <div class="admin-actions">
+        <label class="btn btn-ghost" for="fileInput"><i class="fa-regular fa-image"></i> Choose Files</label>
+        <input id="caption" type="text" placeholder="Optional caption…" style="flex:1;padding:12px;border:1px solid #ddd;border-radius:12px;outline:none">
+        <button id="addBtn" class="btn btn-primary" type="button"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+      </div>
+      <div class="muted">Tip: Small files upload faster. (Local demo stores data in your browser.)</div>
+    </div>
+
+    <!-- Gallery -->
+    <div id="gallery" class="gallery"><!-- filled by JS --></div>
+    <div id="emptyUpdates" class="muted">No updates yet.</div>
+  </section>
+
+  <!-- Customer approval / return -->
+  <section class="card">
+    <div class="h">Action Required</div>
+    <label class="verify">
+      <input id="verify" type="checkbox">
+      <span>
+        I have reviewed the product photos/videos and **verify further processing on my own risk**.
+        I understand that **Only physical damages are covered** during processing/handling.
+      </span>
+    </label>
+
+    <div class="actions">
+      <button id="approveBtn" class="btn btn-primary" disabled><i class="fa-solid fa-check"></i> Approve & Proceed</button>
+      <button id="returnBtn" class="btn btn-danger"><i class="fa-solid fa-rotate-left"></i> Return & Refund</button>
+    </div>
+    <div id="resolutionNote" class="muted" style="display:none;margin-top:6px"></div>
+  </section>
+</main>
+
+<!-- Toast -->
+<div id="toast" class="toast">Saved</div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+</nav>
+
+<script>
+  // ---------- Helpers ----------
+  const $ = id => document.getElementById(id);
+  const qs = new URLSearchParams(location.search);
+  const orderId = qs.get('order') || '—';
+  const isAdmin = qs.get('admin') === '1';
+  $('orderTitle').textContent = `Order #${orderId}`;
+  $('adminBox').style.display = isAdmin ? 'grid' : 'none';
+
+  const TOAST = $('toast');
+  const showToast = m => { TOAST.textContent = m; TOAST.classList.add('show'); setTimeout(()=>TOAST.classList.remove('show'), 1200); };
+
+  // ---------- Tracking (demo) ----------
+  // You can hydrate from Firestore/localStorage; here’s a tiny demo:
+  (function hydrateTracking(){
+    const store = JSON.parse(localStorage.getItem('gbn_tracking') || '{}');
+    const t = store[orderId] || { courier:'—', awb:'—', url:'' };
+    $('courier').textContent = t.courier || '—';
+    $('awb').textContent = t.awb || '—';
+    $('trackBtn').onclick = () => {
+      if(t.url){ window.open(t.url, '_blank'); }
+      else{ alert('Tracking link not available yet.'); }
+    };
+  })();
+
+  // ---------- Updates (images/videos) ----------
+  const UPD_KEY = id => `gbn_updates_${id}`;
+  function loadUpdates(){
+    try { return JSON.parse(localStorage.getItem(UPD_KEY(orderId))||'[]'); }
+    catch { return []; }
+  }
+  function saveUpdates(arr){
+    localStorage.setItem(UPD_KEY(orderId), JSON.stringify(arr));
+  }
+
+  const gallery = $('gallery');
+  const emptyUpdates = $('emptyUpdates');
+
+  function renderUpdates(){
+    const items = loadUpdates();
+    gallery.innerHTML = '';
+    emptyUpdates.style.display = items.length ? 'none' : 'block';
+    items.forEach((u,idx)=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'media';
+      if(u.type.startsWith('video')){
+        wrap.innerHTML = `<video controls src="${u.src}"></video>`;
+      }else{
+        wrap.innerHTML = `<a href="${u.src}" target="_blank" rel="noopener"><img src="${u.src}" alt="Update"></a>`;
+      }
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.title = 'Delete';
+      delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      delBtn.style.display = isAdmin ? 'flex' : 'none';
+      delBtn.onclick = () => {
+        const arr = loadUpdates();
+        arr.splice(idx,1); saveUpdates(arr); renderUpdates(); showToast('Removed');
+      };
+      const cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.textContent = u.caption || '';
+      wrap.appendChild(delBtn);
+      wrap.appendChild(cap);
+      gallery.appendChild(wrap);
+    });
+  }
+  renderUpdates();
+
+  // Admin upload
+  const fileInput = $('fileInput');
+  let selectedFiles = [];
+  if(fileInput){
+    fileInput.addEventListener('change', e => { selectedFiles = Array.from(e.target.files || []); });
+    $('addBtn').addEventListener('click', async () => {
+      if(!selectedFiles.length){ alert('Choose image/video files'); return; }
+      const caption = $('caption').value.trim();
+      const arr = loadUpdates();
+
+      for(const f of selectedFiles){
+        const dataURL = await readAsDataURL(f);
+        arr.unshift({ type:f.type, src:dataURL, caption, time:Date.now() });
+      }
+      saveUpdates(arr);
+      selectedFiles = []; fileInput.value = ''; $('caption').value='';
+      renderUpdates(); showToast('Uploaded');
+    });
+  }
+  function readAsDataURL(file){
+    return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+  }
+
+  // ---------- Customer actions ----------
+  const verify = $('verify');
+  const approveBtn = $('approveBtn');
+  const returnBtn  = $('returnBtn');
+  const resolutionNote = $('resolutionNote');
+
+  verify.addEventListener('change', ()=> { approveBtn.disabled = !verify.checked; });
+
+  approveBtn.addEventListener('click', ()=>{
+    localStorage.setItem(`gbn_resolution_${orderId}`, JSON.stringify({type:'approved', at:new Date().toISOString()}));
+    resolutionNote.textContent = 'You approved to proceed. Thank you!';
+    resolutionNote.style.display = 'block';
+    showToast('Approval saved');
+  });
+
+  returnBtn.addEventListener('click', ()=>{
+    const reason = prompt('Reason for return/refund? (optional)');
+    localStorage.setItem(`gbn_resolution_${orderId}`, JSON.stringify({type:'return', reason, at:new Date().toISOString()}));
+    resolutionNote.textContent = 'Return & refund requested. Our team will contact you shortly.';
+    resolutionNote.style.display = 'block';
+    showToast('Request sent');
+  });
+
+  // (Optional) hydrate resolution if already set
+  (function hydrateResolution(){
+    try{
+      const r = JSON.parse(localStorage.getItem(`gbn_resolution_${orderId}`)||'null');
+      if(!r) return;
+      if(r.type==='approved'){ verify.checked = true; approveBtn.disabled = false; }
+      resolutionNote.textContent = r.type==='approved' ? 'You already approved to proceed.' : 'Return & refund requested earlier.';
+      resolutionNote.style.display = 'block';
+    }catch{}
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Admin • New Order</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
+  --radius:14px; --shadow:0 12px 24px rgba(27,31,35,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{text-decoration:none;color:inherit}
+
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.topbar .left{display:flex; gap:10px; align-items:center}
+.back{border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:#fff; cursor:pointer}
+.page{max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:16px}
+
+.h1{font-weight:900; color:#3c3270; display:flex; align-items:end; gap:10px}
+.h1 small{color:var(--muted); font-weight:600}
+
+.layout{display:grid; grid-template-columns:2fr 1fr; gap:16px}
+@media (max-width:980px){ .layout{grid-template-columns:1fr} }
+
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  padding:14px; display:grid; gap:12px
+}
+.card h3{font-size:16px; color:#3b3d4d}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+@media (max-width:740px){ .grid2,.grid3,.grid4{grid-template-columns:1fr} }
+
+label{font-size:12px; color:var(--muted); font-weight:700}
+input,select,textarea{
+  width:100%; border:1px solid var(--line); background:#fbfbfd; padding:10px 10px; border-radius:10px;
+  outline:none; transition:.15s; font-size:14px;
+}
+textarea{min-height:84px; resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:#cbb6ef; box-shadow:0 0 0 3px rgba(122,30,161,.12)}
+
+.items-head{display:flex; align-items:center; justify-content:space-between}
+.add-row{border:1px dashed var(--line); background:#fff; padding:8px 12px; border-radius:10px; cursor:pointer}
+.add-row i{color:var(--purple)}
+.row{
+  display:grid; grid-template-columns:2fr 1fr 1fr 1fr 36px; gap:10px; align-items:end;
+  border:1px solid var(--line); padding:10px; border-radius:12px; background:#fff;
+}
+.row .rm{border:none; background:#fff; border-radius:8px; color:var(--bad); cursor:pointer; height:38px}
+.subgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.hint{font-size:12px; color:var(--muted)}
+
+.summary{
+  position:sticky; top:74px; display:grid; gap:12px; height:fit-content;
+}
+.summary .line{display:flex; justify-content:space-between; align-items:center}
+.summary .total{font-size:22px; font-weight:900}
+.pill{display:inline-block; padding:4px 8px; border-radius:999px; background:#f2e9ff; color:var(--purple); font-weight:800; font-size:12px}
+
+.attach-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+@media (max-width:640px){ .attach-grid{grid-template-columns:repeat(2,1fr)} }
+.thumb{
+  border:1px solid var(--line); border-radius:10px; padding:6px; display:grid; place-items:center; background:#fff; position:relative;
+}
+.thumb video, .thumb img{max-width:100%; border-radius:8px}
+.thumb .x{
+  position:absolute; top:4px; right:4px; border:none; border-radius:8px; background:#fff; color:#c0392b;
+  padding:4px 6px; cursor:pointer; border:1px solid var(--line);
+}
+
+.actions{display:flex; flex-wrap:wrap; gap:10px}
+.btn{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:12px 14px; cursor:pointer; font-weight:800;
+}
+.btn.primary{background:linear-gradient(135deg,var(--purple),#a060ff); color:#fff; border:none}
+.btn.accent{background:linear-gradient(135deg,var(--accent),#ff9c57); color:#fff; border:none}
+.btn:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+.small{font-size:12px; color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="left">
+    <button class="back" onclick="location.href='admin.html'"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="h1">New Order <small id="orderId" class="pill"></small></div>
+  </div>
+  <div style="margin-left:auto" class="small">Tip: Press <strong>Ctrl/⌘ + S</strong> to Save Draft</div>
+</header>
+
+<main class="page">
+
+  <section class="layout">
+    <!-- LEFT: FORMS -->
+    <div class="stack">
+
+      <!-- Customer -->
+      <div class="card">
+        <h3>Customer</h3>
+        <div class="grid2">
+          <div>
+            <label>Full name</label>
+            <input id="custName" placeholder="Customer name" required/>
+          </div>
+          <div>
+            <label>Email</label>
+            <input id="custEmail" type="email" placeholder="name@example.com"/>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="custPhone" placeholder="+977…"/>
+          </div>
+          <div>
+            <label>Country</label>
+            <input id="custCountry" placeholder="Nepal"/>
+          </div>
+          <div>
+            <label>City</label>
+            <input id="custCity" placeholder="Kathmandu"/>
+          </div>
+          <div>
+            <label>Preferred contact</label>
+            <select id="custPref">
+              <option>Email</option>
+              <option>Phone</option>
+              <option>WhatsApp</option>
+              <option>Viber</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Customer notes</label>
+          <textarea id="custNotes" placeholder="Any special instructions…"></textarea>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="card">
+        <div class="items-head">
+          <h3>Items</h3>
+          <button class="add-row" id="addItem"><i class="fa-solid fa-plus"></i> Add item</button>
+        </div>
+
+        <div id="items" class="stack" style="display:grid; gap:10px"></div>
+        <div class="hint">Include product link where possible. Prices are per item; totals are auto-computed.</div>
+      </div>
+
+      <!-- Logistics -->
+      <div class="card">
+        <h3>Shipping & Logistics</h3>
+        <div class="grid3">
+          <div>
+            <label>Origin Country</label>
+            <input id="origin" placeholder="USA / China / India …"/>
+          </div>
+          <div>
+            <label>Destination</label>
+            <input id="destination" placeholder="Nepal"/>
+          </div>
+          <div>
+            <label>Mode</label>
+            <select id="mode">
+              <option>Air</option><option>Sea</option><option>Courier</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid3">
+          <div>
+            <label>Estimated Weight (kg)</label>
+            <input id="estWeight" type="number" step="0.01" placeholder="0.00"/>
+          </div>
+          <div>
+            <label>Delivery Type</label>
+            <select id="deliveryType">
+              <option>Home Delivery</option>
+              <option>Pickup at Office</option>
+            </select>
+          </div>
+          <div>
+            <label>Expected Delivery</label>
+            <input id="eta" type="date"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="card">
+        <h3>Payment</h3>
+        <div class="grid3">
+          <div>
+            <label>Status</label>
+            <select id="payStatus">
+              <option selected>Awaiting Payment</option>
+              <option>Paid</option>
+              <option>On Hold</option>
+              <option>Refunded</option>
+            </select>
+          </div>
+          <div>
+            <label>Method</label>
+            <select id="payMethod">
+              <option>Cash</option><option>Bank Transfer</option><option>eSewa</option><option>Khalti</option><option>Card</option>
+            </select>
+          </div>
+          <div>
+            <label>Amount Paid (NPR)</label>
+            <input id="amountPaid" type="number" step="0.01" placeholder="0.00"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attachments -->
+      <div class="card">
+        <h3>Attachments</h3>
+        <input id="attach" type="file" accept="image/*,video/*" multiple/>
+        <div id="attachList" class="attach-grid"></div>
+        <div class="hint">Upload supplier screenshots, invoices, or product photos/videos. (Demo: stored locally only)</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button id="saveDraft" class="btn"><i class="fa-regular fa-floppy-disk"></i> Save Draft</button>
+        <button id="createOrder" class="btn primary"><i class="fa-solid fa-paper-plane"></i> Create Order</button>
+        <button id="resetForm" class="btn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+      </div>
+      <div class="small" id="msg"></div>
+
+    </div>
+
+    <!-- RIGHT: SUMMARY -->
+    <aside class="summary">
+      <div class="card">
+        <h3>Summary</h3>
+        <div class="line"><span>Items</span><strong id="sumItems">0</strong></div>
+        <div class="line"><span>Subtotal</span><strong id="sumSub">NPR 0.00</strong></div>
+        <div class="line"><span>Shipping</span><input id="sumShip" type="number" step="0.01" value="0" style="width:120px"/></div>
+        <div class="line"><span>Handling</span><input id="sumHandle" type="number" step="0.01" value="0" style="width:120px"/></div>
+        <hr style="border:none;border-top:1px solid var(--line); margin:6px 0">
+        <div class="line total"><span>Total</span><span id="sumTotal">NPR 0.00</span></div>
+        <div class="line"><span>Amount Paid</span><span id="sumPaid">NPR 0.00</span></div>
+        <div class="line"><span>Balance</span><span id="sumBalance">NPR 0.00</span></div>
+      </div>
+      <div class="card">
+        <h3>Quick flags</h3>
+        <label><input id="flagPriority" type="checkbox"> Mark as priority</label>
+        <label><input id="flagFragile" type="checkbox"> Fragile</label>
+        <label><input id="flagGift" type="checkbox"> Gift / no invoice</label>
+      </div>
+    </aside>
+  </section>
+
+</main>
+
+<script>
+/* ========= Utilities ========= */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const money = n => "NPR " + (Number(n||0)).toFixed(2);
+const genId = () => {
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `GBN-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+};
+const ORDER_ID = genId();
+document.getElementById('orderId').textContent = ORDER_ID;
+
+/* ========= Items Repeater ========= */
+const itemsBox = $('#items');
+const addBtn = $('#addItem');
+
+function itemRow(data={}){
+  const wrap = document.createElement('div');
+  wrap.className = 'row';
+  wrap.innerHTML = `
+    <div>
+      <label>Product name</label>
+      <input class="p-name" placeholder="e.g. Wireless Earbuds" value="${data.name||''}">
+      <div class="subgrid" style="margin-top:8px">
+        <div>
+          <label>Link</label>
+          <input class="p-link" placeholder="https://…"
+                 value="${data.link||''}">
+        </div>
+        <div>
+          <label>Specs / Notes</label>
+          <input class="p-spec" placeholder="Color, size…"
+                 value="${data.spec||''}">
+        </div>
+      </div>
+    </div>
+    <div>
+      <label>Qty</label>
+      <input class="p-qty" type="number" min="1" value="${data.qty||1}">
+    </div>
+    <div>
+      <label>Price (NPR)</label>
+      <input class="p-price" type="number" step="0.01" value="${data.price||0}">
+    </div>
+    <div>
+      <label>Weight (kg)</label>
+      <input class="p-wt" type="number" step="0.01" value="${data.weight||0}">
+    </div>
+    <button class="rm" title="Remove row"><i class="fa-solid fa-xmark"></i></button>
+  `;
+  wrap.querySelector('.rm').addEventListener('click', ()=>{ wrap.remove(); calc() });
+  wrap.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', calc));
+  return wrap;
+}
+function addItem(preset){ itemsBox.appendChild(itemRow(preset)); calc(); }
+addBtn.addEventListener('click', ()=> addItem({qty:1, price:0}));
+
+/* Start with one row */
+addItem({qty:1, price:0});
+
+/* ========= Attachments preview (local) ========= */
+const attach = $('#attach'), attachList = $('#attachList');
+let filesLocal = [];
+attach.addEventListener('change', e=>{
+  [...e.target.files].forEach(f=>{
+    const url = URL.createObjectURL(f);
+    filesLocal.push({name:f.name, type:f.type, size:f.size, url});
+    const th = document.createElement('div');
+    th.className='thumb';
+    th.innerHTML = `
+      ${f.type.startsWith('video') ? `<video src="${url}" controls muted></video>` : `<img src="${url}" alt="${f.name}">`}
+      <button class="x" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    th.querySelector('.x').addEventListener('click', ()=>{
+      URL.revokeObjectURL(url);
+      filesLocal = filesLocal.filter(x=>x.url!==url);
+      th.remove();
+    });
+    attachList.appendChild(th);
+  });
+  attach.value = "";
+});
+
+/* ========= Summary calc ========= */
+function calc(){
+  const rows = $$('#items .row');
+  let items=0, sub=0;
+  rows.forEach(r=>{
+    const qty = Number(r.querySelector('.p-qty').value||0);
+    const price = Number(r.querySelector('.p-price').value||0);
+    items += qty>0? qty:0;
+    sub += qty*price;
+  });
+  $('#sumItems').textContent = items;
+  $('#sumSub').textContent = money(sub);
+  const ship = Number($('#sumShip').value||0);
+  const handle = Number($('#sumHandle').value||0);
+  const total = sub + ship + handle;
+  $('#sumTotal').textContent = money(total);
+  const paid = Number($('#amountPaid').value||0);
+  $('#sumPaid').textContent = money(paid);
+  $('#sumBalance').textContent = money(total - paid);
+}
+$('#sumShip').addEventListener('input', calc);
+$('#sumHandle').addEventListener('input', calc);
+$('#amountPaid').addEventListener('input', calc);
+
+/* ========= Collect & Save ========= */
+function collectOrder(statusLabel){
+  // minimal validation
+  const name = $('#custName').value.trim();
+  if(!name){ throw new Error('Customer name is required.'); }
+  if(!$('#items .row')){ throw new Error('Add at least one item.'); }
+
+  const items = $$('#items .row').map(r=>({
+    name: r.querySelector('.p-name').value.trim(),
+    link: r.querySelector('.p-link').value.trim(),
+    spec: r.querySelector('.p-spec').value.trim(),
+    qty: Number(r.querySelector('.p-qty').value||0),
+    price: Number(r.querySelector('.p-price').value||0),
+    weight: Number(r.querySelector('.p-wt').value||0),
+  })).filter(i=>i.name || i.link);
+
+  if(items.length===0) throw new Error('Please fill at least one item.');
+
+  const subtotal = Number($('#sumSub').textContent.replace(/[^\d.]/g,''))||0;
+  const shipping = Number($('#sumShip').value||0);
+  const handling = Number($('#sumHandle').value||0);
+  const total = subtotal + shipping + handling;
+
+  return {
+    id: ORDER_ID,
+    createdAt: new Date().toISOString(),
+    status: statusLabel,                             // “Draft” or “Awaiting Payment”
+    customer: {
+      name, email: $('#custEmail').value.trim(),
+      phone: $('#custPhone').value.trim(),
+      country: $('#custCountry').value.trim(),
+      city: $('#custCity').value.trim(),
+      preferred: $('#custPref').value,
+      notes: $('#custNotes').value.trim(),
+    },
+    logistics: {
+      origin: $('#origin').value.trim(),
+      destination: $('#destination').value.trim(),
+      mode: $('#mode').value,
+      estWeight: Number($('#estWeight').value||0),
+      deliveryType: $('#deliveryType').value,
+      eta: $('#eta').value || null
+    },
+    payment: {
+      status: $('#payStatus').value,
+      method: $('#payMethod').value,
+      amountPaid: Number($('#amountPaid').value||0)
+    },
+    flags: {
+      priority: $('#flagPriority').checked,
+      fragile: $('#flagFragile').checked,
+      gift: $('#flagGift').checked
+    },
+    items,
+    charges: { subtotal, shipping, handling, total },
+    attachments: filesLocal.map(f=>({name:f.name,type:f.type,size:f.size})) // demo only
+  };
+}
+function saveToLocal(listKey, obj){
+  const arr = JSON.parse(localStorage.getItem(listKey)||'[]');
+  arr.unshift(obj);
+  localStorage.setItem(listKey, JSON.stringify(arr));
+}
+
+const msg = $('#msg');
+
+function showMsg(text, ok=true){
+  msg.textContent = text;
+  msg.style.color = ok ? 'var(--ok)' : 'var(--bad)';
+  setTimeout(()=> msg.textContent='', 3000);
+}
+
+/* Draft / Create */
+$('#saveDraft').addEventListener('click', ()=>{
+  try{
+    const order = collectOrder('Draft');
+    saveToLocal('ADMIN_ORDERS', order);
+    showMsg('Draft saved ✓');
+  }catch(e){ showMsg(e.message, false); }
+});
+
+$('#createOrder').addEventListener('click', ()=>{
+  try{
+    const order = collectOrder('Awaiting Payment');
+    saveToLocal('ADMIN_ORDERS', order);
+    showMsg('Order created ✓ Redirecting…');
+    setTimeout(()=> location.href = `admin-orders.html?order=${encodeURIComponent(ORDER_ID)}`, 500);
+  }catch(e){ showMsg(e.message, false); }
+});
+
+/* Reset */
+$('#resetForm').addEventListener('click', ()=>{
+  if(confirm('Clear the form?')){
+    location.reload();
+  }
+});
+
+/* Ctrl/⌘+S -> Save Draft */
+document.addEventListener('keydown', (e)=>{
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){
+    e.preventDefault();
+    $('#saveDraft').click();
+  }
+});
+</script>
+</body>
+</html>

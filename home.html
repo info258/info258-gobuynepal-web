@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GoBuy Nepal - Home</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal Logo" class="logo" />
+
+
+    <h2 class="welcome">Welcome to GoBuy Nepal!</h2>
+    <h3 class="user-greeting">Hello user! what do you want to do today:</h3>
+
+    <div class="button-group">
+      <button onclick="goTo('dashboard')">Import</button>
+     <button onclick="goTo('export')">Export</button>
+      <button onclick="goTo('inland')">Inland transport</button>
+    </div>
+  </div>
+
+  <script>
+    function goTo(action) {
+      alert("Navigating to: " + action);
+      // location.href = `${action}.html`; // uncomment when pages exist
+    }
+  </script>
+<script src="script.js"></script>
+
+</body>
+</html>

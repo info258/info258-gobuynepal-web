@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Language • GoBuy Nepal</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88;
+      --radius:14px; --shadow:0 10px 18px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px}
+    .top-btn{color:var(--purple);font-size:18px;text-decoration:none}
+    .title{font-weight:900;color:#444}
+    .right{width:28px}
+
+    .section{margin:16px 12px 10px;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin:0 12px 14px;padding:10px}
+
+    /* language rows */
+    .lang-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1px solid var(--line);background:#fff;margin:8px 0}
+    .lang-row .flag{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px}
+    .lang-row .body{flex:1}
+    .lang-row .name{font-weight:900}
+    .lang-row .sub{font-size:12px;color:#666}
+    .lang-row input[type="radio"]{width:18px;height:18px}
+
+    /* switch */
+    .row{display:flex;align-items:center;justify-content:space-between;padding:12px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;margin:8px 0}
+    .row .label{font-weight:900}
+    .switch{
+      --w:46px; --h:26px; position:relative;width:var(--w);height:var(--h);background:#e5e5ea;border-radius:999px;
+      transition:.2s; cursor:pointer; border:1px solid var(--line);
+    }
+    .switch::after{
+      content:""; position:absolute; left:2px; top:2px; width:22px; height:22px; background:#fff; border-radius:50%;
+      box-shadow:0 1px 3px rgba(0,0,0,.2); transition:.2s;
+    }
+    .switch.on{ background:var(--purple); border-color:var(--purple)}
+    .switch.on::after{ left: calc(100% - 24px) }
+
+    /* preview */
+    .preview{padding:14px;border-radius:12px;border:1px solid var(--line);background:#fafafa}
+    .preview .title{color:var(--purple);font-weight:900;margin-bottom:8px}
+    .taglist{display:flex;flex-wrap:wrap;gap:8px}
+    .tag{background:#f5f5fb;border:1px solid #e5def3;border-radius:999px;padding:6px 10px;font-size:12px;color:#6b5ea3;font-weight:800}
+
+    /* Actions */
+    .actions{position:fixed;left:0;right:0;bottom:70px;display:flex;justify-content:center;pointer-events:none;z-index:50}
+    .actions .wrap{width:100%;max-width:450px;padding:0 12px;display:flex;gap:10px;pointer-events:auto}
+    .btn{border:none;border-radius:12px;padding:13px 14px;font-weight:900;cursor:pointer}
+    .btn-primary{background:var(--purple);color:#fff;flex:1}
+    .btn-outline{background:#fff;color:var(--purple);border:2px solid var(--purple)}
+
+    /* Toast */
+    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;z-index:9999}
+    .toast.show{opacity:1}
+
+    /* Bottom nav */
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+      display:flex;justify-content:space-around;align-items:center;padding:8px 0;z-index:999;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+    .nav-item{color:var(--purple);text-decoration:none;font-size:12px;display:flex;flex-direction:column;align-items:center}
+    .nav-item i{font-size:20px;margin-bottom:4px}
+    .nav-item.active span{font-weight:800}
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="profile.html" aria-label="Back to Profile"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Language</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Device language -->
+  <div class="section">Preference</div>
+  <div class="card">
+    <div class="row">
+      <div class="label">Use device language</div>
+      <div id="autoSwitch" class="switch" role="switch" tabindex="0" aria-checked="false"></div>
+    </div>
+    <div style="font-size:12px;color:#777;margin:4px 2px 0 2px">
+      When ON, we’ll pick the best match based on your phone’s language.
+    </div>
+  </div>
+
+  <!-- Language list -->
+  <div class="section">Choose language</div>
+  <div class="card" id="langList">
+    <!-- rows inserted by JS -->
+  </div>
+
+  <!-- Preview -->
+  <div class="section">Preview</div>
+  <div class="card preview" id="previewCard">
+    <div class="title" id="p_title">Welcome to GoBuy Nepal!</div>
+    <div class="taglist">
+      <span class="tag" id="p_request">Request Order</span>
+      <span class="tag" id="p_chat">Quick Chat</span>
+      <span class="tag" id="p_confirm">Confirm Order</span>
+      <span class="tag" id="p_track">Track Order</span>
+      <span class="tag" id="p_help">Help</span>
+      <span class="tag" id="p_cart">Cart</span>
+      <span class="tag" id="p_alerts">Alerts</span>
+      <span class="tag" id="p_profile">Profile</span>
+    </div>
+  </div>
+</main>
+
+<!-- Actions -->
+<div class="actions">
+  <div class="wrap">
+    <button class="btn btn-outline" id="btnReset" type="button">Reset</button>
+    <button class="btn btn-primary" id="btnSave" type="button">Apply & Back</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">Saved</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+</nav>
+
+<script>
+  // ---- Config ----
+  const KEY_LANG = 'gbn_lang';
+  const KEY_LANG_AUTO = 'gbn_lang_auto';
+
+  const languages = [
+    { code:'en', name:'English', native:'English', flag:'🇬🇧' },
+    { code:'ne', name:'Nepali',  native:'नेपाली', flag:'🇳🇵' },
+    { code:'hi', name:'Hindi',   native:'हिन्दी', flag:'🇮🇳' },
+    { code:'zh', name:'Chinese', native:'中文 (简体)', flag:'🇨🇳' },
+    { code:'ar', name:'Arabic',  native:'العربية', flag:'🇦🇪' },
+  ];
+
+  // Tiny i18n dictionary for preview
+  const I18N = {
+    en:{ title:'Welcome to GoBuy Nepal!', request:'Request Order', chat:'Quick Chat', confirm:'Confirm Order', track:'Track Order', help:'Help', cart:'Cart', alerts:'Alerts', profile:'Profile' },
+    ne:{ title:'गोबाय नेपालमा स्वागत छ!', request:'अर्डर अनुरोध', chat:'छिटो च्याट', confirm:'अर्डर पुष्टि', track:'अर्डर ट्र्याक', help:'सहायता', cart:'कार्ट', alerts:'सूचना', profile:'प्रोफाइल' },
+    hi:{ title:'गोबाय नेपाल में आपका स्वागत है!', request:'ऑर्डर अनुरोध', chat:'त्वरित चैट', confirm:'ऑर्डर की पुष्टि', track:'ऑर्डर ट्रैक करें', help:'सहायता', cart:'कार्ट', alerts:'अलर्ट', profile:'प्रोफ़ाइल' },
+    zh:{ title:'欢迎来到 GoBuy Nepal！', request:'请求下单', chat:'快速聊天', confirm:'确认订单', track:'订单跟踪', help:'帮助', cart:'购物车', alerts:'提醒', profile:'个人资料' },
+    ar:{ title:'مرحبًا بك في GoBuy Nepal!', request:'طلب طلبية', chat:'دردشة سريعة', confirm:'تأكيد الطلب', track:'تتبّع الطلب', help:'مساعدة', cart:'السلة', alerts:'التنبيهات', profile:'الملف الشخصي' },
+  };
+
+  // ---- Helpers ----
+  const $ = id => document.getElementById(id);
+  const toast = $('toast');
+  function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1300); }
+
+  function bestDeviceLang(){
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+    const p = nav.toLowerCase();
+    if(p.startsWith('ne')) return 'ne';
+    if(p.startsWith('hi')) return 'hi';
+    if(p.startsWith('zh')) return 'zh';
+    if(p.startsWith('ar')) return 'ar';
+    return 'en';
+  }
+
+  function setDirFor(code){
+    const rtl = (code === 'ar');
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+  }
+
+  function paintPreview(code){
+    const t = I18N[code] || I18N.en;
+    $('p_title').textContent   = t.title;
+    $('p_request').textContent = t.request;
+    $('p_chat').textContent    = t.chat;
+    $('p_confirm').textContent = t.confirm;
+    $('p_track').textContent   = t.track;
+    $('p_help').textContent    = t.help;
+    $('p_cart').textContent    = t.cart;
+    $('p_alerts').textContent  = t.alerts;
+    $('p_profile').textContent = t.profile;
+  }
+
+  // ---- Build language list ----
+  const langList = $('langList');
+  function buildLangRows(selected){
+    langList.innerHTML = '';
+    languages.forEach(l => {
+      const row = document.createElement('label');
+      row.className = 'lang-row';
+      row.innerHTML = `
+        <div class="flag">${l.flag}</div>
+        <div class="body">
+          <div class="name">${l.name}</div>
+          <div class="sub">${l.native}</div>
+        </div>
+        <input type="radio" name="lang" value="${l.code}">
+      `;
+      const radio = row.querySelector('input[type="radio"]');
+      radio.checked = l.code === selected;
+      radio.addEventListener('change', ()=>{
+        currentLang = l.code;
+        paintPreview(currentLang);
+        setDirFor(currentLang);
+        // If user manually picks, turn OFF auto
+        setAuto(false);
+      });
+      langList.appendChild(row);
+    });
+  }
+
+  // ---- Auto switch handling ----
+  const autoSwitch = $('autoSwitch');
+  function setAuto(on){
+    auto = !!on;
+    autoSwitch.classList.toggle('on', auto);
+    autoSwitch.setAttribute('aria-checked', auto ? 'true':'false');
+    localStorage.setItem(KEY_LANG_AUTO, auto ? 'on' : 'off');
+    if(auto){
+      currentLang = bestDeviceLang();
+      // select matching radio
+      const radios = langList.querySelectorAll('input[name="lang"]');
+      radios.forEach(r => r.checked = (r.value === currentLang));
+      paintPreview(currentLang);
+      setDirFor(currentLang);
+    }
+  }
+  autoSwitch.addEventListener('click', ()=>setAuto(!auto));
+  autoSwitch.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setAuto(!auto); }});
+
+  // ---- Reset / Save ----
+  $('btnReset').addEventListener('click', ()=>{
+    if(!confirm('Reset language to English?')) return;
+    currentLang = 'en';
+    setAuto(false);
+    buildLangRows(currentLang);
+    paintPreview(currentLang);
+    setDirFor(currentLang);
+    showToast('Language reset');
+  });
+
+  $('btnSave').addEventListener('click', ()=>{
+    localStorage.setItem(KEY_LANG, currentLang);
+    showToast('Language saved');
+    setTimeout(()=> location.href = 'profile.html', 400);
+  });
+
+  // ---- Init ----
+  let auto = (localStorage.getItem(KEY_LANG_AUTO) === 'on');
+  let currentLang = localStorage.getItem(KEY_LANG) || (auto ? bestDeviceLang() : 'en');
+
+  setDirFor(currentLang);
+  buildLangRows(currentLang);
+  paintPreview(currentLang);
+  setAuto(auto);
+</script>
+</body>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+</nav>
+</html>

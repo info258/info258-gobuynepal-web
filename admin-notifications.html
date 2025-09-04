@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Notifications</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#f1c40f; --info:#3aa0ff; --bad:#e74c3c;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:inherit}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px;
+}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions .btn{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 12px; cursor:pointer
+}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{
+  width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=15') center/cover no-repeat;
+  border:1px solid var(--line)
+}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* 2-column for center + preferences */
+.grid{display:grid; grid-template-columns:2fr 1fr; gap:16px}
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+.ph{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; border-bottom:1px solid var(--line)
+}
+.ph .t{font-weight:900}
+.pb{padding:12px}
+
+/* Tabs / filters */
+.tabs{display:flex; gap:8px; flex-wrap:wrap}
+.tab{
+  border:1px solid var(--line); background:#fff; padding:8px 10px; border-radius:999px; cursor:pointer; font-weight:700; font-size:13px
+}
+.tab.active{background:#f2e9ff; color:var(--purple); border-color:#e2d2ff}
+
+/* Notification items */
+.list{display:grid; gap:10px}
+.notif{
+  display:grid; grid-template-columns:36px 1fr auto; gap:12px; align-items:start;
+  border:1px solid var(--line); background:#fff; border-radius:12px; padding:10px 12px;
+}
+.icon{
+  width:36px;height:36px;border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff;
+}
+.ic-success{background:linear-gradient(135deg,var(--ok),#79e6a7)}
+.ic-warn{background:linear-gradient(135deg,#f7d24d,#f1c40f)}
+.ic-info{background:linear-gradient(135deg,var(--info),#7bc1ff)}
+.ic-bad{background:linear-gradient(135deg,var(--bad),#ff8a8a)}
+.body .title{font-weight:800}
+.body .meta{font-size:12px; color:var(--muted); margin-top:2px}
+.badge{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:800; color:#fff; margin-left:8px}
+.b-alert{background:var(--bad)}
+.b-order{background:var(--purple)}
+.b-system{background:var(--info)}
+.actions{display:flex; gap:8px; align-items:center}
+.btn{border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 8px; font-size:12px; cursor:pointer}
+.btn.primary{background:#7a1ea1; color:#fff; border-color:#7a1ea1}
+.btn:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--purple); display:inline-block; margin-left:10px}
+.read .dot{display:none; opacity:.2}
+.read{opacity:.75}
+
+/* Preferences */
+.pref-group{display:grid; gap:12px}
+.row{
+  display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px;
+  border:1px solid var(--line); background:#fff; border-radius:12px; padding:10px 12px;
+}
+.row small{color:var(--muted)}
+.switch{
+  --w:46px; --h:26px;
+  position:relative; width:var(--w); height:var(--h); border-radius:999px; background:#e5e7ef; border:1px solid var(--line); cursor:pointer;
+}
+.switch::after{
+  content:""; position:absolute; top:2px; left:2px; width:22px;height:22px; border-radius:50%; background:#fff;
+  box-shadow:0 2px 4px rgba(0,0,0,.12); transition:.2s;
+}
+.switch.on{background:#7a1ea1; border-color:#7a1ea1}
+.switch.on::after{left: calc(100% - 24px)}
+.inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+input[type="time"]{border:1px solid var(--line); border-radius:8px; padding:6px 8px}
+.save-row{display:flex; gap:8px; justify-content:flex-end}
+
+.empty{color:var(--muted); text-align:center; padding:24px 8px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <div class="brand">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/>
+      <div class="t">GoBuy Admin</div>
+    </div>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-cases.html"><i class="fa-regular fa-circle-question"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+      <a class="active" href="admin-notifications.html"><i class="fa-regular fa-bell"></i><span>Notifications</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="search" type="search" placeholder="Search notifications…"/>
+      </div>
+      <div class="k-actions">
+        <button class="btn" id="markAll">Mark all read</button>
+        <button class="btn" id="clearAll">Clear</button>
+        <button class="btn" id="testNotif"><i class="fa-solid fa-paper-plane"></i> Test</button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="h1">Notifications</div>
+
+      <section class="grid">
+        <!-- Center: Notification feed -->
+        <div class="panel">
+          <div class="ph">
+            <div class="tabs" role="tablist" aria-label="Filters">
+              <button class="tab active" data-filter="all" role="tab" aria-selected="true">All</button>
+              <button class="tab" data-filter="unread" role="tab">Unread</button>
+              <button class="tab" data-filter="alerts" role="tab">Alerts</button>
+            </div>
+            <div class="inline">
+              <span style="font-size:12px;color:var(--muted)">Tip: click a card to toggle read</span>
+            </div>
+          </div>
+          <div class="pb">
+            <div id="list" class="list" aria-live="polite"><div class="empty">Loading…</div></div>
+          </div>
+        </div>
+
+        <!-- Right: Preferences -->
+        <aside class="panel">
+          <div class="ph"><div class="t">Preferences</div></div>
+          <div class="pb pref-group">
+            <div class="row">
+              <div>
+                <div class="title" style="font-weight:800">Email</div>
+                <small>Send important updates via email</small>
+              </div>
+              <div id="swEmail" class="switch" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+
+            <div class="row">
+              <div>
+                <div class="title" style="font-weight:800">SMS</div>
+                <small>Time-critical alerts only</small>
+              </div>
+              <div id="swSms" class="switch" role="switch" aria-checked="false" tabindex="0"></div>
+            </div>
+
+            <div class="row">
+              <div>
+                <div class="title" style="font-weight:800">Push</div>
+                <small>Browser push notifications</small>
+              </div>
+              <div id="swPush" class="switch on" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+
+            <div class="row">
+              <div>
+                <div class="title" style="font-weight:800">Quiet hours</div>
+                <small>Mute between</small>
+              </div>
+              <div class="inline">
+                <input id="quietFrom" type="time" value="22:00" aria-label="Quiet hours start">
+                <span>–</span>
+                <input id="quietTo" type="time" value="07:00" aria-label="Quiet hours end">
+              </div>
+            </div>
+
+            <div class="save-row">
+              <button class="btn" id="resetPrefs">Reset</button>
+              <button class="btn primary" id="savePrefs">Save</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
+
+  </section>
+</div>
+
+<script>
+/* ---------------- Seed + storage ---------------- */
+const KEY = 'ADMIN_NOTIFS';
+const PREF_KEY = 'ADMIN_PREFS';
+
+const seed = [
+  {id:'n1', type:'success', tags:['order'], title:'Order #1234 confirmed', text:'Customer payment verified and order confirmed.', time:'2 min ago', read:false},
+  {id:'n2', type:'warn', tags:['alert'], title:'Payment pending for #1234', text:'Customer has not completed payment.', time:'10 min ago', read:false},
+  {id:'n3', type:'info', tags:['system'], title:'Inventory sync finished', text:'Warehouse sync completed successfully.', time:'30 min ago', read:true},
+  {id:'n4', type:'success', tags:['order'], title:'Order #1229 delivered', text:'Carrier reported successful delivery.', time:'2 days ago', read:true},
+];
+
+function loadNotifs(){
+  try{
+    const data = JSON.parse(localStorage.getItem(KEY));
+    return Array.isArray(data) && data.length ? data : seed.slice();
+  }catch(e){ return seed.slice(); }
+}
+function saveNotifs(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+
+/* ---------------- Render ---------------- */
+let filter = 'all';
+let q = '';
+let notifs = loadNotifs();
+
+const listEl = document.getElementById('list');
+const tabs = document.querySelectorAll('.tab');
+
+function iconCls(type){
+  return {
+    success:'ic-success fa-check',
+    warn:'ic-warn fa-triangle-exclamation',
+    info:'ic-info fa-circle-info',
+    error:'ic-bad fa-circle-xmark'
+  }[type] || 'ic-info fa-circle-info';
+}
+function tagBadge(tags){
+  if(!tags?.length) return '';
+  return tags.map(t=>{
+    const map = {alert:'b-alert', order:'b-order', system:'b-system'};
+    return `<span class="badge ${map[t]||'b-system'}">${t}</span>`;
+  }).join('');
+}
+
+function render(){
+  const items = notifs
+    .filter(n => filter==='all' ? true
+            : filter==='unread' ? !n.read
+            : filter==='alerts' ? n.tags?.includes('alert') : true)
+    .filter(n => (n.title+n.text).toLowerCase().includes(q));
+
+  if(!items.length){
+    listEl.innerHTML = `<div class="empty">No notifications.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = '';
+  items.forEach(n=>{
+    const a = document.createElement('article');
+    a.className = 'notif' + (n.read ? ' read' : '');
+    a.setAttribute('data-id', n.id);
+    a.innerHTML = `
+      <div class="icon ${iconCls(n.type).split(' ')[0]}"><i class="fa-solid ${iconCls(n.type).split(' ')[1]}"></i></div>
+      <div class="body">
+        <div class="title">${n.title}${tagBadge(n.tags)} ${!n.read?'<span class="dot" title="unread"></span>':''}</div>
+        <div class="text">${n.text}</div>
+        <div class="meta">${n.time}</div>
+      </div>
+      <div class="actions">
+        <button class="btn small" data-act="toggle">${n.read?'Mark unread':'Mark read'}</button>
+        <button class="btn small" data-act="remove"><i class="fa-regular fa-trash-can"></i></button>
+      </div>
+    `;
+    listEl.appendChild(a);
+  });
+}
+
+/* toggle / remove */
+listEl.addEventListener('click', e=>{
+  const card = e.target.closest('.notif'); if(!card) return;
+  const id = card.getAttribute('data-id');
+  const n = notifs.find(x=>x.id===id); if(!n) return;
+
+  const actBtn = e.target.closest('[data-act]');
+  if(actBtn){
+    const act = actBtn.getAttribute('data-act');
+    if(act==='toggle'){ n.read = !n.read; saveNotifs(notifs); render(); }
+    if(act==='remove'){ notifs = notifs.filter(x=>x.id!==id); saveNotifs(notifs); render(); }
+    return;
+  }
+  // click card toggles read
+  n.read = !n.read; saveNotifs(notifs); render();
+});
+
+/* tabs */
+tabs.forEach(t=>{
+  t.addEventListener('click', ()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    filter = t.getAttribute('data-filter');
+    render();
+  });
+});
+
+/* actions */
+document.getElementById('markAll').addEventListener('click', ()=>{
+  notifs.forEach(n=>n.read=true); saveNotifs(notifs); render();
+});
+document.getElementById('clearAll').addEventListener('click', ()=>{
+  if(!confirm('Clear all notifications?')) return;
+  notifs = []; saveNotifs(notifs); render();
+});
+document.getElementById('testNotif').addEventListener('click', ()=>{
+  const id = 'n' + Math.random().toString(36).slice(2,8);
+  notifs.unshift({
+    id, type:'info', tags:['system'],
+    title:'Test notification',
+    text:'This is a sample test message.',
+    time:'just now', read:false
+  });
+  saveNotifs(notifs); filter='all'; tabs.forEach(x=>x.classList.toggle('active', x.dataset.filter==='all')); render();
+});
+
+/* search */
+document.getElementById('search').addEventListener('input', e=>{
+  q = e.target.value.trim().toLowerCase(); render();
+});
+
+/* Preferences (demo persistence) */
+const sw = id => document.getElementById(id);
+function setSwitch(el, on){ el.classList.toggle('on', on); el.setAttribute('aria-checked', on ? 'true' : 'false'); }
+function getPrefs(){
+  try{ return JSON.parse(localStorage.getItem(PREF_KEY)) || {email:true,sms:false,push:true,quietFrom:'22:00',quietTo:'07:00'};}
+  catch{ return {email:true,sms:false,push:true,quietFrom:'22:00',quietTo:'07:00'}; }
+}
+function savePrefs(p){ localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
+function loadPrefs(){
+  const p = getPrefs();
+  setSwitch(sw('swEmail'), p.email);
+  setSwitch(sw('swSms'), p.sms);
+  setSwitch(sw('swPush'), p.push);
+  document.getElementById('quietFrom').value = p.quietFrom;
+  document.getElementById('quietTo').value = p.quietTo;
+}
+['swEmail','swSms','swPush'].forEach(id=>{
+  const el = sw(id);
+  el.addEventListener('click', ()=> setSwitch(el, !el.classList.contains('on')));
+  el.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); setSwitch(el, !el.classList.contains('on')); }});
+});
+document.getElementById('savePrefs').addEventListener('click', ()=>{
+  const prefs = {
+    email: sw('swEmail').classList.contains('on'),
+    sms: sw('swSms').classList.contains('on'),
+    push: sw('swPush').classList.contains('on'),
+    quietFrom: document.getElementById('quietFrom').value,
+    quietTo: document.getElementById('quietTo').value
+  };
+  savePrefs(prefs);
+  alert('Preferences saved.');
+});
+document.getElementById('resetPrefs').addEventListener('click', ()=>{
+  localStorage.removeItem(PREF_KEY); loadPrefs();
+});
+
+/* Boot */
+loadPrefs();
+render();
+</script>
+</body>
+</html>

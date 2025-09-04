@@ -1,0 +1,7 @@
+<script type="module">
+  import { getAuth, signInAnonymously, connectAuthEmulator }
+    from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  const auth = getAuth();
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings:true });
+  signInAnonymously(auth).then(()=>location.href="id-info.html");
+</script>

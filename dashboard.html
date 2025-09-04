@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GoBuy Nepal - Dashboard</title>
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* Make quick-action tiles clickable without changing look */
+    .action-link { text-decoration: none; color: inherit; display: block; }
+    .action-icons a.action-link { flex: 1; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: #000;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 160px; /* room for bottom nav */
+      text-align: center;
+      position: relative;
+    }
+
+    /* (removed .menu-icon element and styles) */
+
+    .logo { width: 180px; margin: 20px auto; display: block; }
+
+    h2 {
+      color: #7a1ea1;
+      font-size: 22px;
+      margin: 10px 0 24px;
+    }
+
+    .features { text-align: left; font-size: 16px; margin-bottom: 30px; }
+    .features p { margin: 10px 0; }
+
+    .btn {
+      background-color: #d35400;
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 14px;
+      border: none;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Quick actions */
+    .action-icons {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      gap: 10px;
+    }
+    .action-item { text-align: center; }
+
+    .circle-bg {
+      background-color: #e8d9f3;
+      border-radius: 50%;
+      width: 60px; height: 60px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 8px;
+    }
+    .circle-bg img { width: 30px; height: 30px; }
+
+    .action-label { font-size: 13px; font-weight: bold; line-height: 1.3; }
+
+    /* Bottom Nav Bar */
+    .bottom-nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 70px; background: #fff; border-top: 1px solid #ccc;
+      display: flex; justify-content: space-around; align-items: center;
+      z-index: 999;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 12px; color: #7a1ea1; font-weight: 600; cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-item i { font-size: 20px; margin-bottom: 4px; }
+
+    /* iOS home indicator */
+    .home-indicator {
+      position: fixed; bottom: 5px; left: 50%; transform: translateX(-50%);
+      width: 130px; height: 5px; background: #000; border-radius: 4px; opacity: .8; z-index: 1000;
+    }
+
+    /* ---- Left-corner slide-in menu styles ---- */
+    :root{
+      --gbn-purple:#7a1ea1; --gbn-purple-700:#5b1680; --gbn-line:#e5e7ef;
+      --gbn-shadow:0 10px 18px rgba(0,0,0,.12);
+    }
+    .gbn-corner-wrap{ position:relative; z-index:1200 }
+    .gbn-corner-btn{
+      position:fixed; left:12px; top:12px; width:42px; height:42px;
+      border:none; border-radius:12px; background:#fff; color:var(--gbn-purple);
+      box-shadow:var(--gbn-shadow); display:flex; align-items:center; justify-content:center;
+      font-size:18px; cursor:pointer; z-index:1201; border:1px solid var(--gbn-line);
+    }
+    .gbn-corner-btn:active{ transform:translateY(1px) }
+
+    .gbn-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; z-index:1200;
+    }
+    .gbn-backdrop.show{ display:block }
+
+    .gbn-drawer{
+      position:fixed; top:0; left:0; height:100vh; width:86%; max-width:340px;
+      background:#fff; border-right:1px solid var(--gbn-line); box-shadow:var(--gbn-shadow);
+      transform:translateX(-100%); transition:transform .25s ease; z-index:1202;
+      display:flex; flex-direction:column;
+    }
+    .gbn-drawer.show{ transform:none }
+
+    .gbn-dhdr{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:12px 12px; border-bottom:1px solid var(--gbn-line);
+    }
+    .gbn-dtitle{ font-weight:900; color:#444 }
+    .gbn-close{
+      border:none; background:#fff; color:#666; width:34px; height:34px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--gbn-line);
+    }
+
+    .gbn-dlist{ overflow:auto; padding:10px 10px 16px; display:grid; gap:10px }
+    .gbn-item{
+      display:grid; grid-template-columns:40px 1fr auto; align-items:center; gap:10px;
+      background:#fff; border:1px solid var(--gbn-line); border-radius:12px; padding:10px; text-decoration:none; color:#222;
+    }
+    .gbn-ico{
+      width:40px; height:40px; border-radius:10px; background:#faf8ff; border:1px solid #e5def3;
+      color:var(--gbn-purple); display:flex; align-items:center; justify-content:center; font-size:16px;
+    }
+    .gbn-text{ display:grid; gap:2px }
+    .gbn-text .t{ font-weight:900 }
+    .gbn-text .s{ font-size:12px; color:#6b5ea3 }
+    .gbn-go{ color:#b0b3bb }
+    .gbn-item:active{ transform:translateY(1px) }
+
+    @media (min-width: 430px){
+      .gbn-corner-btn{ left:16px; top:16px }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- (old ☰ menu icon removed) -->
+
+    <!-- Logo -->
+    <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal Logo" class="logo" />
+
+    <!-- Welcome text -->
+    <h2>Welcome to GoBuy Nepal!</h2>
+
+    <!-- Features -->
+    <div class="features">
+      <p>✅ Shop From Top Shopping Sites all over the world</p>
+      <p>✅ Fast and Reliable Delivery</p>
+      <p>✅ Secure Online Payments</p>
+    </div>
+
+    <!-- Buttons -->
+    <button class="btn" onclick="location.href='request-order.html'">REQUEST ORDER</button>
+    <button class="btn" onclick="location.href='chat.html'">QUICK CHAT</button>
+
+    <!-- Quick Actions: Confirm / Track / Help -->
+    <div class="action-icons">
+      <!-- CONFIRM ORDER -->
+      <a href="confirm-order.html" class="action-link" aria-label="Confirm Order">
+        <div class="action-item">
+          <div class="circle-bg">
+            <img src="assets/icons/cart.png" alt="Confirm Order">
+          </div>
+          <div class="action-label">CONFIRM<br>ORDER</div>
+        </div>
+      </a>
+
+      <!-- TRACK ORDER -->
+      <a href="track-order.html" class="action-link" aria-label="Track Order">
+        <div class="action-item">
+          <div class="circle-bg">
+            <img src="assets/icons/box.png" alt="Track Order">
+          </div>
+          <div class="action-label">TRACK<br>ORDER</div>
+        </div>
+      </a>
+
+      <!-- HELP -->
+      <a href="help.html" class="action-link" aria-label="Help & Support">
+        <div class="action-item">
+          <div class="circle-bg">
+            <img src="assets/icons/help.png" alt="Help">
+          </div>
+          <div class="action-label">HELP</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Bottom nav bar -->
+  <div class="bottom-nav-bar">
+    <a class="nav-item active" href="dashboard.html" aria-label="Home">
+      <i class="fas fa-home"></i><span>Home</span>
+    </a>
+    <a class="nav-item" href="explore.html" aria-label="Explore">
+      <i class="fas fa-compass"></i><span>Explore</span>
+    </a>
+
+    <!-- Cart as DIV (opens add-to-cart.html) -->
+    <div class="nav-item" id="cartNav" role="button" tabindex="0" aria-label="Open Cart">
+      <i class="fas fa-shopping-cart"></i><span>Cart</span>
+    </div>
+
+    <a class="nav-item" href="alerts.html" aria-label="Alerts">
+      <i class="fas fa-bell"></i><span>Alerts</span>
+    </a>
+    <a class="nav-item" href="profile.html" aria-label="Profile">
+      <i class="fas fa-user"></i><span>Profile</span>
+    </a>
+  </div>
+
+  <!-- iOS-style home indicator -->
+  <div class="home-indicator"></div>
+
+  <!-- Cart DIV navigation (click + keyboard) -->
+  <script>
+    (function () {
+      const el = document.getElementById('cartNav');
+      if (!el) return;
+      const go = () => { window.location.href = 'add-to-cart.html'; };
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
+    })();
+  </script>
+
+  <!-- LEFT CORNER MENU (GoBuy Nepal) -->
+  <div class="gbn-corner-wrap" aria-live="polite">
+    <!-- Floating menu button -->
+    <button id="gbnMenuBtn" class="gbn-corner-btn" aria-label="Open menu" title="Menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Backdrop -->
+    <div id="gbnBackdrop" class="gbn-backdrop" tabindex="-1"></div>
+
+    <!-- Drawer -->
+    <aside id="gbnDrawer" class="gbn-drawer" role="dialog" aria-modal="true" aria-hidden="true" aria-label="GoBuy menu">
+      <div class="gbn-dhdr">
+        <div class="gbn-dtitle">GoBuy Menu</div>
+        <button id="gbnClose" class="gbn-close" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <nav class="gbn-dlist">
+        <!-- 1) Import -->
+        <a class="gbn-item" href="dashboard.html">
+          <div class="gbn-ico"><i class="fa-solid fa-box-open"></i></div>
+          <div class="gbn-text">
+            <div class="t">Import</div>
+            <div class="s">Go to main dashboard</div>
+          </div>
+          <div class="gbn-go"><i class="fa-solid fa-chevron-right"></i></div>
+        </a>
+
+        <!-- 2) Export (placeholder) -->
+        <button class="gbn-item" type="button" data-action="export">
+          <div class="gbn-ico"><i class="fa-solid fa-file-export"></i></div>
+          <div class="gbn-text">
+            <div class="t">Export</div>
+            <div class="s">Coming soon</div>
+          </div>
+          <div class="gbn-go"><i class="fa-solid fa-chevron-right"></i></div>
+        </button>
+
+        <!-- 3) Inland Transport (placeholder) -->
+        <button class="gbn-item" type="button" data-action="inland">
+          <div class="gbn-ico"><i class="fa-solid fa-truck-moving"></i></div>
+          <div class="gbn-text">
+            <div class="t">Inland Transport</div>
+            <div class="s">Coming soon</div>
+          </div>
+          <div class="gbn-go"><i class="fa-solid fa-chevron-right"></i></div>
+        </button>
+
+        <!-- 4) Quick Email -->
+        <a class="gbn-item" href="mailto:info@gobuynepal.com">
+          <div class="gbn-ico"><i class="fa-regular fa-envelope"></i></div>
+          <div class="gbn-text">
+            <div class="t">Email Us</div>
+            <div class="s">info@gobuynepal.com</div>
+          </div>
+          <div class="gbn-go"><i class="fa-solid fa-chevron-right"></i></div>
+        </a>
+
+        <!-- 5) Quick Contact -->
+        <a class="gbn-item" href="tel:+9779821336970">
+          <div class="gbn-ico"><i class="fa-solid fa-phone"></i></div>
+          <div class="gbn-text">
+            <div class="t">Call GoBuy Nepal</div>
+            <div class="s">+977 9821336970</div>
+          </div>
+          <div class="gbn-go"><i class="fa-solid fa-chevron-right"></i></div>
+        </a>
+
+        <!-- 6) Google Maps location -->
+        <a class="gbn-item" href="https://maps.google.com/?q=GoBuy%20Nepal%20Office%20Kathmandu" target="_blank" rel="noopener">
+          <div class="gbn-ico"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="gbn-text">
+            <div class="t">Office Location</div>
+            <div class="s">Open in Google Maps</div>
+          </div>
+          <div class="gbn-go"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+        </a>
+      </nav>
+    </aside>
+  </div>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('gbnMenuBtn');
+      const drawer = document.getElementById('gbnDrawer');
+      const closeBtn = document.getElementById('gbnClose');
+      const backdrop = document.getElementById('gbnBackdrop');
+
+      function openDrawer(){
+        drawer.classList.add('show');
+        drawer.setAttribute('aria-hidden','false');
+        backdrop.classList.add('show');
+        const f = drawer.querySelector('a,button');
+        setTimeout(()=> f && f.focus(), 10);
+      }
+      function closeDrawer(){
+        drawer.classList.remove('show');
+        drawer.setAttribute('aria-hidden','true');
+        backdrop.classList.remove('show');
+        btn.focus();
+      }
+
+      btn.addEventListener('click', openDrawer);
+      closeBtn.addEventListener('click', closeDrawer);
+      backdrop.addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', (e)=>{
+        if(e.key === 'Escape' && drawer.classList.contains('show')) closeDrawer();
+      });
+
+      // Placeholders
+      drawer.addEventListener('click', (e)=>{
+        const el = e.target.closest('[data-action]');
+        if(!el) return;
+        const act = el.getAttribute('data-action');
+        if(act==='export') alert('Export: Coming soon');
+        if(act==='inland') alert('Inland Transport: Coming soon');
+      });
+    })();
+  </script>
+  <!-- /LEFT CORNER MENU -->
+</body>
+</html>

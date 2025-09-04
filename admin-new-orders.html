@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy • Admin • New Requests</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{ --ink:#1f2033; --muted:#7e8190; --line:#e6e7ef; --bg:#f6f7fb; --purple:#7a1ea1; --radius:14px; --shadow:0 12px 24px rgba(27,31,35,.06);}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.h .left{display:flex;align-items:center;gap:10px}
+.t{font-weight:900;font-size:22px;color:#3c3270}
+.btn{border:none;border-radius:999px;padding:8px 12px;font-weight:800;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:#1f2033}
+.btn-ghost:hover{background:#fafbff}
+.btn-new{background:var(--purple);color:#fff}
+.b{padding:16px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th,td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+.badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:#334155;background:#f8fafc;white-space:nowrap}
+.small{font-size:12px;color:var(--muted)}
+.links div{margin:2px 0}
+.links em{font-style:normal;color:#475569}
+.actions{white-space:nowrap}
+td a{color:#1d4ed8;text-decoration:none}
+td a:hover{text-decoration:underline}
+
+/* Responsive: hide less-important cols on small screens */
+@media (max-width: 720px){
+  th:nth-child(5), td:nth-child(5), /* Price */
+  th:nth-child(6), td:nth-child(6)  /* When  */
+  { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="h">
+      <div class="left">
+        <button class="btn btn-ghost" id="backBtn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <i class="fa-solid fa-truck" style="color:var(--purple)"></i>
+        <div class="t">New order requests</div>
+        <span id="conn" class="badge">Connecting…</span>
+      </div>
+      <button class="btn btn-ghost" onclick="location.href='admin.html'"><i class="fa-solid fa-gauge"></i> Dashboard</button>
+    </div>
+    <div class="b">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ref</th>
+              <th>Customer</th>
+              <th>Items / Links</th>
+              <th>Total Qty</th>
+              <th>Price</th>
+              <th>When</th>
+              <th>Status</th>
+              <th class="actions">Action</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- UI helpers ----------
+  document.getElementById('backBtn').onclick = (e)=>{ e.preventDefault(); if(history.length>1) history.back(); else location.href='admin.html'; };
+  const rows = document.getElementById('rows');
+  const conn = document.getElementById('conn');
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const shortUrl = (u)=>{
+    try{ const x=new URL(u); const p=x.pathname.length>30?x.pathname.slice(0,30)+'…':x.pathname; return x.hostname + p; }
+    catch{ return (u||'').slice(0,50)+(u&&u.length>50?'…':''); }
+  };
+  const fmtTs = (ts)=>{
+    try{
+      if (ts?.toMillis) return new Date(ts.toMillis()).toLocaleString();
+      if (typeof ts?.seconds === 'number') return new Date(ts.seconds*1000).toLocaleString();
+    }catch{}
+    return '—';
+  };
+
+  // Converted list fallback (in case Firestore write is delayed/offline)
+  function getConvertedRids(){
+    try{ return JSON.parse(localStorage.getItem('ADMIN_CONVERTED_RIDS')||'[]'); }catch{return []}
+  }
+  function startBuilder(docId, refId, r){
+    const payload = {
+      source: 'request',
+      requestId: docId,      // Builder uses this to mark converted in Firestore
+      refId: refId || docId,
+      type: r.type || 'single',
+      createdAt: r.createdAt || null,
+      customer: r.customer || {},
+      items: Array.isArray(r.items) ? r.items : (r.item ? [r.item] : []),
+      lockAll: true
+    };
+    try{ localStorage.setItem('ADMIN_PREFILL_REQUEST', JSON.stringify(payload)); }catch(e){ alert('Could not store prefill data.'); return; }
+    location.href = `admin-order-builder.html?locked=1&rid=${encodeURIComponent(docId)}`;
+  }
+
+  // Re-render when builder signals a conversion (localStorage changes)
+  window.addEventListener('storage', (e)=>{
+    if (e.key === 'ADMIN_CONVERTED_RIDS') renderBuffer(); // soft re-render
+  });
+
+  let buffer = []; // keep latest snapshot to reapply local filter
+  function renderBuffer(){
+    const converted = new Set(getConvertedRids().map(String));
+    rows.innerHTML = '';
+    buffer.forEach(({id, r})=>{
+      if (converted.has(String(id))) return; // hide converted
+      const c = r.customer || {};
+      const type = r.type || 'single';
+      let itemCell = '', totalQty = 0, priceCol = '—';
+      if (type === 'bulk' && Array.isArray(r.items)) {
+        const items = r.items;
+        totalQty = items.reduce((a,b)=> a + (Number(b?.qty)||1), 0);
+        const list = items.map((it,i)=>{
+          const link = it?.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(shortUrl(it.link))}</a>` : '—';
+          const qty  = it?.qty ? ` × ${Number(it.qty)}` : '';
+          const spec = it?.specs ? ` <em>${esc(it.specs)}</em>` : '';
+          return `<div>${i+1}. ${link}${qty}${spec}</div>`;
+        }).join('');
+        itemCell = `<div><b>Bulk request • ${items.length} item(s)</b></div><div class="links">${list}</div>`;
+      } else {
+        const it = r.item || {};
+        totalQty = Number(it.qty ?? 1);
+        const link = it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(shortUrl(it.link))}</a>` : '<span class="small">—</span>';
+        const specs= it.specs ? `<div class="small">${esc(it.specs)}</div>` : '';
+        itemCell = `<div><b>${esc(it.name || '')}</b></div>${link}${specs}`;
+        priceCol = (typeof it.price === 'number') ? it.price.toString() : '—';
+      }
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><b>${esc(r.refId || id)}</b><div class="small">${esc(type)}</div></td>
+        <td><b>${esc(c.name||'-')}</b><div class="small">${esc(c.phone||'')}<br>${esc(c.city||'')}</div></td>
+        <td>${itemCell}</td>
+        <td>${totalQty}</td>
+        <td>${priceCol}</td>
+        <td>${fmtTs(r.createdAt)}</td>
+        <td><span class="badge">${esc(r.status||'new')}</span></td>
+        <td class="actions"><button class="btn btn-new"><i class="fa-solid fa-plus"></i> New</button></td>
+      `;
+      tr.querySelector('button')?.addEventListener('click', ()=> startBuilder(id, r.refId || id, r));
+      rows.appendChild(tr);
+    });
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAuth, connectAuthEmulator, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { getFirestore, connectFirestoreEmulator, collection, onSnapshot, where, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  const cfg = {
+    apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+    authDomain:"customer-login-e5ecd.firebaseapp.com",
+    projectId:"customer-login-e5ecd",
+    storageBucket:"customer-login-e5ecd.appspot.com",
+    messagingSenderId:"569269085839",
+    appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+  };
+
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  if (["localhost","127.0.0.1"].includes(location.hostname)) {
+    connectAuthEmulator(auth,"http://127.0.0.1:9099",{disableWarnings:true});
+    connectFirestoreEmulator(db,"127.0.0.1",8080);
+  }
+  onAuthStateChanged(auth, async u => { if(!u){ try{ await signInAnonymously(auth);}catch{} } });
+
+  conn.textContent = "Listening…";
+
+  // ONLY "new" requests; newest first
+  const q = query(collection(db,"requests"), where("status","==","new"), orderBy("createdAt","desc"));
+  onSnapshot(q, snap=>{
+    // buffer fresh snapshot
+    buffer = [];
+    snap.forEach(docSnap=>{
+      const data = docSnap.data() || {};
+      // normalize TS for the renderer
+      const createdAt = data.createdAt?.toMillis ? data.createdAt : (data.createdAt?.seconds ? { toMillis: ()=>data.createdAt.seconds*1000 } : null);
+      buffer.push({ id: docSnap.id, r: { ...data, createdAt } });
+    });
+    renderBuffer(); // apply local converted filter + paint
+  }, err=>{
+    conn.textContent = 'Offline';
+    conn.title = err?.message || 'Error';
+  });
+</script>
+</body>
+</html>

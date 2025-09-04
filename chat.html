@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GoBuy Nepal • Quick Chat</title>
+  <style>
+    :root{ --ink:#1f2033; --muted:#7e8190; --bg:#fff; --line:#e9e9ef; --purple:#7a1ea1; --bubble:#fff; --bubbleMe:#7a1ea1; --meText:#fff }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; color:var(--ink); background:var(--bg) }
+    .chat-container{ max-width:760px; margin:0 auto; height:100vh; display:grid; grid-template-rows:auto 1fr auto; border-left:1px solid var(--line); border-right:1px solid var(--line) }
+    .chat-header{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#fff; z-index:2 }
+    .profile-pic{ width:40px; height:40px; border-radius:50%; object-fit:cover }
+    .chat-user-info{ flex:1 }
+    .chat-username{ font-weight:800 }
+    .chat-status{ font-size:12px; color:var(--muted) }
+    .req-order{ display:inline-flex; align-items:center; gap:8px; background:var(--purple); color:#fff; text-decoration:none; padding:8px 12px; border-radius:10px; font-weight:800; border:1px solid var(--purple) }
+    .chat-messages{ padding:16px 14px 110px; overflow:auto; background:#fafbff; position:relative }
+    .daybreak{ text-align:center; color:var(--muted); font-size:12px; margin:14px 0 }
+    .message{ max-width:78%; padding:10px 12px; margin:8px 0; border-radius:14px; box-shadow:0 1px 4px rgba(0,0,0,.06); word-wrap:break-word; white-space:pre-wrap; background:var(--bubble) }
+    .message.me{ background:var(--bubbleMe); color:var(--meText); margin-left:auto }
+    .message .meta{ font-size:11px; color:var(--muted); margin-top:6px }
+    .message.me .meta{ color:#e9d9f5 }
+    .msg-img{ display:block; max-width:100%; border-radius:10px; background:#f2f3f9 }
+    .file-card{ display:flex; align-items:center; gap:10px; padding:10px; border:1px solid var(--line); border-radius:10px; background:#fff }
+    .file-card .ico{ font-size:20px }
+    .file-card a{ color:inherit; text-decoration:none; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:280px }
+    .progress{ height:6px; background:#ececff; border-radius:999px; overflow:hidden; margin-top:8px }
+    .progress > i{ display:block; height:6px; width:0%; background:var(--purple) }
+    .chat-input-wrap{ position:sticky; bottom:0; background:#fff; border-top:1px solid var(--line) }
+    .chat-input{ display:flex; align-items:center; gap:8px; padding:10px; }
+    .chat-input input{ flex:1; padding:12px; border:1px solid var(--line); border-radius:10px; outline:none }
+    .chat-input-buttons{ display:flex; gap:6px }
+    .chat-input-buttons button{ border:0; background:#fff; font-size:20px; cursor:pointer; width:36px; height:36px; border-radius:10px }
+    .emoji-panel{ position:absolute; bottom:66px; right:78px; width:280px; max-width:90vw; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,.12); padding:8px; display:none; z-index:5 }
+    .emoji-grid{ display:grid; grid-template-columns:repeat(8,1fr); gap:6px; max-height:220px; overflow:auto; font-size:22px }
+    .emoji-btn{ background:#fff; border:1px solid transparent; border-radius:8px; cursor:pointer; padding:6px }
+    .drop-hint{ position:absolute; inset:0; display:none; place-items:center; background:rgba(122,30,161,.06); border:2px dashed #c7b4e0; color:#5a2e8a; font-weight:800; }
+    .drop-hint.show{ display:grid }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <img src="https://via.placeholder.com/40" alt="User" class="profile-pic">
+      <div class="chat-user-info">
+        <div class="chat-username" id="chatTitle">QUICK CHAT</div>
+        <div class="chat-status" id="chatSub">Connecting…</div>
+      </div>
+      <a href="request-order.html" class="req-order">📝 Request Order</a>
+    </div>
+
+    <div class="chat-messages" id="chatBody" aria-live="polite">
+      <div class="drop-hint" id="dropHint">Drop files to upload</div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <div class="chat-input">
+        <input type="text" id="messageInput" placeholder="Message..." autocomplete="off">
+        <div class="chat-input-buttons">
+          <button id="emojiBtn" title="Emoji" type="button">😊</button>
+          <button id="attachBtn" title="Attachment" type="button">📎</button>
+          <button id="sendBtn" title="Send" type="button">📤</button>
+        </div>
+      </div>
+      <div class="emoji-panel" id="emojiPanel"><div class="emoji-grid" id="emojiGrid"></div></div>
+    </div>
+  </div>
+
+  <input
+    type="file"
+    id="filePicker"
+    multiple
+    style="display:none"
+    accept="image/*,application/pdf,text/plain,application/zip,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  />
+
+  <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    import { getFirestore, doc, collection, addDoc, getDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
+
+    // IMPORTANT: use your actual bucket (new projects use .firebasestorage.app)
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+      authDomain: "customer-login-e5ecd.firebaseapp.com",
+      projectId: "customer-login-e5ecd",
+      storageBucket: "customer-login-e5ecd.firebasestorage.app",
+      messagingSenderId: "569269085839",
+      appId: "1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+    };
+
+    const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    try { await setPersistence(auth, browserLocalPersistence); } catch {}
+    const db = getFirestore(app);
+
+    // Explicitly bind to the correct bucket
+    const storage = getStorage(app, "gs://customer-login-e5ecd.firebasestorage.app");
+
+    const chatBody     = document.getElementById('chatBody');
+    const dropHint     = document.getElementById('dropHint');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn      = document.getElementById('sendBtn');
+    const chatSubEl    = document.getElementById('chatSub');
+    const emojiBtn     = document.getElementById('emojiBtn');
+    const attachBtn    = document.getElementById('attachBtn');
+    const filePicker   = document.getElementById('filePicker');
+    const emojiPanel   = document.getElementById('emojiPanel');
+    const emojiGrid    = document.getElementById('emojiGrid');
+
+    // Emoji picker
+    const EMOJIS = "😀😁😂🤣😊🙂😉😍😘😇🤗🤔😴🤤🤩😎😢😭😡😬🤯👍👎🙏👏🙌🔥✨🎉💯✅❌🫶🤝💡📦🛒🚚🕒".split("");
+    EMOJIS.forEach(e=>{
+      const b=document.createElement('button');
+      b.className='emoji-btn'; b.type='button'; b.textContent=e;
+      b.onclick=()=>{ insertAtCaret(messageInput,e); messageInput.focus(); };
+      emojiGrid.appendChild(b);
+    });
+    document.addEventListener('click', (ev)=>{ if(!emojiPanel.contains(ev.target) && ev.target!==emojiBtn) emojiPanel.style.display='none'; });
+    emojiBtn.onclick=()=>{ emojiPanel.style.display = (emojiPanel.style.display==='block'?'none':'block'); };
+
+    function insertAtCaret(input, text){
+      const s=input.selectionStart??input.value.length;
+      const e=input.selectionEnd??input.value.length;
+      input.value=input.value.slice(0,s)+text+input.value.slice(e);
+      input.selectionStart=input.selectionEnd=s+text.length;
+      input.dispatchEvent(new Event('input'));
+    }
+    function scrollToBottom(){ chatBody.scrollTop = chatBody.scrollHeight; }
+    function escapeHTML(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[m])); }
+    function linkify(t){ const safe=escapeHTML(t||''); return safe.replace(/\b(https?:\/\/[^\s]+)\b/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'); }
+    function formatTime(ts){ const d=ts?.toDate?.()??ts??new Date(); return new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(d); }
+    function dayKey(ts){ const d=ts?.toDate?.()??ts??new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+    let lastDay='';
+
+    function daybreak(ts){
+      const k=dayKey(ts);
+      if(k!==lastDay){
+        lastDay=k;
+        const el=document.createElement('div');
+        el.className='daybreak';
+        el.textContent=(ts?.toDate?.()??ts??new Date()).toLocaleDateString();
+        chatBody.appendChild(el);
+      }
+    }
+    function bubbleText({text,ts},me=false){
+      daybreak(ts);
+      const d=document.createElement('div');
+      d.className='message'+(me?' me':'');
+      d.innerHTML=`<div>${linkify(text)}</div><div class="meta">${formatTime(ts)}</div>`;
+      chatBody.appendChild(d);
+      return d;
+    }
+    function bubbleImage({url,name,ts},me=false){
+      daybreak(ts);
+      const d=document.createElement('div');
+      d.className='message'+(me?' me':'');
+      d.innerHTML=`<img class="msg-img" alt="${escapeHTML(name||'image')}" src="${url}"><div class="meta">${escapeHTML(name||'Image')} • ${formatTime(ts)}</div>`;
+      chatBody.appendChild(d);
+      return d;
+    }
+    function bubbleFile({url,name,size,ts},me=false){
+      daybreak(ts);
+      const d=document.createElement('div');
+      d.className='message'+(me?' me':'');
+      const kb=size?Math.max(1,Math.round(size/1024))+' KB':'';
+      d.innerHTML=`<div class="file-card"><div class="ico">📄</div><a href="${url}" target="_blank" rel="noopener noreferrer">${escapeHTML(name||'file')}</a><span style="margin-left:auto;font-size:12px;${me?'color:#e9d9f5':'color:var(--muted)'}">${kb}</span></div><div class="meta">${formatTime(ts)}</div>`;
+      chatBody.appendChild(d);
+      return d;
+    }
+    function bubbleProgress(name,me=true){
+      const d=document.createElement('div');
+      d.className='message'+(me?' me':'');
+      d.innerHTML=`<div><strong>${escapeHTML(name)}</strong></div><div class="progress"><i></i></div><div class="meta">Uploading…</div>`;
+      chatBody.appendChild(d);
+      return {
+        set(p){ d.querySelector('.progress>i').style.width=Math.max(0,Math.min(100,p))+'%'; },
+        done(){ d.querySelector('.meta').textContent='Uploaded'; }
+      };
+    }
+
+    // Promise+timeout so uploads don’t hang forever
+    function waitForUpload(task, onProg, timeoutMs = 120000){
+      return new Promise((resolve, reject)=>{
+        const to = setTimeout(()=>{ try{task.cancel();}catch{}; reject(new Error('upload-timeout')); }, timeoutMs);
+        task.on('state_changed',
+          s=>onProg?.(s),
+          err=>{ clearTimeout(to); reject(err); },
+          ()=>{ clearTimeout(to); resolve(task.snapshot); }
+        );
+      });
+    }
+
+    let currentUser=null, unsubscribe=null;
+
+    async function sendText(){
+      const text=(messageInput.value||'').trim();
+      if(!text||!currentUser) return;
+      const room=doc(db,'chats',currentUser.uid), messages=collection(room,'messages');
+      const tmp=bubbleText({text,ts:new Date()},true);
+      messageInput.value=''; messageInput.focus();
+      try{
+        await addDoc(messages,{type:'text',text,uid:currentUser.uid,role:'user',ts:serverTimestamp()});
+      }catch(e){
+        tmp.querySelector('.meta').textContent='Failed to send';
+        console.error(e);
+      }finally{ scrollToBottom(); }
+    }
+    sendBtn.onclick=sendText;
+    messageInput.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendText(); } });
+
+    attachBtn.onclick=()=>filePicker.click();
+    filePicker.onchange=()=>{ const files=[...filePicker.files||[]]; if(files.length) uploadFiles(files); filePicker.value=''; };
+
+    ['dragenter','dragover'].forEach(ev=> chatBody.addEventListener(ev, e=>{ e.preventDefault(); dropHint.classList.add('show'); }));
+    ['dragleave','drop'].forEach(ev=> chatBody.addEventListener(ev, e=>{ e.preventDefault(); dropHint.classList.remove('show'); }));
+    chatBody.addEventListener('drop', e=>{ const files=[...(e.dataTransfer?.files||[])]; if(files.length) uploadFiles(files); });
+
+    document.addEventListener('paste', e=>{
+      const items=e.clipboardData?.items||[];
+      const files=[...items].filter(i=>i.kind==='file').map(i=>i.getAsFile());
+      if(files.length) uploadFiles(files);
+    });
+
+    async function uploadFiles(files){
+      if(!currentUser) return;
+
+      for(const f of files){
+        const isImage=/^image\//.test(f.type);
+        const maxMB=isImage?8:12;
+        if(f.size>maxMB*1024*1024){
+          bubbleText({text:`⚠️ ${f.name} is too large (max ${maxMB}MB).`,ts:new Date()},false);
+          continue;
+        }
+
+        const stamp=Date.now();
+        const safe=(f.name||'file').replace(/[^\w.\-]+/g,'_');
+        const path=`chats/${currentUser.uid}/uploads/${stamp}_${safe}`;
+        const prog=bubbleProgress(f.name);
+
+        try{
+          const task=uploadBytesResumable(
+            ref(storage,path),
+            f,
+            { contentType:f.type||'application/octet-stream', cacheControl:'public,max-age=31536000' }
+          );
+
+          const snap=await waitForUpload(task, s=>{
+            const pct=s.totalBytes?(s.bytesTransferred/s.totalBytes*100):0;
+            prog.set(pct);
+          });
+
+          prog.done();
+          const url=await getDownloadURL(snap.ref);
+
+          const room=doc(db,'chats',currentUser.uid), messages=collection(room,'messages');
+          const base={ uid:currentUser.uid, role:'user', ts:serverTimestamp() };
+
+          await addDoc(messages, isImage
+            ? { ...base, type:'image', url, name:f.name, size:f.size, mime:f.type }
+            : { ...base, type:'file',  url, name:f.name, size:f.size, mime:f.type }
+          );
+
+        }catch(err){
+          console.error('UPLOAD ERROR', { code:err?.code, message:err?.message, name:err?.name });
+          bubbleText({ text:`❌ Upload failed: ${f.name}\n(${err?.code || err?.message || 'unknown error'})`, ts:new Date() }, false);
+        }finally{
+          scrollToBottom();
+        }
+      }
+    }
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){
+        location.replace('index.html?next='+encodeURIComponent('chat.html'));
+        return;
+      }
+      currentUser=user;
+      chatSubEl.textContent=`Signed in as ${user.email||user.uid.slice(0,8)}`;
+
+      const room=doc(db,'chats',user.uid);
+      const messages=collection(room,'messages');
+      const q=query(messages,orderBy('ts'));
+
+      unsubscribe?.(); lastDay='';
+      unsubscribe=onSnapshot(q, snap=>{
+        chatBody.innerHTML=''; chatBody.appendChild(dropHint);
+        if(snap.empty){
+          bubbleText({text:'Hi! How can we help you today?', ts:new Date()}, false);
+        }else{
+          snap.forEach(d=>{
+            const m=d.data(); const mine=m?.uid===user.uid;
+            if(m.type==='image'&&m.url)      bubbleImage(m,mine);
+            else if(m.type==='file'&&m.url)  bubbleFile(m,mine);
+            else                              bubbleText(m,mine);
+          });
+        }
+        scrollToBottom();
+      }, err=>{
+        console.error(err);
+        chatSubEl.textContent='Live updates failed.';
+      });
+
+      try{
+        const exists=await getDoc(room);
+        if(!exists.exists()){
+          await addDoc(collection(room,'messages'), { text:'🟢 User opened chat.', uid:user.uid, role:'system', type:'text', ts:serverTimestamp() });
+        }
+      }catch{}
+    });
+
+    window.addEventListener('beforeunload', ()=>unsubscribe?.());
+  </script>
+</body>
+</html>

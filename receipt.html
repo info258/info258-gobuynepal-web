@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Receipt • GoBuy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--ink:#1f2033;--ok:#22c55e;--line:#ececf3;--bg:#fafbff}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:700px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 24px rgba(0,0,0,.06)}
+.h1{font-weight:900;font-size:28px;margin:6px 0 16px;color:#5f3ab8}
+.row{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
+.badge{background:var(--ok);color:#fff;border-radius:999px;padding:6px 12px;font-weight:800}
+.actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;background:#7a1ea1;color:#fff;text-decoration:none;border-radius:12px;padding:12px 16px;font-weight:800}
+.btn.secondary{background:#64748b}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="h1">Receipt</h1>
+  <div class="card">
+    <div class="row"><div>Order</div><div id="oid">#</div></div>
+    <div class="row"><div>Status</div><div class="badge">Paid</div></div>
+    <div class="row"><div>Customer</div><div id="cust">—</div></div>
+    <div class="row"><div>Item</div><div id="item">—</div></div>
+    <div class="row"><div>Total</div><div id="total">—</div></div>
+    <div class="row"><div>Paid At</div><div id="paidAt">—</div></div>
+    <div class="actions">
+      <a id="back" class="btn secondary">Back to Order</a>
+      <a class="btn" href="javascript:window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</a>
+      <a id="shareRec" class="btn" style="background:#3b82f6"><i class="fa-solid fa-share-from-square"></i> Share Receipt</a>
+    </div>
+  </div>
+</div>
+<script>
+const money = n => new Intl.NumberFormat('en-NP',{style:'currency',currency:'NPR'}).format(Number(n||0));
+const KEY='ADMIN_ORDERS'; const qs=new URLSearchParams(location.search);
+function getOrders(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
+function get(id){return getOrders().find(o=>String(o.id)===String(id))}
+const id = qs.get('order')||qs.get('id'); const o=get(id);
+if(!o){ location.replace('confirm.html'); }
+else{
+  const it=o.items?.[0]||{}; const total=Number(o.totals?.total||it.price||0);
+  document.getElementById('oid').textContent='#'+o.id;
+  document.getElementById('cust').textContent=o.customer?.name||'Customer';
+  document.getElementById('item').textContent=`${it.name||'—'} × ${it.qty||1}`;
+  document.getElementById('total').textContent=money(total);
+  document.getElementById('paidAt').textContent = o.payment?.at ? new Date(o.payment.at).toLocaleString() : '—';
+  document.getElementById('back').href=`confirm.html?order=${o.id}`;
+  document.getElementById('shareRec').href=`share.html?order=${o.id}`;
+}
+</script>
+</body>
+</html>

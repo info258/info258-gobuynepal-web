@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Firestore Diagnostics</title>
+<style>
+  body{font-family:system-ui,Arial;margin:24px}
+  .ok{color:#065f46;background:#ecfdf3;border:1px solid #bbf7d0;padding:8px;border-radius:8px}
+  .bad{color:#7f1d1d;background:#fee2e2;border:1px solid #fecaca;padding:8px;border-radius:8px}
+  code{background:#f6f7fb;padding:2px 6px;border-radius:6px}
+  pre{background:#0b1020;color:#e6edf3;padding:12px;border-radius:8px;overflow:auto}
+</style>
+</head>
+<body>
+<h2>Firestore Diagnostics</h2>
+<div id="env"></div>
+<div id="auth" class="bad">Auth: checking…</div>
+<div id="emu"  class="bad">Emulator: checking…</div>
+<div id="write" class="bad">Write: pending…</div>
+<div id="read"  class="bad">Read: pending…</div>
+<h3>Details</h3>
+<pre id="log"></pre>
+
+<script type="module">
+  const log = (...a)=>{ const el=document.getElementById('log'); el.textContent += a.join(' ')+'\n'; console.log(...a); };
+  const set = (id, ok, msg)=>{ const el = document.getElementById(id); el.className = ok?'ok':'bad'; el.textContent = msg; };
+
+  // ---- FIREBASE IMPORTS
+  import { initializeApp, getApps, getApp }
+    from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInAnonymously, connectAuthEmulator }
+    from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import {
+    getFirestore, initializeFirestore,
+    connectFirestoreEmulator, doc, setDoc, getDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  // ---- CONFIG (your real project)
+  const cfg = {
+    apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+    authDomain:"customer-login-e5ecd.firebaseapp.com",
+    projectId:"customer-login-e5ecd",
+    storageBucket:"customer-login-e5ecd.appspot.com",
+    messagingSenderId:"569269085839",
+    appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+  };
+
+  // ---- ENV
+  document.getElementById('env').innerHTML =
+    `<div><b>Origin:</b> <code>${location.origin}</code> &nbsp; <b>Host:</b> <code>${location.hostname}</code></div>`;
+  const isLocal = ["localhost","127.0.0.1"].includes(location.hostname);
+
+  // ---- APP + FIRESTORE (force long-polling)
+  const app = getApps().length ? getApp() : initializeApp(cfg);
+  const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    useFetchStreams: false
+  });
+  const auth = getAuth(app);
+
+  try{
+    if (isLocal){
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings:true });
+      connectFirestoreEmulator(db, "127.0.0.1", 8080);
+      set('emu', true, "Emulator: connected (127.0.0.1:9099 / :8080)");
+    } else {
+      set('emu', false, "Emulator: NOT in localhost (open this page on 127.0.0.1)");
+    }
+  }catch(e){
+    log("Emulator connect error:", e);
+    set('emu', false, "Emulator: connect error (see logs below)");
+  }
+
+  // ---- AUTH (anon on emulator)
+  onAuthStateChanged(auth, async (user)=>{
+    try{
+      if (!user && isLocal) await signInAnonymously(auth);
+      set('auth', true, `Auth: OK (uid=${auth.currentUser?.uid||'—'})`);
+    }catch(e){
+      log("Anon sign-in failed:", e);
+      set('auth', false, "Auth: failed (see logs)");
+    }
+
+    // ---- WRITE TEST
+    try{
+      const id = 'ping-' + Date.now();
+      await setDoc(doc(db, "_ping", id), { at: serverTimestamp(), host: location.hostname });
+      set('write', true, "Write: OK (_ping/*)");
+    }catch(e){
+      log("Write error:", e);
+      set('write', false, "Write: FAILED (rules or emulator unreachable)");
+    }
+
+    // ---- READ TEST (requests/*)
+    try{
+      // Try read a known (probably missing) doc just to exercise rules path
+      const snap = await getDoc(doc(db, "requests", "___diagnostic___"));
+      set('read', true, "Read: OK (requests path readable)");
+      if (!snap.exists()) log("Read OK: document does not exist (expected).");
+    }catch(e){
+      log("Read error:", e);
+      set('read', false, "Read: FAILED (rules block reads from requests/*)");
+    }
+  });
+</script>
+</body>
+</html>

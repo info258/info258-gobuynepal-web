@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Pending Payments</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{
+  --purple:#7a1ea1; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --blue:#3aa0ff;
+  --shadow:0 12px 24px rgba(27,31,35,.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px;padding:14px 10px}
+.brand{display:flex;align-items:center;gap:10px;padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900;color:var(--purple)}
+@media (max-width:1024px){.brand .t{display:none}}
+.nav{display:grid;gap:6px;margin-top:8px}
+.nav a{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:12px;padding:10px;border-radius:10px;color:#3b3d4d;text-decoration:none}
+.nav a i{font-size:16px;color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff;color:var(--purple);font-weight:800}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 14px}
+.h1{font-weight:900;color:#3c3270}
+.h1 small{color:var(--muted);font-weight:600}
+.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-weight:700}
+.btn:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+.btn.orange{color:#ff8a1f}
+.btn.green{color:var(--ok)}
+.btn.red{color:var(--bad)}
+.btn.purple{color:var(--purple)}
+.search{margin-left:8px;display:flex;align-items:center;gap:8px;background:#f3f4f8;border:1px solid var(--line);border-radius:999px;padding:8px 12px;flex:1;max-width:420px}
+.search input{border:none;outline:none;background:transparent;width:100%}
+.content{padding:16px;display:grid;gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:900}
+.cb{padding:14px}
+.table-wrap{overflow:auto}
+.table{width:100%;border-collapse:collapse;min-width:980px}
+.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
+.table th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;color:#fff}
+.b-await{background:var(--warn)}
+.b-paid{background:var(--ok)}
+.b-cancel{background:var(--bad)}
+.actions-row{display:flex;gap:8px;flex-wrap:wrap}
+.link{color:var(--purple);font-weight:800;text-decoration:none}
+.link:hover{text-decoration:underline}
+.note{font-size:12px;color:var(--muted)}
+.kpi-strip{display:flex;align-items:center;gap:12px}
+.kpi-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ff8a1f,#ffb36c);display:flex;align-items:center;justify-content:center;color:#fff}
+.kpi-count{font-weight:900;font-size:20px}
+.countdown{font-variant-numeric:tabular-nums}
+
+/* Hide low-priority cols on small screens */
+@media (max-width:720px){
+  th:nth-child(7), td:nth-child(7){display:none;} /* Last reminder */
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="Admin navigation">
+    <div class="brand"><img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/><div class="t">GoBuy Admin</div></div>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a class="active" href="admin-pending-payments.html"><i class="fa-solid fa-credit-card"></i><span>Pending Payments</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-cases.html"><i class="fa-regular fa-circle-question"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="h1">Pending Payments <small id="ppCount">(0)</small></div>
+      <div class="search" role="search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="search" type="search" placeholder="Search by order, customer…"/></div>
+      <div class="actions">
+        <button id="remindAll" class="btn orange"><i class="fa-regular fa-envelope"></i> Remind all</button>
+        <button id="exportCSV" class="btn"><i class="fa-solid fa-file-export"></i> Export CSV</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="card">
+        <div class="ch">
+          <div class="kpi-strip">
+            <div class="kpi-icon"><i class="fa-solid fa-credit-card"></i></div>
+            <div><div style="font-weight:900">Pending Payments</div><div class="note">Orders waiting for customer payment</div></div>
+          </div>
+          <div class="kpi-count" id="kCount">0</div>
+        </div>
+        <div class="cb note">Tip: Click <span class="link">View</span> to open the order, <strong>Mark paid</strong> after confirming receipt, or send a quick reminder. Orders auto-cancel after 24 hours.</div>
+      </section>
+
+      <section class="card">
+        <div class="ch">Orders</div>
+        <div class="cb">
+          <div class="table-wrap">
+            <table class="table" id="ppTable">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th>Created</th>
+                  <th>Time left</th>
+                  <th>Last reminder</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </section>
+</div>
+
+<script>
+/* ------------------- storage + utils ------------------- */
+const PENDING_HOURS = 24;
+const REMIND_BEFORE_MS = 60*60*1000; // 1h
+
+const ORDERS_KEY = 'ADMIN_ORDERS';
+const PENDING_COUNT_KEY = 'ADMIN_PENDING_COUNT';
+const ORDERS_UPDATED_KEY = 'ADMIN_ORDERS_UPDATED';
+
+const SEED = []; // keep empty to avoid “phantom” rows confusion
+
+const tbody = document.querySelector('#ppTable tbody');
+
+function coerceTime(v){
+  if (v == null) return 0;
+  if (typeof v === 'number') return v;
+  if (v && typeof v.toMillis === 'function') return v.toMillis();
+  if (typeof v === 'string'){ const n=Date.parse(v); return isNaN(n)?0:n; }
+  if (v instanceof Date) return v.getTime();
+  return 0;
+}
+function fmtDate(ms){ return ms ? new Date(ms).toLocaleString() : '—'; }
+function badge(s){ const m={ 'Awaiting Payment':'b-await','Paid':'b-paid','Cancelled':'b-cancel' }; return `<span class="badge ${m[s]||'b-await'}">${s}</span>`; }
+function humanLeft(ms){ if (ms<=0) return 'expired'; const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000); return `${h}h ${m}m`; }
+
+function getLocalOrders(){ try{ return JSON.parse(localStorage.getItem(ORDERS_KEY))||[] }catch{return []} }
+function setLocalOrders(list){
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(list));
+  localStorage.setItem(ORDERS_UPDATED_KEY, String(Date.now()));
+  const pending = list.filter(o => (o.payment?.status||o.status)==='Awaiting Payment').length;
+  localStorage.setItem(PENDING_COUNT_KEY, String(pending));
+}
+
+function getAllOrders(){
+  const local = getLocalOrders().map(o=>({
+    id:o.id,
+    customer:{ name:o.customer?.name || 'Customer' },
+    status:o.status || o.payment?.status || 'Awaiting Payment',
+    totals:{ total: Number(o.totals?.total ?? o.charges?.total ?? 0) },
+    created: coerceTime(o.created) || Date.now(),
+    expiresAt: o.expiresAt ? coerceTime(o.expiresAt) : ((coerceTime(o.created)||Date.now()) + PENDING_HOURS*3600*1000),
+    lastReminderAt: coerceTime(o.lastReminderAt) || 0,
+    items:o.items||[],
+    payment:o.payment||{}
+  }));
+  return [...local, ...SEED];
+}
+
+/* ------------------- render ------------------- */
+function renderRows(term=''){
+  const orders = getAllOrders().filter(o => o.status==='Awaiting Payment');
+  const q = term.trim().toLowerCase();
+
+  tbody.innerHTML='';
+  orders.filter(o => !q || String(o.id).includes(q) || o.customer.name.toLowerCase().includes(q))
+  .forEach(o=>{
+    const tr = document.createElement('tr');
+    tr.dataset.id = o.id;
+    tr.dataset.expires = o.expiresAt;
+    tr.innerHTML = `
+      <td><a class="link" href="confirm-order.html?order=${encodeURIComponent(o.id)}">#${o.id}</a></td>
+      <td>${o.customer.name}</td>
+      <td>${badge(o.status)}</td>
+      <td>NPR ${(o.totals.total||0).toFixed(2)}</td>
+      <td>${fmtDate(o.created)}</td>
+      <td class="countdown" data-left>—</td>
+      <td data-last>${o.lastReminderAt?fmtDate(o.lastReminderAt):'—'}</td>
+      <td class="actions-row">
+        <a class="btn purple" data-edit="${o.id}"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
+        <button class="btn green" data-paid="${o.id}"><i class="fa-solid fa-receipt"></i> Mark paid</button>
+        <button class="btn orange" data-remind="${o.id}"><i class="fa-regular fa-bell"></i> Remind</button>
+        <button class="btn red" data-cancel="${o.id}"><i class="fa-regular fa-circle-xmark"></i> Cancel</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  const count = orders.length;
+  document.getElementById('kCount').textContent = count;
+  document.getElementById('ppCount').textContent = `(${count})`;
+  tickCountdowns(); // initial paint
+}
+
+/* ------------------- countdown / auto tasks ------------------- */
+function maybeSendReminder(id, lastEl){
+  const orders = getLocalOrders();
+  const o = orders.find(x=>String(x.id)===String(id));
+  if (!o || (o.payment?.status||o.status) !== 'Awaiting Payment') return;
+  if (!o.lastReminderAt || Date.now() - coerceTime(o.lastReminderAt) > 30*60*1000) {
+    o.lastReminderAt = Date.now();
+    setLocalOrders(orders);
+    if (lastEl) lastEl.textContent = fmtDate(o.lastReminderAt);
+    const n = JSON.parse(localStorage.getItem('CUSTOMER_NOTICES')||'[]');
+    n.push({order:o.id, type:'payment-reminder', at:o.lastReminderAt, msg:`Reminder: please pay for order #${o.id}.`});
+    localStorage.setItem('CUSTOMER_NOTICES', JSON.stringify(n));
+  }
+}
+function autoCancel(id){
+  const orders = getLocalOrders();
+  const i = orders.findIndex(x=>String(x.id)===String(id));
+  if (i === -1) return;
+  const o = orders[i];
+  if ((o.payment?.status||o.status) !== 'Awaiting Payment') return;
+  // Remove entirely so the row disappears
+  orders.splice(i,1);
+  setLocalOrders(orders);
+}
+
+function tickCountdowns(){
+  const now = Date.now();
+  [...tbody.querySelectorAll('tr')].forEach(tr=>{
+    const id = tr.dataset.id;
+    const expires = Number(tr.dataset.expires||0);
+    const leftEl = tr.querySelector('[data-left]');
+    const lastEl = tr.querySelector('[data-last]');
+
+    if (expires - now <= 0) {
+      autoCancel(id);
+      tr.remove();
+      return;
+    }
+    if (expires - now <= REMIND_BEFORE_MS) {
+      maybeSendReminder(id, lastEl);
+    }
+    leftEl.textContent = humanLeft(expires - now);
+  });
+}
+
+/* ------------------- actions ------------------- */
+function markPaid(id){
+  const list = getLocalOrders();
+  const o = list.find(x=>String(x.id)===String(id));
+  if (o){
+    o.status='Paid';
+    o.payment = o.payment||{}; o.payment.status='Paid';
+    setLocalOrders(list);
+  }
+  alert(`Order #${id} marked as paid.`);
+  renderRows(document.getElementById('search').value||'');
+}
+function remind(id){
+  const orders = getLocalOrders();
+  const o = orders.find(x=>String(x.id)===String(id));
+  if (!o) return;
+  o.lastReminderAt = Date.now();
+  setLocalOrders(orders);
+  const n = JSON.parse(localStorage.getItem('CUSTOMER_NOTICES')||'[]');
+  n.push({order:o.id, type:'payment-reminder', at:o.lastReminderAt, msg:`Reminder: please pay for order #${o.id}.`});
+  localStorage.setItem('CUSTOMER_NOTICES', JSON.stringify(n));
+  alert(`Reminder queued for Order #${id}.`);
+  renderRows(document.getElementById('search').value||'');
+}
+function cancelOrder(id){
+  if(!confirm(`Cancel Order #${id}?`)) return;
+  const orders = getLocalOrders();
+  const idx = orders.findIndex(o=>String(o.id)===String(id));
+  if (idx>-1){
+    orders.splice(idx,1);           // remove from storage entirely
+    setLocalOrders(orders);
+  }
+  renderRows(document.getElementById('search').value||''); // row disappears immediately
+}
+function editOrder(id){
+  const o = getLocalOrders().find(x=>String(x.id)===String(id));
+  if (!o) return;
+  const draft = {
+    customer:o.customer,
+    items: o.items || [{name:o.item?.name||'', specs:o.item?.specs||'', qty:o.item?.qty||1, price:o.item?.price||0, weight:o.item?.weight||0, link:o.item?.link||''}],
+    shipping:o.shipping||{mode:'Air',type:'Home Delivery',city:''},
+    payment:o.payment||{status:o.status||'Awaiting Payment', method:'Cash', amount:0},
+    charges:o.charges||{},
+    totals:o.totals||{}
+  };
+  localStorage.setItem('ORDER_BUILDER_DRAFT', JSON.stringify(draft));
+  location.href = `admin-order-builder.html?edit=${encodeURIComponent(id)}`;
+}
+
+/* delegate button clicks */
+tbody.addEventListener('click', (e)=>{
+  const t = e.target.closest('button, a.btn');
+  if(!t) return;
+  const id = t.getAttribute('data-paid')||t.getAttribute('data-remind')||t.getAttribute('data-cancel')||t.getAttribute('data-edit');
+  if (t.hasAttribute('data-paid'))   markPaid(id);
+  if (t.hasAttribute('data-remind')) remind(id);
+  if (t.hasAttribute('data-cancel')) cancelOrder(id);
+  if (t.hasAttribute('data-edit'))   editOrder(id);
+});
+
+/* toolbar */
+document.getElementById('remindAll').addEventListener('click', ()=>{
+  const ids = [...tbody.querySelectorAll('button[data-remind]')].map(b=>b.getAttribute('data-remind'));
+  if(!ids.length) return alert('No pending payments.');
+  ids.forEach(remind);
+});
+document.getElementById('exportCSV').addEventListener('click', ()=>{
+  const rows = [['Order','Customer','Status','Total','Created','Expires','Last reminder']];
+  getAllOrders().filter(o=>o.status==='Awaiting Payment').forEach(o=>{
+    rows.push([`#${o.id}`, o.customer.name, o.status, (o.totals.total||0).toFixed(2), fmtDate(o.created), fmtDate(o.expiresAt), o.lastReminderAt?fmtDate(o.lastReminderAt):'']);
+  });
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'pending-payments.csv'; a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById('search').addEventListener('input', e=> renderRows(e.target.value));
+
+/* live countdown + auto tasks */
+setInterval(tickCountdowns, 1000);
+
+/* also re-render if other tabs modify orders */
+window.addEventListener('storage', (e)=>{ if (e.key===ORDERS_UPDATED_KEY) renderRows(document.getElementById('search').value||''); });
+
+/* boot */
+renderRows();
+</script>
+</body>
+</html>

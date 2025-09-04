@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Membership Plans • GoBuy Nepal</title>
+
+  <!-- Icons (no downloads) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1;
+      --purple-700:#5b1680;
+      --bg:#ffffff;
+      --card:#ffffff;
+      --line:#e9e9ef;
+      --muted:#7b7f88;
+      --green:#2ecc71;
+      --orange:#d35400;
+      --danger:#e74c3c;
+      --radius:14px;
+      --shadow:0 10px 18px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg); color:#1e1e1e; padding-bottom:88px;
+    }
+
+    .page{ max-width:450px; margin:0 auto; padding-bottom:120px }
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:3; background:#fff;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px 10px;
+    }
+    .top-btn{ color:var(--purple); font-size:18px; text-decoration:none; }
+    .title{ font-weight:900; color:#444 }
+    .right{ width:28px; }
+
+    /* Hero header */
+    .hero{
+      padding:18px 16px 10px; text-align:center;
+    }
+    .hero h1{
+      color:var(--purple); font-size:22px; letter-spacing:.2px; margin-bottom:6px;
+    }
+    .sub{ color:var(--muted); font-size:13px }
+
+    /* Billing toggle */
+    .billing{
+      margin:14px auto 8px; display:flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .pill{
+      background:#f5f5fb; border:1px solid var(--line); border-radius:999px;
+      display:inline-flex; padding:4px; gap:4px;
+    }
+    .pill button{
+      border:none; background:transparent; padding:8px 14px; border-radius:999px;
+      font-weight:800; color:#666; cursor:pointer;
+    }
+    .pill button.active{
+      background:#fff; color:var(--purple); border:1px solid #d9c9ee; box-shadow:var(--shadow);
+    }
+    .save-badge{
+      font-size:11px; color:#fff; background:var(--purple); padding:3px 8px; border-radius:999px;
+    }
+
+    /* Plan cards */
+    .plans{ padding:10px 12px 18px; display:grid; gap:12px; }
+    .plan{
+      background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+      padding:14px; display:grid; gap:10px;
+    }
+    .plan-header{ display:flex; align-items:center; justify-content:space-between; }
+    .plan-name{ font-weight:900; color:#333; letter-spacing:.2px; }
+    .badge{
+      background:#f5f5fb; border:1px solid #e5def3; color:var(--purple);
+      padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800;
+    }
+    .price{
+      font-size:26px; font-weight:900; color:#222;
+    }
+    .price small{ font-size:12px; color:#888; margin-left:4px; font-weight:700 }
+    .features{ list-style:none; display:grid; gap:8px; margin-top:4px }
+    .features li{ display:flex; align-items:flex-start; gap:8px; color:#333; }
+    .features i{ color:var(--green); margin-top:2px }
+
+    .cta{
+      display:flex; gap:8px; align-items:center; justify-content:space-between;
+      margin-top:6px;
+    }
+    .btn{
+      border:none; border-radius:10px; padding:12px 14px; font-weight:900; cursor:pointer;
+    }
+    .btn-primary{ background:var(--purple); color:#fff; flex:1 }
+    .btn-outline{ background:#fff; color:var(--purple); border:2px solid var(--purple) }
+    .current-tag{
+      color:#fff; background:var(--green); border-radius:8px; padding:6px 10px; font-weight:800; font-size:12px;
+    }
+
+    .note{
+      color:#777; font-size:12px; text-align:center; margin:8px 16px 0;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed; left:50%; bottom:86px; transform:translateX(-50%);
+      background:#222; color:#fff; padding:10px 14px; border-radius:10px; font-weight:700; opacity:0;
+      transition:.25s ease; z-index:9999; pointer-events:none;
+    }
+    .toast.show{ opacity:1; }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--line);
+      display:flex; justify-content:space-around; align-items:center; padding:8px 0; z-index:999;
+      box-shadow:0 -2px 8px rgba(0,0,0,.05);
+    }
+    .nav-item{
+      color:var(--purple); text-decoration:none; font-size:12px;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .nav-item i{ font-size:20px; margin-bottom:4px }
+    .nav-item.active span{ font-weight:800 }
+  </style>
+</head>
+<body>
+
+  <main class="page">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <a class="top-btn" href="profile.html" aria-label="Back to Profile"><i class="fa-solid fa-chevron-left"></i></a>
+      <div class="title">Membership</div>
+      <div class="right"></div>
+    </div>
+
+    <!-- Header -->
+    <section class="hero">
+      <h1>Select a plan that fits you</h1>
+      <div class="sub">Upgrade anytime. Cancel anytime.</div>
+    </section>
+
+    <!-- Billing toggle -->
+    <div class="billing">
+      <div class="pill" role="tablist" aria-label="Billing period">
+        <button id="billMonthly" class="active" role="tab" aria-selected="true">Monthly</button>
+        <button id="billYearly" role="tab" aria-selected="false">Yearly</button>
+      </div>
+      <span class="save-badge" id="saveBadge" style="display:none;">Save 20%</span>
+    </div>
+
+    <!-- Plans -->
+    <section class="plans" id="plans">
+      <!-- Basic -->
+      <article class="plan" data-plan="Basic" data-month="0" data-year="0">
+        <div class="plan-header">
+          <div class="plan-name">Basic</div>
+          <span class="badge">Starter</span>
+        </div>
+        <div class="price"><span class="price-value">$0</span><small>/mo</small></div>
+        <ul class="features">
+          <li><i class="fa-solid fa-check"></i> Standard support</li>
+          <li><i class="fa-solid fa-check"></i> Up to 3 order requests / month</li>
+          <li><i class="fa-solid fa-check"></i> Basic tracking</li>
+        </ul>
+        <div class="cta">
+          <button class="btn btn-primary choose-btn">Choose</button>
+          <span class="current-tag" style="display:none">CURRENT</span>
+        </div>
+      </article>
+
+      <!-- Plus -->
+      <article class="plan" data-plan="Plus" data-month="4.99" data-year="49.00">
+        <div class="plan-header">
+          <div class="plan-name">Plus</div>
+          <span class="badge">Most Popular</span>
+        </div>
+        <div class="price"><span class="price-value">$4.99</span><small>/mo</small></div>
+        <ul class="features">
+          <li><i class="fa-solid fa-check"></i> Priority chat support</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited order requests</li>
+          <li><i class="fa-solid fa-check"></i> Shipment protection up to $100</li>
+        </ul>
+        <div class="cta">
+          <button class="btn btn-primary choose-btn">Choose</button>
+          <span class="current-tag" style="display:none">CURRENT</span>
+        </div>
+      </article>
+
+      <!-- Pro -->
+      <article class="plan" data-plan="Pro" data-month="9.99" data-year="99.00">
+        <div class="plan-header">
+          <div class="plan-name">Pro</div>
+          <span class="badge">For Power Users</span>
+        </div>
+        <div class="price"><span class="price-value">$9.99</span><small>/mo</small></div>
+        <ul class="features">
+          <li><i class="fa-solid fa-check"></i> VIP support with fastest response</li>
+          <li><i class="fa-solid fa-check"></i> Express handling & consolidated shipping</li>
+          <li><i class="fa-solid fa-check"></i> Shipment protection up to $500</li>
+        </ul>
+        <div class="cta">
+          <button class="btn btn-primary choose-btn">Choose</button>
+          <span class="current-tag" style="display:none">CURRENT</span>
+        </div>
+      </article>
+    </section>
+
+    <p class="note">Prices are shown in USD. Yearly billing reflects a ~20% discount.</p>
+  </main>
+
+  <!-- Tiny toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite">Plan updated</div>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+    <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+    <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+    <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+    <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+  </nav>
+
+  <script>
+    // --- State
+    const billMonthlyBtn = document.getElementById('billMonthly');
+    const billYearlyBtn  = document.getElementById('billYearly');
+    const saveBadge      = document.getElementById('saveBadge');
+    const plansEl        = document.getElementById('plans');
+    const toast          = document.getElementById('toast');
+
+    let period = localStorage.getItem('gbn_billing') || 'monthly';
+    let currentPlan = localStorage.getItem('gbn_plan') || 'Basic';
+
+    function money(n){ return '$' + Number(n).toFixed(2); }
+
+    function setBilling(newPeriod){
+      period = newPeriod;
+      localStorage.setItem('gbn_billing', period);
+
+      billMonthlyBtn.classList.toggle('active', period==='monthly');
+      billMonthlyBtn.setAttribute('aria-selected', period==='monthly' ? 'true':'false');
+      billYearlyBtn.classList.toggle('active', period==='yearly');
+      billYearlyBtn.setAttribute('aria-selected', period==='yearly' ? 'true':'false');
+      saveBadge.style.display = period==='yearly' ? 'inline-block' : 'none';
+
+      // update all card prices
+      plansEl.querySelectorAll('.plan').forEach(card=>{
+        const val = period==='monthly' ? card.dataset.month : card.dataset.year;
+        const priceNode = card.querySelector('.price-value');
+        const small = card.querySelector('.price small');
+        if(Number(val) === 0){
+          priceNode.textContent = '$0';
+          small.textContent = '/mo';
+        }else{
+          priceNode.textContent = money(val);
+          small.textContent = period==='monthly' ? '/mo' : '/yr';
+        }
+      });
+    }
+
+    function updateCurrentBadges(){
+      plansEl.querySelectorAll('.plan').forEach(card=>{
+        const isCurrent = card.dataset.plan === currentPlan;
+        card.querySelector('.current-tag').style.display = isCurrent ? 'inline-block':'none';
+        const btn = card.querySelector('.choose-btn');
+        btn.textContent = isCurrent ? 'Selected' : 'Choose';
+        btn.disabled = isCurrent;
+        btn.classList.toggle('btn-outline', isCurrent);
+        btn.classList.toggle('btn-primary', !isCurrent);
+      });
+    }
+
+    function choosePlan(plan){
+      currentPlan = plan;
+      localStorage.setItem('gbn_plan', plan);
+      showToast(`Plan updated to ${plan}`);
+      updateCurrentBadges();
+    }
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'), 1400);
+    }
+
+    // Wire events
+    billMonthlyBtn.addEventListener('click', ()=>setBilling('monthly'));
+    billYearlyBtn.addEventListener('click',  ()=>setBilling('yearly'));
+
+    plansEl.querySelectorAll('.choose-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        const card = e.currentTarget.closest('.plan');
+        choosePlan(card.dataset.plan);
+      });
+    });
+
+    // Initial paint
+    setBilling(period);
+    updateCurrentBadges();
+  </script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Admin • In Transit</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --blue:#3aa0ff; --grey:#9094a6;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.h1{font-weight:900; color:#3c3270}
+.content{padding:16px; display:grid; gap:16px}
+
+/* Toolbar */
+.toolbar{
+  background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+  padding:10px 12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+}
+.filters{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.filters input, .filters select{
+  padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:#f9f9fb;
+}
+.count{color:var(--muted); font-weight:700}
+
+/* Table */
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+.panel .ph{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; border-bottom:1px solid var(--line)
+}
+.panel .ph .t{font-weight:900}
+.panel .pb{padding:12px; overflow:auto}
+
+.table{width:100%; border-collapse:collapse}
+.table th,.table td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap}
+.table th{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+
+.badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; color:#fff}
+.b-move{background:var(--blue)}
+.b-ofd{background:#7b61ff}
+.b-delay{background:var(--warn); color:#222}
+.b-deliv{background:var(--ok)}
+
+.actions{display:flex; gap:6px; flex-wrap:wrap}
+.btn{
+  border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 8px; font-size:12px; cursor:pointer
+}
+.btn.view{color:var(--purple)}
+.btn.track{color:var(--blue)}
+.btn.done{color:var(--ok)}
+.btn.delay{color:#b26a00}
+.btn.cancel{color:#e74c3c}
+.btn:hover{background:#fafafa}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <div class="brand">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/>
+      <div class="t">GoBuy Admin</div>
+    </div>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-cases.html"><i class="fa-regular fa-circle-question"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a class="active" href="admin-in-transit.html"><i class="fa-solid fa-truck-fast"></i><span>In Transit</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+    <header class="topbar">
+      <div class="h1">In Transit</div>
+    </header>
+
+    <div class="content">
+
+      <!-- Filters -->
+      <div class="toolbar">
+        <div class="filters">
+          <input id="q" type="search" placeholder="Search order, customer, tracking…"/>
+          <select id="fStatus">
+            <option value="">All statuses</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Delayed">Delayed</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+          <select id="fCarrier">
+            <option value="">All carriers</option>
+            <option>DHL</option>
+            <option>FedEx</option>
+            <option>UPS</option>
+            <option>Aramex</option>
+          </select>
+        </div>
+        <div class="count"><span id="resultCount">0</span> results</div>
+      </div>
+
+      <!-- Table -->
+      <section class="panel">
+        <div class="ph">
+          <div class="t">Shipments</div>
+          <button class="btn" onclick="location.href='admin-orders.html'">
+            <i class="fa-regular fa-eye"></i> View all orders
+          </button>
+        </div>
+        <div class="pb">
+          <table class="table" id="shipTable">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Carrier / Tracking</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>ETA</th>
+                <th>Last Scan</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody><!-- JS fills --></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </section>
+</div>
+
+<script>
+/* ----------- Demo: build transit list from seeds + any local orders ----------- */
+const SEED_SHIPMENTS = [
+  {id:'S-9011', orderId:5691, customer:'Neesh R', carrier:'DHL', tracking:'DHL123456789', from:'Shenzhen, CN', to:'Kathmandu, NP', eta:'Aug 31', last:'Departed Hong Kong hub', status:'In Transit'},
+  {id:'S-9012', orderId:5701, customer:'Bikash S', carrier:'FedEx', tracking:'FX999333222', from:'Delhi, IN', to:'Pokhara, NP', eta:'Sep 1', last:'Arrived at Delhi facility', status:'In Transit'},
+  {id:'S-9013', orderId:5678, customer:'Anil L', carrier:'UPS', tracking:'1Z88X0012345', from:'Cologne, DE', to:'Kathmandu, NP', eta:'Aug 30', last:'Out for delivery', status:'Out for Delivery'},
+  {id:'S-9014', orderId:5715, customer:'Ravi M', carrier:'Aramex', tracking:'ARMX667788', from:'Dubai, AE', to:'Biratnagar, NP', eta:'Sep 3', last:'Weather delay at DXB', status:'Delayed'}
+];
+
+// Merge local orders (if any) as In Transit with dummy tracking
+function mergedShipments(){
+  const localOrders = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]');
+  const fromLocal = localOrders
+    .filter(o => (o.status||'').toLowerCase().includes('ship') || (o.status||'').toLowerCase().includes('transit'))
+    .map((o, i) => ({
+      id:`L-${o.id}-${i}`,
+      orderId:o.id,
+      customer:o.customer?.name || 'Customer',
+      carrier:'DHL',
+      tracking:`DHL${Math.floor(Math.random()*9e10)}`,
+      from:o.route?.from || 'Warehouse',
+      to:o.route?.to || 'Nepal',
+      eta:'TBD',
+      last:'Label created',
+      status:'In Transit'
+    }));
+  return [...fromLocal, ...SEED_SHIPMENTS];
+}
+
+const $ = s => document.querySelector(s);
+const tbody = $('#shipTable tbody');
+const q = $('#q'); const fStatus = $('#fStatus'); const fCarrier = $('#fCarrier');
+
+function statusBadge(s){
+  const map = {
+    'In Transit':'b-move',
+    'Out for Delivery':'b-ofd',
+    'Delayed':'b-delay',
+    'Delivered':'b-deliv'
+  };
+  return `<span class="badge ${map[s]||'b-move'}">${s}</span>`;
+}
+
+let DATA = mergedShipments();
+
+function render(){
+  const term = q.value.trim().toLowerCase();
+  const st = fStatus.value;
+  const cr = fCarrier.value;
+
+  const rows = DATA.filter(x=>{
+    const hit = !term || (String(x.orderId).includes(term) || x.customer.toLowerCase().includes(term) || x.tracking.toLowerCase().includes(term));
+    const okS = !st || x.status===st;
+    const okC = !cr || x.carrier===cr;
+    return hit && okS && okC;
+  });
+
+  $('#resultCount').textContent = rows.length;
+  tbody.innerHTML = '';
+  rows.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><a href="admin-orders.html?order=${encodeURIComponent(s.orderId)}" class="link">#${s.orderId}</a></td>
+      <td>${s.customer}</td>
+      <td>${s.carrier} • <strong>${s.tracking}</strong></td>
+      <td>${s.from} → ${s.to}</td>
+      <td>${statusBadge(s.status)}</td>
+      <td>${s.eta}</td>
+      <td>${s.last}</td>
+      <td class="actions">
+        <button class="btn view" onclick="location.href='admin-orders.html?order=${encodeURIComponent(s.orderId)}'"><i class="fa-regular fa-eye"></i> Open</button>
+        <button class="btn track" onclick="track('${s.tracking}')"><i class="fa-solid fa-location-arrow"></i> Track</button>
+        ${s.status!=='Delivered' ? `<button class="btn done" onclick="markDelivered('${s.id}')"><i class="fa-solid fa-circle-check"></i> Delivered</button>`:''}
+        ${s.status!=='Delayed' && s.status!=='Delivered' ? `<button class="btn delay" onclick="markDelayed('${s.id}')"><i class="fa-solid fa-clock"></i> Delay</button>`:''}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function track(code){
+  // Replace with a real carrier deep link if needed.
+  alert('Open tracking for: ' + code);
+}
+
+function markDelivered(id){
+  const it = DATA.find(x=>x.id===id);
+  if(!it) return;
+  it.status = 'Delivered';
+  it.last = 'Delivered to destination';
+  it.eta = '—';
+  render();
+}
+
+function markDelayed(id){
+  const it = DATA.find(x=>x.id===id);
+  if(!it) return;
+  it.status = 'Delayed';
+  it.last = 'Delay reported by carrier';
+  render();
+}
+
+/* events */
+[q, fStatus, fCarrier].forEach(el => el.addEventListener('input', render));
+
+/* boot */
+render();
+</script>
+</body>
+</html>

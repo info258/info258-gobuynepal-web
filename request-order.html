@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Request Order</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --ink:#1f2033; --muted:#7e8190; --line:#e6e7ef;
+  --bg:#f6f7fb; --ok:#16a34a; --bad:#e11d48; --accent:#d35400;
+  --radius:14px; --shadow:0 12px 24px rgba(27,31,35,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:880px;margin:28px auto;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.h .left{display:flex;align-items:center;gap:10px}
+.h .t{font-weight:900;font-size:22px;color:#3c3270}
+.btn{cursor:pointer;border:none;background:#d35400;color:#fff;padding:10px 16px;border-radius:999px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:#1f2033}
+.btn-ghost:hover{background:#fafbff}
+.b{padding:16px;display:grid;gap:14px}
+label{font-size:14px;color:#3c3270;font-weight:700}
+input,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.note{font-size:13px;color:var(--muted)}
+.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:12px;border-radius:10px;display:none}
+#toast{position:fixed;right:16px;bottom:16px;background:#111;color:#fff;padding:10px 12px;border-radius:10px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="h">
+      <div class="left">
+        <button class="btn btn-ghost" type="button" id="backBtn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <i class="fa-solid fa-cart-plus" style="color:var(--purple)"></i>
+        <div class="t">Request Order</div>
+      </div>
+      <a href="bulk-request.html" class="btn" style="background:var(--purple)">
+        <i class="fa-solid fa-list"></i> Bulk request
+      </a>
+    </div>
+
+    <form class="b" id="reqForm">
+      <div class="success" id="okMsg">✅ Request submitted! Your reference is <b id="refId"></b>.</div>
+
+      <div class="row">
+        <div>
+          <label>Full name</label>
+          <input name="name" placeholder="Customer name" required>
+        </div>
+        <div>
+          <label>Phone</label>
+          <input name="phone" placeholder="+977-98xxxxxxx" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Email</label>
+          <input name="email" type="email" placeholder="name@email.com">
+        </div>
+        <div>
+          <label>City</label>
+          <input name="city" placeholder="Kathmandu">
+        </div>
+      </div>
+
+      <div>
+        <label>Notes / address (optional)</label>
+        <textarea name="notes" placeholder="Any special instructions…"></textarea>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--line)">
+
+      <div class="row">
+        <div>
+          <label>Product name</label>
+          <input name="pname" placeholder="e.g. Wireless Earbuds" required>
+        </div>
+        <div>
+          <label>Product link</label>
+          <input name="plink" placeholder="https://… (Amazon, AliExpress, etc.)">
+        </div>
+      </div>
+
+      <div class="row3">
+        <div>
+          <label>Quantity</label>
+          <input name="qty" type="number" min="1" value="1" required>
+        </div>
+        <div>
+          <label>Price (NPR per item)</label>
+          <input name="price" type="number" min="0" step="0.01" value="0">
+        </div>
+        <div>
+          <label>Weight (kg)</label>
+          <input name="weight" type="number" min="0" step="0.01" value="0">
+        </div>
+      </div>
+
+      <div>
+        <label>Specs / details</label>
+        <textarea name="specs" placeholder="Color, size, options…"></textarea>
+      </div>
+
+      <div class="note">We’ll review and send you a Pay Link if anything is due.</div>
+      <div><button class="btn" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // Back button
+  document.getElementById('backBtn').onclick = (e)=>{
+    e.preventDefault();
+    if (history.length > 1) history.back();
+    else location.href = 'home.html';
+  };
+  const toast = document.getElementById('toast');
+  const showToast = (m)=>{ toast.textContent=m; toast.style.display='block'; setTimeout(()=>toast.style.display='none',2200); };
+
+  // Local-only reference generator
+  function genReqId(){ return 'R-' + (Date.now().toString().slice(-6)); }
+</script>
+
+<!-- Firestore submit (self-contained) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import {
+    getAuth, signInAnonymously, onAuthStateChanged, connectAuthEmulator
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import {
+    getFirestore, connectFirestoreEmulator, serverTimestamp,
+    addDoc, collection
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  // Your project
+  const firebaseConfig = {
+    apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+    authDomain:"customer-login-e5ecd.firebaseapp.com",
+    projectId:"customer-login-e5ecd",
+    storageBucket:"customer-login-e5ecd.appspot.com",
+    messagingSenderId:"569269085839",
+    appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // Use emulators on localhost
+  const localish = ["localhost","127.0.0.1"].includes(location.hostname);
+  if (localish){
+    connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings:true });
+    connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  }
+
+  // Always ensure a session (anon ok for dev)
+  onAuthStateChanged(auth, async (u)=>{ if(!u){ try{ await signInAnonymously(auth);}catch{} } });
+
+  const form  = document.getElementById('reqForm');
+  const refIdBox = document.getElementById('refId'); // add <div id="refId"></div> in HTML if missing
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // Simple conversion of form to object
+    const fd = Object.fromEntries(new FormData(form));
+    const reqId = genReqId();
+    const req = {
+      id: reqId,
+      name: fd.name || "",
+      phone: fd.phone || "",
+      items: fd.items || "",
+      createdAt: serverTimestamp()
+    };
+
+    // Save to localStorage fallback
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('CUSTOMER_REQUESTS') || '[]'); } catch {}
+    list.push(req);
+    try { localStorage.setItem('CUSTOMER_REQUESTS', JSON.stringify(list)); } catch {}
+
+    // Write to Firestore
+    try {
+      await addDoc(collection(db, 'requests'), req);
+      if (refIdBox) refIdBox.textContent = reqId;
+      showToast('Request submitted');
+      // optionally reset form: form.reset();
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to submit request');
+    }
+  });
+</script>
+</body>
+</html>
+

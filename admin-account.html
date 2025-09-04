@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • My Account</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --blue:#3aa0ff;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px;
+}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions .btn{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{
+  width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=5') center/cover no-repeat;
+  border:1px solid var(--line); cursor:pointer;
+}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* Panels */
+.grid{display:grid; grid-template-columns:1.2fr 1fr; gap:16px}
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.pb{padding:12px; display:grid; gap:12px}
+
+/* Forms */
+.form{display:grid; gap:10px}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+@media (max-width:640px){ .row2{grid-template-columns:1fr} }
+label{font-size:12px; color:var(--muted)}
+input[type="text"],input[type="email"],input[type="tel"],input[type="password"],textarea,select{
+  width:100%; border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px; font-size:14px;
+}
+textarea{min-height:90px}
+
+/* Buttons */
+.btn{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:600;
+}
+.btn.primary{background:var(--purple); border-color:var(--purple); color:#fff}
+.btn.ghost{background:#fff}
+.btn.bad{color:#fff; background:var(--bad); border-color:var(--bad)}
+.btn.ok{color:#fff; background:var(--ok); border-color:var(--ok)}
+
+/* Avatar editor */
+.pfp{
+  display:grid; grid-template-columns:72px 1fr auto; align-items:center; gap:12px;
+  border:1px dashed #deddf3; border-radius:12px; padding:12px;
+}
+.pfp .img{
+  width:72px;height:72px;border-radius:50%;border:3px solid #f0eaff;
+  background:#eee center/cover no-repeat;
+}
+.pfp input{display:none}
+.pfp .hint{font-size:12px; color:var(--muted)}
+.pill{display:inline-flex; align-items:center; gap:8px; background:#faf8ff; border:1px solid #e6def7; color:var(--purple); border-radius:999px; padding:6px 10px; font-size:12px}
+
+/* Switch */
+.switch{display:inline-flex; align-items:center; gap:8px}
+.switch input{appearance:none; width:38px; height:22px; border-radius:999px; background:#dfe3ee; position:relative; outline:none; cursor:pointer}
+.switch input:after{content:""; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:.2s}
+.switch input:checked{background:#a778e9}
+.switch input:checked:after{left:19px}
+
+/* Lists */
+.item{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:10px;
+  border:1px solid var(--line); border-radius:12px; padding:8px 10px;
+}
+.item .l{width:28px;height:28px;border-radius:50%;background:#faf8ff;border:1px solid #e6def7; display:flex; align-items:center; justify-content:center; color:var(--purple)}
+.item .m .t{font-weight:700}
+.item .m .s{font-size:12px; color:var(--muted)}
+.danger{border:1px solid #ffd9d9; background:#fff5f5}
+
+/* Toast */
+.toast{
+  position:fixed; right:16px; bottom:16px; background:#1f2033; color:#fff; padding:10px 12px; border-radius:10px; opacity:0; pointer-events:none; transform:translateY(10px); transition:.25s;
+}
+.toast.show{opacity:1; transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a class="brand" href="admin.html" title="Dashboard">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/><div class="t">GoBuy Admin</div>
+    </a>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-open-cases.html"><i class="fa-regular fa-life-ring"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+      <a class="active" href="admin-account.html"><i class="fa-regular fa-id-badge"></i><span>My Account</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" placeholder="Search orders, customers, cases…"/>
+      </div>
+      <div class="k-actions">
+        <button class="btn" onclick="location.href='admin-new-order.html'"><i class="fa-solid fa-plus"></i> New order</button>
+        <button class="btn" onclick="location.href='admin-paylink.html'"><i class="fa-solid fa-link"></i> Pay link</button>
+      </div>
+      <div class="avatar" title="My Account" onclick="location.href='admin-account.html'"></div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="h1">My Account</div>
+
+      <section class="grid">
+        <!-- Left: Profile & Security -->
+        <div class="panel">
+          <div class="ph"><div class="t">Profile</div><span class="pill"><i class="fa-regular fa-id-badge"></i> Admin</span></div>
+          <div class="pb form">
+            <div class="pfp">
+              <div id="pfpImg" class="img" style="background-image:url('https://i.pravatar.cc/144?img=5')"></div>
+              <div>
+                <div style="font-weight:800">Avatar</div>
+                <div class="hint">Click “Upload” to change your profile photo (JPG/PNG).</div>
+              </div>
+              <label class="btn ghost">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload
+                <input id="pfpInput" type="file" accept="image/*"/>
+              </label>
+            </div>
+
+            <div class="row2">
+              <div><label>Full name</label><input id="name" type="text" placeholder="Your name"/></div>
+              <div><label>Role</label><input id="role" type="text" placeholder="e.g., Super Admin"/></div>
+            </div>
+            <div class="row2">
+              <div><label>Email</label><input id="email" type="email" placeholder="name@example.com"/></div>
+              <div><label>Phone</label><input id="phone" type="tel" placeholder="+977-98…"/></div>
+            </div>
+            <div class="row2">
+              <div><label>Country</label><input id="country" type="text" placeholder="Nepal"/></div>
+              <div><label>City</label><input id="city" type="text" placeholder="Kathmandu"/></div>
+            </div>
+            <div><label>About you</label><textarea id="about" placeholder="Short bio / notes…"></textarea></div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button id="saveProfile" class="btn primary"><i class="fa-regular fa-floppy-disk"></i> Save changes</button>
+              <button id="resetProfile" class="btn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            </div>
+          </div>
+
+          <div class="ph"><div class="t">Security</div></div>
+          <div class="pb form">
+            <div class="row2">
+              <div><label>New password</label><input id="pwd1" type="password" placeholder="••••••••"/></div>
+              <div><label>Confirm password</label><input id="pwd2" type="password" placeholder="••••••••"/></div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center">
+              <label class="switch"><input id="twofa" type="checkbox"/><span>Enable 2-step verification (demo)</span></label>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button id="saveSecurity" class="btn ok"><i class="fa-solid fa-shield-halved"></i> Update security</button>
+              <button id="signoutOthers" class="btn"><i class="fa-solid fa-right-from-bracket"></i> Sign out other sessions</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Preferences & Sessions -->
+        <div class="panel">
+          <div class="ph"><div class="t">Preferences</div></div>
+          <div class="pb form">
+            <label class="switch"><input id="pEmail" type="checkbox" checked/><span>Email me order updates</span></label>
+            <label class="switch"><input id="pSms" type="checkbox"/><span>SMS for delivery status</span></label>
+            <label class="switch"><input id="pNews" type="checkbox"/><span>Product & feature news</span></label>
+            <div style="display:flex; gap:8px">
+              <button id="savePrefs" class="btn primary"><i class="fa-regular fa-floppy-disk"></i> Save preferences</button>
+            </div>
+          </div>
+
+          <div class="ph"><div class="t">Active sessions</div></div>
+          <div class="pb">
+            <div class="item">
+              <div class="l"><i class="fa-solid fa-laptop"></i></div>
+              <div class="m">
+                <div class="t">This device • Chrome on Windows</div>
+                <div class="s">Signed in just now • IP 103.89.xx.xx</div>
+              </div>
+              <div><span class="pill"><i class="fa-solid fa-location-dot"></i> Kathmandu</span></div>
+            </div>
+            <div class="item">
+              <div class="l"><i class="fa-solid fa-mobile-screen"></i></div>
+              <div class="m">
+                <div class="t">iPhone • Safari</div>
+                <div class="s">Last active 2 days ago</div>
+              </div>
+              <div><button class="btn">Sign out</button></div>
+            </div>
+          </div>
+
+          <div class="ph"><div class="t">Danger zone</div></div>
+          <div class="pb danger">
+            <div class="m" style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+              <div>
+                <div class="t" style="font-weight:800">Reset demo data</div>
+                <div class="s">Clears locally-stored profile & preferences (localStorage).</div>
+              </div>
+              <button id="wipe" class="btn bad"><i class="fa-solid fa-broom"></i> Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </section>
+</div>
+
+<div id="toast" class="toast">Saved</div>
+
+<script>
+const KEY='ADMIN_PROFILE';
+
+/* Helpers */
+const $ = s=>document.querySelector(s);
+function toast(msg='Saved'){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1400);
+}
+function load(){
+  const def = {
+    name:'Admin User', role:'Super Admin', email:'admin@gobuynepal.com', phone:'+977-98xxxxxxx',
+    country:'Nepal', city:'Kathmandu', about:'', avatar:'',
+    prefs:{email:true,sms:false,news:false}, twofa:false
+  };
+  try{ return {...def, ...JSON.parse(localStorage.getItem(KEY)||'{}')}; }catch(e){ return def; }
+}
+function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+let profile = load();
+
+/* Populate */
+function paint(){
+  $('#name').value = profile.name||'';
+  $('#role').value = profile.role||'';
+  $('#email').value = profile.email||'';
+  $('#phone').value = profile.phone||'';
+  $('#country').value = profile.country||'';
+  $('#city').value = profile.city||'';
+  $('#about').value = profile.about||'';
+  $('#twofa').checked = !!profile.twofa;
+  $('#pEmail').checked = !!profile.prefs?.email;
+  $('#pSms').checked   = !!profile.prefs?.sms;
+  $('#pNews').checked  = !!profile.prefs?.news;
+  if(profile.avatar){ $('#pfpImg').style.backgroundImage = `url('${profile.avatar}')`; }
+}
+paint();
+
+/* Avatar upload (preview + store) */
+$('#pfpInput').addEventListener('change', e=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    profile.avatar = reader.result;
+    $('#pfpImg').style.backgroundImage = `url('${profile.avatar}')`;
+    save(profile); toast('Avatar updated');
+  };
+  reader.readAsDataURL(f);
+});
+
+/* Save profile */
+$('#saveProfile').addEventListener('click', ()=>{
+  profile = {
+    ...profile,
+    name:$('#name').value.trim(),
+    role:$('#role').value.trim(),
+    email:$('#email').value.trim(),
+    phone:$('#phone').value.trim(),
+    country:$('#country').value.trim(),
+    city:$('#city').value.trim(),
+    about:$('#about').value.trim(),
+  };
+  save(profile); toast('Profile saved');
+});
+
+/* Reset to stored */
+$('#resetProfile').addEventListener('click', ()=>{
+  profile = load(); paint(); toast('Reverted');
+});
+
+/* Security save (demo only) */
+$('#saveSecurity').addEventListener('click', ()=>{
+  const p1 = $('#pwd1').value, p2 = $('#pwd2').value;
+  if(p1 || p2){
+    if(p1!==p2) return alert('Passwords do not match.');
+    localStorage.setItem('ADMIN_PWD_DEMO', btoa(p1));
+    $('#pwd1').value = $('#pwd2').value = '';
+  }
+  profile.twofa = $('#twofa').checked;
+  save(profile); toast('Security updated');
+});
+
+/* Sign out others (demo) */
+$('#signoutOthers').addEventListener('click', ()=>{
+  if(confirm('Sign out all other sessions?')){
+    localStorage.setItem('ADMIN_SESSIONS', JSON.stringify([{device:'This device', ts:Date.now()}]));
+    toast('Other sessions signed out');
+  }
+});
+
+/* Preferences */
+$('#savePrefs').addEventListener('click', ()=>{
+  profile.prefs = { email:$('#pEmail').checked, sms:$('#pSms').checked, news:$('#pNews').checked };
+  save(profile); toast('Preferences saved');
+});
+
+/* Danger zone */
+$('#wipe').addEventListener('click', ()=>{
+  if(!confirm('Reset locally stored profile & prefs?')) return;
+  localStorage.removeItem(KEY);
+  profile = load(); paint(); toast('Reset done');
+});
+
+/* If you want the small top-right avatar on ALL pages to open this page:
+   add this on those pages -> document.querySelector('.avatar')?.addEventListener('click',()=>location.href='admin-account.html');
+*/
+</script>
+</body>
+</html>

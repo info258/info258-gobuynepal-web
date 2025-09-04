@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Analytics</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --blue:#3aa0ff; --deep:#3c3270;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px; text-decoration:none}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line); border-radius:999px; padding:8px 12px}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px; flex-wrap:wrap}
+.k-actions .btn{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=31') center/cover no-repeat;border:1px solid var(--line)}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:var(--deep)}
+
+/* Filters bar */
+.filters{
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.filters select, .filters button{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px;
+}
+.filters .pill{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px;
+  border:1px solid var(--line); background:#fff; cursor:pointer;
+}
+.pill i{color:var(--purple)}
+
+/* KPI cards */
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+@media (max-width:1100px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:560px){ .kpis{grid-template-columns:1fr} }
+.kpi{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:14px; display:grid; gap:10px;
+}
+.kpi .top{display:flex; align-items:center; justify-content:space-between}
+.kpi .label{color:var(--muted); font-size:12px}
+.kpi .value{font-size:28px; font-weight:900}
+.kpi .trend{font-size:12px}
+.kpi .ic{width:38px;height:38px;border-radius:10px; display:flex;align-items:center;justify-content:center; color:#fff}
+.i-rev{background:linear-gradient(135deg,#6c3adb,#a57cff)}
+.i-ord{background:linear-gradient(135deg,#f39c12,#f6b55a)}
+.i-aov{background:linear-gradient(135deg,#3aa0ff,#7bc1ff)}
+.i-cr {background:linear-gradient(135deg,#2ecc71,#58d68d)}
+
+/* Panels */
+.grid{display:grid; grid-template-columns:2fr 1fr; gap:16px}
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.pb{padding:12px}
+
+/* Charts */
+.chart-wrap{position:relative; width:100%; height:280px}
+canvas{width:100%; height:100%}
+.legend{display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:8px}
+.legend .dot{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px}
+
+/* Pie via conic-gradient */
+.pie{
+  --slice1: 40;
+  --slice2: 25;
+  --slice3: 20;
+  --slice4: 15;
+  width:180px; height:180px; border-radius:50%;
+  background:
+    conic-gradient(#7a1ea1 0 calc(var(--slice1)*1%), #ff8a1f 0 calc((var(--slice1)+var(--slice2))*1%),
+                   #3aa0ff 0 calc((var(--slice1)+var(--slice2)+var(--slice3))*1%), #58d68d 0 100%);
+  margin:auto;
+  position:relative;
+}
+.pie::after{
+  content:""; position:absolute; inset:20px; background:#fff; border-radius:50%;
+}
+
+/* Table */
+.table{width:100%; border-collapse:collapse}
+.table th,.table td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap}
+.table th{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+
+/* Funnel */
+.funnel{display:grid; gap:10px}
+.step{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff;
+}
+.step .lbl{display:flex; align-items:center; gap:8px}
+.step .bar{flex:1; height:8px; border-radius:999px; background:#eee; margin:0 10px; overflow:hidden}
+.step .fill{height:100%; background:linear-gradient(90deg,#7a1ea1,#a57cff)}
+.step small{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <a class="brand" href="admin.html" title="Dashboard">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/><div class="t">GoBuy Admin</div>
+    </a>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-open-cases.html"><i class="fa-regular fa-life-ring"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a class="active" href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="search" type="search" placeholder="Search metrics… (tip: export or change range)"/>
+      </div>
+      <div class="k-actions">
+        <button class="btn" id="exportCSV"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</button>
+        <button class="btn" id="sharePNG"><i class="fa-regular fa-image"></i> Save charts</button>
+        <button class="btn" id="notif"><i class="fa-regular fa-bell"></i></button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="h1">Analytics</div>
+
+      <!-- Filters -->
+      <div class="filters" aria-label="Filters">
+        <select id="range">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last 365 days</option>
+        </select>
+        <select id="channel">
+          <option value="">All channels</option>
+          <option>Search</option>
+          <option>Social</option>
+          <option>Direct</option>
+          <option>Referral</option>
+        </select>
+        <button class="pill" id="refresh"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+      </div>
+
+      <!-- KPIs -->
+      <section class="kpis">
+        <article class="kpi">
+          <div class="top">
+            <div class="label">Revenue</div>
+            <div class="ic i-rev"><i class="fa-solid fa-sack-dollar"></i></div>
+          </div>
+          <div class="value" id="kRevenue">NPR 0.00</div>
+          <div class="trend" id="tRevenue">—</div>
+        </article>
+
+        <article class="kpi">
+          <div class="top">
+            <div class="label">Orders</div>
+            <div class="ic i-ord"><i class="fa-solid fa-bag-shopping"></i></div>
+          </div>
+          <div class="value" id="kOrders">0</div>
+          <div class="trend" id="tOrders">—</div>
+        </article>
+
+        <article class="kpi">
+          <div class="top">
+            <div class="label">Avg Order Value</div>
+            <div class="ic i-aov"><i class="fa-solid fa-scale-balanced"></i></div>
+          </div>
+          <div class="value" id="kAOV">NPR 0.00</div>
+          <div class="trend" id="tAOV">—</div>
+        </article>
+
+        <article class="kpi">
+          <div class="top">
+            <div class="label">Conversion Rate</div>
+            <div class="ic i-cr"><i class="fa-solid fa-bullseye"></i></div>
+          </div>
+          <div class="value" id="kCR">0%</div>
+          <div class="trend" id="tCR">—</div>
+        </article>
+      </section>
+
+      <!-- Charts -->
+      <section class="grid">
+        <!-- Left: 2 big charts -->
+        <div class="panel">
+          <div class="ph">
+            <div class="t">Sales Trend</div>
+            <small id="salesSubtitle" style="color:var(--muted)"></small>
+          </div>
+          <div class="pb">
+            <div class="chart-wrap"><canvas id="salesLine"></canvas></div>
+            <div class="legend">
+              <span><span class="dot" style="background:#7a1ea1"></span>Revenue</span>
+              <span><span class="dot" style="background:#3aa0ff"></span>Orders</span>
+            </div>
+          </div>
+
+          <div class="ph" style="border-top:1px solid var(--line)">
+            <div class="t">Orders by Status</div>
+          </div>
+          <div class="pb">
+            <div class="chart-wrap" style="height:260px"><canvas id="statusStack"></canvas></div>
+            <div class="legend">
+              <span><span class="dot" style="background:#2ecc71"></span>Paid</span>
+              <span><span class="dot" style="background:#ff8a1f"></span>Awaiting</span>
+              <span><span class="dot" style="background:#3aa0ff"></span>Shipped</span>
+              <span><span class="dot" style="background:#b83b3b"></span>Cancelled</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: pie, funnel, top products -->
+        <div class="panel">
+          <div class="ph">
+            <div class="t">Traffic Sources</div>
+          </div>
+          <div class="pb" style="display:grid; gap:12px">
+            <div class="pie" id="trafficPie" aria-label="Traffic sources pie"></div>
+            <div id="trafficList" style="display:grid; gap:6px; font-size:14px"></div>
+          </div>
+
+          <div class="ph" style="border-top:1px solid var(--line)">
+            <div class="t">Conversion Funnel</div>
+          </div>
+          <div class="pb">
+            <div class="funnel" id="funnel"><!-- JS fills --></div>
+          </div>
+
+          <div class="ph" style="border-top:1px solid var(--line)">
+            <div class="t">Top Products</div>
+          </div>
+          <div class="pb">
+            <table class="table" id="topTable">
+              <thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead>
+              <tbody><!-- JS --></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------------- Demo generator ---------------- */
+const rnd = (min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+const money = n => 'NPR ' + Number(n||0).toFixed(2);
+
+function generateData(days=30){
+  const labels=[], revenue=[], orders=[], status={paid:[], awaiting:[], shipped:[], cancelled:[]};
+  const products = {};
+  let visits=0, views=0, carts=0, checkouts=0, purchases=0;
+
+  for(let i=days-1;i>=0;i--){
+    labels.push(new Date(Date.now()-i*86400000).toLocaleDateString());
+    const o = rnd(18,60);
+    const aov = rnd(1600,5200)/10; // 160–520
+    const rev = Math.round(o*aov*100)/100;
+
+    // status mix
+    const paid = Math.max(0, Math.round(o*0.62 + rnd(-3,3)));
+    const awaiting = Math.max(0, Math.round(o*0.18 + rnd(-2,2)));
+    const shipped = Math.max(0, Math.round(o*0.16 + rnd(-2,2)));
+    const cancelled = Math.max(0, o - (paid+awaiting+shipped));
+
+    orders.push(o); revenue.push(rev);
+    status.paid.push(paid); status.awaiting.push(awaiting);
+    status.shipped.push(shipped); status.cancelled.push(cancelled);
+
+    // fake funnel
+    const v = rnd(800,1400); visits += v;
+    const pv = Math.round(v*0.55); views += pv;
+    const ac = Math.round(pv*0.18); carts += ac;
+    const co = Math.round(ac*0.70); checkouts += co;
+    purchases += o;
+
+    // top products
+    const todays = [
+      ['GBN Tee', rnd(1,8), 899],
+      ['Cargo Pants', rnd(1,5), 2299],
+      ['Trail Shoes', rnd(1,4), 4499],
+      ['Backpack 24L', rnd(1,6), 2999],
+      ['Sunglasses', rnd(1,8), 1599]
+    ];
+    todays.forEach(([name,u,price])=>{
+      const p = products[name] || {units:0,revenue:0};
+      p.units += u; p.revenue += u*price; products[name]=p;
+    });
+  }
+
+  // traffic shares
+  const direct=rnd(20,40), search=rnd(30,45), social=rnd(10,25);
+  const referral = Math.max(0, 100 - (direct+search+social));
+
+  return {labels,revenue,orders,status,products, funnel:{visits,views,carts,checkouts,purchases},
+          traffic:{Direct:direct, Search:search, Social:social, Referral:referral}};
+}
+
+/* ---------------- Simple Canvas renderers ---------------- */
+function drawLineChart(canvas, labels, series, colors){
+  const dpr = window.devicePixelRatio||1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w*dpr; canvas.height = h*dpr;
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,w,h);
+
+  // padding
+  const pl=40, pr=10, pt=10, pb=28;
+  const innerW = w-pl-pr, innerH = h-pt-pb;
+
+  // grid
+  ctx.strokeStyle = '#ececf4'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y = pt + i*(innerH/4);
+    ctx.beginPath(); ctx.moveTo(pl,y); ctx.lineTo(w-pr,y); ctx.stroke();
+  }
+
+  // x labels every Nth
+  const step = Math.ceil(labels.length / 6);
+  ctx.fillStyle = '#7e8190'; ctx.font = '11px system-ui';
+  labels.forEach((lab,i)=>{
+    if(i%step!==0 && i!==labels.length-1) return;
+    const x = pl + i*(innerW/(labels.length-1));
+    ctx.fillText(lab, Math.max(pl, Math.min(x-20, w-pr-40)), h-10);
+  });
+
+  // scaling
+  const maxY = Math.max(...series.flat());
+  const scaleY = v => pt + innerH - (v/maxY)*innerH;
+  const scaleX = i => pl + i*(innerW/(labels.length-1));
+
+  // lines
+  series.forEach((arr,si)=>{
+    ctx.strokeStyle = colors[si]; ctx.lineWidth=2.2; ctx.beginPath();
+    arr.forEach((v,i)=>{ const x=scaleX(i), y=scaleY(v); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.stroke();
+
+    // last value dot
+    const lx=scaleX(arr.length-1), ly=scaleY(arr[arr.length-1]);
+    ctx.fillStyle=colors[si]; ctx.beginPath(); ctx.arc(lx,ly,3,0,Math.PI*2); ctx.fill();
+  });
+}
+
+function drawStackedBars(canvas, labels, stacks, colors){
+  const dpr = window.devicePixelRatio||1;
+  const w = canvas.clientWidth, h=canvas.clientHeight;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,w,h);
+
+  const pl=40, pr=10, pt=10, pb=20;
+  const innerW=w-pl-pr, innerH=h-pt-pb;
+
+  // totals to scale
+  const totals = labels.map((_,i)=> Object.values(stacks).reduce((s,arr)=>s+arr[i],0));
+  const maxY = Math.max(...totals) * 1.1;
+
+  // grid
+  ctx.strokeStyle='#ececf4';
+  for(let i=0;i<=4;i++){
+    const y=pt+i*(innerH/4); ctx.beginPath(); ctx.moveTo(pl,y); ctx.lineTo(w-pr,y); ctx.stroke();
+  }
+
+  const barW = innerW/labels.length * 0.7;
+  labels.forEach((_,i)=>{
+    let yTop = pt + innerH; // start bottom
+    let x = pl + i*(innerW/labels.length) + (innerW/labels.length - barW)/2;
+
+    Object.keys(stacks).forEach((k,idx)=>{
+      const v = stacks[k][i];
+      const hBar = (v/maxY)*innerH;
+      yTop -= hBar;
+      ctx.fillStyle = colors[idx];
+      ctx.fillRect(x, yTop, barW, Math.max(0,hBar));
+    });
+  });
+}
+
+/* ---------------- Page wiring ---------------- */
+let STATE = {days:30, data:generateData(30)};
+
+const els = {
+  kRevenue: document.getElementById('kRevenue'),
+  kOrders:  document.getElementById('kOrders'),
+  kAOV:     document.getElementById('kAOV'),
+  kCR:      document.getElementById('kCR'),
+  tRevenue: document.getElementById('tRevenue'),
+  tOrders:  document.getElementById('tOrders'),
+  tAOV:     document.getElementById('tAOV'),
+  tCR:      document.getElementById('tCR'),
+  salesSubtitle: document.getElementById('salesSubtitle'),
+  trafficPie: document.getElementById('trafficPie'),
+  trafficList: document.getElementById('trafficList'),
+  funnel: document.getElementById('funnel'),
+  topBody: document.querySelector('#topTable tbody')
+};
+
+function render(){
+  const d = STATE.data;
+  // KPIs
+  const sumRev = d.revenue.reduce((a,b)=>a+b,0);
+  const sumOrd = d.orders.reduce((a,b)=>a+b,0);
+  const aov = sumRev / Math.max(1,sumOrd);
+  const visits = d.funnel.visits;
+  const cr = (d.funnel.purchases / Math.max(1,visits))*100;
+
+  els.kRevenue.textContent = money(sumRev);
+  els.kOrders.textContent  = sumOrd.toLocaleString();
+  els.kAOV.textContent     = money(aov);
+  els.kCR.textContent      = cr.toFixed(2)+'%';
+
+  // fake trends vs prev period
+  const prev = generateData(STATE.days);
+  const prevRev = prev.revenue.reduce((a,b)=>a+b,0);
+  const prevOrd = prev.orders.reduce((a,b)=>a+b,0);
+  const prevAOV = prevRev/Math.max(1,prevOrd);
+  const prevCR = (prev.funnel.purchases/Math.max(1,prev.funnel.visits))*100;
+
+  function trend(cur,prv){ const diff = ((cur-prv)/Math.max(1,prv))*100; const dir = diff>=0?'▲':'▼'; const clr = diff>=0?'var(--ok)':'var(--bad)'; return `<span style="color:${clr}">${dir} ${Math.abs(diff).toFixed(1)}%</span>`; }
+  els.tRevenue.innerHTML = trend(sumRev, prevRev);
+  els.tOrders.innerHTML  = trend(sumOrd, prevOrd);
+  els.tAOV.innerHTML     = trend(aov, prevAOV);
+  els.tCR.innerHTML      = trend(cr, prevCR);
+
+  // subtitle
+  els.salesSubtitle.textContent = `${STATE.days} days • ${new Date(Date.now()- (STATE.days-1)*86400000).toLocaleDateString()} – ${new Date().toLocaleDateString()}`;
+
+  // Charts
+  drawLineChart(document.getElementById('salesLine'), d.labels, [d.revenue, d.orders], ['#7a1ea1','#3aa0ff']);
+  drawStackedBars(document.getElementById('statusStack'), d.labels, d.status, ['#2ecc71','#ff8a1f','#3aa0ff','#b83b3b']);
+
+  // Traffic pie + list
+  const tr = d.traffic;
+  const total= tr.Direct+tr.Search+tr.Social+tr.Referral;
+  const s1 = tr.Search/total*100, s2 = tr.Social/total*100, s3 = tr.Direct/total*100, s4 = tr.Referral/total*100;
+  els.trafficPie.style.setProperty('--slice1', s3.toFixed(2)); // Direct first (purple)
+  els.trafficPie.style.setProperty('--slice2', s1.toFixed(2)); // Search (orange)
+  els.trafficPie.style.setProperty('--slice3', s2.toFixed(2)); // Social (blue)
+  els.trafficPie.style.setProperty('--slice4', s4.toFixed(2)); // Referral (green)
+
+  els.trafficList.innerHTML = `
+    <div><b>Direct</b> — ${tr.Direct}%</div>
+    <div><b>Search</b> — ${tr.Search}%</div>
+    <div><b>Social</b> — ${tr.Social}%</div>
+    <div><b>Referral</b> — ${tr.Referral}%</div>
+  `;
+
+  // Funnel
+  const f = d.funnel;
+  const steps = [
+    ['Visits', f.visits, '#7a1ea1'],
+    ['Product Views', f.views, '#7a1ea1'],
+    ['Add to Cart', f.carts, '#7a1ea1'],
+    ['Checkout', f.checkouts, '#7a1ea1'],
+    ['Purchases', f.purchases, '#2ecc71']
+  ];
+  const maxStep = steps[0][1];
+  els.funnel.innerHTML = '';
+  steps.forEach(([label,val,color],i)=>{
+    const pct = (val/maxStep)*100;
+    const conv = i===0 ? '' : `<small>${(val/steps[i-1][1]*100).toFixed(1)}% from prev</small>`;
+    const div = document.createElement('div');
+    div.className='step';
+    div.innerHTML = `
+      <div class="lbl"><i class="fa-solid fa-circle-dot" style="color:${color}"></i> ${label}</div>
+      <div class="bar"><div class="fill" style="width:${pct}%; background:${i===steps.length-1?'linear-gradient(90deg,#2ecc71,#58d68d)':'linear-gradient(90deg,#7a1ea1,#a57cff)'}"></div></div>
+      <div><b>${val.toLocaleString()}</b><br>${conv}</div>
+    `;
+    els.funnel.appendChild(div);
+  });
+
+  // Top products
+  const top = Object.entries(d.products)
+                  .map(([name,info])=>({name, ...info}))
+                  .sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+  els.topBody.innerHTML = '';
+  top.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.name}</td><td>${p.units}</td><td>${money(p.revenue)}</td>`;
+    els.topBody.appendChild(tr);
+  });
+}
+
+/* ---------------- Controls ---------------- */
+document.getElementById('range').addEventListener('change', e=>{
+  STATE.days = parseInt(e.target.value,10);
+  STATE.data = generateData(STATE.days);
+  render();
+});
+document.getElementById('refresh').addEventListener('click', ()=>{
+  STATE.data = generateData(STATE.days);
+  render();
+});
+document.getElementById('notif').addEventListener('click', ()=> location.href='admin-notifications.html');
+
+/* Export CSV of daily revenue & orders */
+document.getElementById('exportCSV').addEventListener('click', ()=>{
+  const d = STATE.data;
+  const rows = d.labels.map((lab,i)=>[lab, d.orders[i], d.revenue[i]]);
+  const csv = ['Date,Orders,Revenue', ...rows.map(r=>r.join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='analytics-'+STATE.days+'d.csv'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* Save both charts as PNG (quick share) */
+document.getElementById('sharePNG').addEventListener('click', ()=>{
+  ['salesLine','statusStack'].forEach(id=>{
+    const c = document.getElementById(id);
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/png');
+    a.download = id+'.png';
+    a.click();
+  });
+});
+
+/* Boot */
+render();
+</script>
+</body>
+</html>

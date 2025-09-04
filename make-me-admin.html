@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Seed Admin</title></head>
+<body>
+<button id="mk">Make me admin</button>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAuth, signInAnonymously, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { getFirestore, connectFirestoreEmulator, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  const cfg = {
+    apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+    authDomain:"customer-login-e5ecd.firebaseapp.com",
+    projectId:"customer-login-e5ecd"
+  };
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  if (["localhost","127.0.0.1"].includes(location.hostname)) {
+    connectAuthEmulator(auth,"http://127.0.0.1:9099",{disableWarnings:true});
+    connectFirestoreEmulator(db,"127.0.0.1",8080);
+  }
+
+  document.getElementById('mk').onclick = async ()=>{
+    const cred = auth.currentUser || (await signInAnonymously(auth)).user;
+    await setDoc(doc(db,"admins",cred.uid), { active:true, seededAt: new Date().toISOString() });
+    alert("You are admin now. Reload admin-new-orders.html");
+  };
+</script>
+</body></html>

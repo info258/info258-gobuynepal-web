@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Settings • GoBuy Nepal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--purple:#7a1ea1;--ink:#1f2033;--muted:#7e8190;--bg:#f6f7fb;--card:#fff;--line:#ececf3;--radius:16px;--shadow:0 12px 24px rgba(27,31,35,.06)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{display:flex;min-height:100vh}.aside{width:260px;background:#fff;border-right:1px solid var(--line);padding:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#7a1ea1;font-size:20px;margin-bottom:14px}
+.nav a{display:flex;align-items:center;gap:12px;padding:12px 10px;border-radius:12px;color:#4a4d57;text-decoration:none}
+.nav a.active,.nav a:hover{background:#f3e9f9;color:#6d22a2}
+.main{flex:1;padding:18px 22px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.h1{font-size:30px;font-weight:900;margin:8px 0 16px}
+.input{padding:10px 12px;border:1px solid var(--line);border-radius:12px;width:100%}
+.btn{border:0;background:var(--purple);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+</style></head><body><div class="wrap">
+<aside class="aside">
+  <div class="brand"><i class="fa-solid fa-store"></i> GoBuy Nepal</div>
+  <nav class="nav">
+    <a href="vendor-dashboard.html"><i class="fa-solid fa-house"></i>Dashboard</a>
+    <a href="vendor-orders.html"><i class="fa-solid fa-clipboard-list"></i>Orders</a>
+    <a href="vendor-products.html"><i class="fa-solid fa-tags"></i>Products</a>
+    <a href="vendor-payouts.html"><i class="fa-solid fa-wallet"></i>Payouts</a>
+    <a href="vendor-chat.html"><i class="fa-solid fa-comments"></i>Chat</a>
+    <a class="active" href="vendor-settings.html"><i class="fa-solid fa-gear"></i>Settings</a>
+  </nav>
+</aside>
+<main class="main">
+  <h1 class="h1">Settings</h1>
+
+  <section class="card">
+    <form id="setForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+      <div><label>Vendor Name</label><input class="input" id="s_name"/></div>
+      <div><label>Email</label><input class="input" id="s_email" type="email"/></div>
+      <div><label>Phone</label><input class="input" id="s_phone"/></div>
+      <div style="grid-column:1/-1"><button class="btn">Save Settings</button>
+        <button type="button" id="logout" class="btn" style="background:#ef4444;margin-left:8px">Logout</button></div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div><b>Verification Status</b></div>
+    <p style="color:#7e8190">KYC: <span id="kyc">pending</span> • Bank: <span id="bank">pending</span></p>
+  </section>
+</main>
+</div>
+<script>
+const VID=localStorage.getItem('vendorAuth'); if(!VID){ location.href='vendor-login.html?next=vendor-settings.html'; }
+const vendors = JSON.parse(localStorage.getItem('vendors')||'[]'); const me = vendors.find(v=>v.vendorId===VID)||{};
+document.getElementById('s_name').value = me.vendorName||''; document.getElementById('s_email').value = me.email||''; document.getElementById('s_phone').value = me.phone||'';
+document.getElementById('kyc').textContent = (me.verification&&me.verification.kyc)||'pending';
+document.getElementById('bank').textContent = (me.verification&&me.verification.bank)||'pending';
+document.getElementById('setForm').onsubmit=(e)=>{ e.preventDefault();
+  me.vendorName=document.getElementById('s_name').value.trim();
+  me.email=document.getElementById('s_email').value.trim();
+  me.phone=document.getElementById('s_phone').value.trim();
+  const idx = vendors.findIndex(v=>v.vendorId===VID); if(idx>-1){ vendors[idx]=me; localStorage.setItem('vendors', JSON.stringify(vendors)); alert('Saved'); }
+};
+document.getElementById('logout').onclick=()=>{ localStorage.removeItem('vendorAuth'); location.href='vendor-login.html'; };
+</script>
+</body></html>

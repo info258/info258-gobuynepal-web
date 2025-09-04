@@ -1,0 +1,26 @@
+rules_version = "2";
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+
+    match /users/{uid}         { allow read, write: if isOwner(uid); }
+    match /chats/{uid}         { allow read, write: if isOwner(uid);
+      match /messages/{doc}    { allow read, write: if isOwner(uid); } }
+
+    match /requests/{doc} {
+      allow create: if isSignedIn();
+      allow read:   if isSignedIn();   // change to isAdmin() for prod
+      allow update, delete: if false;
+    }
+
+    match /_ping/{doc}         { allow read, write: if isSignedIn(); }
+    match /_admin_ping/{doc}   { allow read, write: if isSignedIn(); }
+
+    match /{document=**}       { allow read, write: if false; }
+  }
+}

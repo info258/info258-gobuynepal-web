@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add to Cart</title>
+
+  <!-- Font Awesome (icons, no downloads needed) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1;
+      --card:#1f1f1f;
+      --bg:#ffffff;
+      --orange:#d35400;
+      --shadow:0 10px 18px rgba(0,0,0,.12);
+      --radius:14px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#111;
+      padding-bottom:95px; /* room for bottom nav + add bar */
+    }
+
+    /* Top title */
+    .top{
+      max-width:450px; margin:0 auto;
+      padding:14px 14px 8px;
+      text-align:center; color:var(--purple);
+      font-weight:800; font-size:20px;
+    }
+
+    /* Page wrapper */
+    .page{ max-width:450px; margin:0 auto; padding:8px 14px 120px; }
+
+    /* Item card */
+    .card{
+      background:var(--card); color:#fff;
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:16px; margin:12px 0;
+    }
+    .row-top{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-bottom:6px;
+    }
+    .title{ font-weight:900; font-size:16px; }
+    .price{ color:#cfcfcf; font-size:14px; margin-bottom:10px; }
+    .qty-line{ display:flex; align-items:center; gap:10px; }
+    .qty-btn{
+      width:28px;height:28px;border-radius:50%;
+      border:none;background:#3a3a3a;color:#fff;font-weight:800;cursor:pointer;
+    }
+    .qty{ min-width:24px; text-align:center; font-weight:900; }
+    .delete{ color:#ff4d4f; font-size:20px; cursor:pointer; }
+
+    /* Add bar fixed above bottom nav */
+    .add-bar{
+      position:fixed; left:0; right:0; bottom:68px; /* above nav */
+      display:flex; justify-content:center; pointer-events:none;
+      z-index: 10;
+    }
+    .add-wrap{
+      width:100%; max-width:450px; padding:0 14px; pointer-events:auto;
+    }
+    .add-btn{
+      width:100%; border:none; background:var(--orange); color:#fff;
+      font-weight:800; font-size:16px; padding:14px 0; border-radius:10px;
+      box-shadow:0 6px 14px rgba(211,84,0,.25); cursor:pointer;
+    }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid #e5e5e5;
+      box-shadow:0 -2px 8px rgba(0,0,0,.06);
+      display:flex; justify-content:space-around; align-items:center;
+      padding:8px 0; z-index:9;
+    }
+    .nav-item{
+      color:var(--purple); text-decoration:none; font-size:12px;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .nav-item i{ font-size:20px; margin-bottom:4px; }
+    .nav-item.active span{ font-weight:800; }
+
+    .empty{
+      text-align:center; color:#777; margin:40px 0 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Title -->
+  <div class="top">ADD TO CART</div>
+
+  <main class="page">
+    <!-- Cart item -->
+    <section id="itemCard" class="card">
+      <div class="row-top">
+        <div class="title" id="itemName">Wireless Earbuds</div>
+        <i id="deleteItem" class="fa-solid fa-xmark delete" title="Remove"></i>
+      </div>
+      <div class="price">$<span id="price">25.00</span></div>
+
+      <div class="qty-line" aria-label="Quantity controls">
+        <button id="decrease" class="qty-btn" aria-label="Decrease">–</button>
+        <div id="qty" class="qty" role="status" aria-live="polite">1</div>
+        <button id="increase" class="qty-btn" aria-label="Increase">+</button>
+      </div>
+    </section>
+
+    <p id="emptyMsg" class="empty" style="display:none;">Your cart is empty.</p>
+  </main>
+
+  <!-- Fixed ADD button -->
+  <div class="add-bar">
+    <div class="add-wrap">
+      <button id="addBtn" class="add-btn">ADD</button>
+    </div>
+  </div>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+    <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+    <a class="nav-item active" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+    <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+  </nav>
+
+  <script>
+    // Basic state
+    const itemCard = document.getElementById('itemCard');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const qtyEl    = document.getElementById('qty');
+    const priceEl  = document.getElementById('price');
+    const nameEl   = document.getElementById('itemName');
+
+    const addBtn = document.getElementById('addBtn');
+    const delBtn = document.getElementById('deleteItem');
+    const incBtn = document.getElementById('increase');
+    const decBtn = document.getElementById('decrease');
+
+    const ITEM = { id:'SKU-EBUDS', name:'Wireless Earbuds', price:25.00 };
+
+    let qty = 1;
+    function money(n){ return n.toFixed(2); }
+
+    // quantity controls
+    incBtn.addEventListener('click', ()=>{ qty++; qtyEl.textContent = qty; });
+    decBtn.addEventListener('click', ()=>{ if(qty>1){ qty--; qtyEl.textContent = qty; } });
+
+    // delete the visible row (visual only)
+    delBtn.addEventListener('click', ()=>{
+      itemCard.style.display = 'none';
+      emptyMsg.style.display = 'block';
+      qty = 0;
+      qtyEl.textContent = 0;
+    });
+
+    // ADD -> open the form page with prefilled values (via query params)
+    addBtn.addEventListener('click', ()=>{
+      const url = new URL('add-to-cart-form.html', location.href);
+      url.searchParams.set('name',  ITEM.name);
+      url.searchParams.set('qty',   String(qty));
+      url.searchParams.set('price', String(ITEM.price));
+      // You can also pass a link if you have it
+      // url.searchParams.set('link', 'https://www.amazon.com/example');
+
+      window.location.href = url.toString();
+    });
+
+    // init values
+    nameEl.textContent = ITEM.name;
+    priceEl.textContent = money(ITEM.price);
+    qtyEl.textContent = qty;
+  </script>
+</body>
+</html>

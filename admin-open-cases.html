@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Open Cases</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --info:#3aa0ff; --gray:#b8bcc8;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions .btn{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer; text-decoration:none}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=45') center/cover no-repeat;border:1px solid var(--line)}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* Panel & table */
+.panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.controls{display:flex; gap:8px; flex-wrap:wrap}
+.controls select,.controls input{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px}
+.pb{padding:12px; overflow:auto}
+.table{width:100%; border-collapse:collapse}
+.table th,.table td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap}
+.table th{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+.badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; color:#fff}
+.b-open{background:var(--info)}
+.b-wait{background:var(--warn)}
+.b-escalated{background:#7b3fe4}
+.b-closed{background:var(--gray)}
+.b-ok{background:var(--ok)}
+.p-high{background:var(--bad)}
+.p-medium{background:var(--warn)}
+.p-low{background:var(--ok)}
+.actions{display:flex; gap:6px; flex-wrap:wrap}
+.btn{border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 8px; font-size:12px; cursor:pointer; text-decoration:none}
+.btn.view{color:var(--purple)}
+.btn.assign{color:#3a7bd5}
+.btn.close{color:var(--bad)}
+.btn:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+
+/* Drawer */
+.drawer{position:fixed; inset:0; display:none; z-index:1000}
+.drawer.show{display:block}
+.drawer .backdrop{position:absolute; inset:0; background:rgba(0,0,0,.4)}
+.drawer .panel{
+  position:absolute; top:0; right:0; height:100%; width:92%; max-width:520px; background:#fff;
+  border-left:1px solid var(--line); box-shadow: -12px 0 24px rgba(0,0,0,.12); display:flex; flex-direction:column
+}
+.drawer header{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line)}
+.drawer .body{padding:12px 14px; overflow:auto; display:grid; gap:12px}
+.kv{display:grid; grid-template-columns:120px 1fr; gap:8px; font-size:14px}
+.note{display:grid; gap:8px}
+.note textarea{min-height:90px; border:1px solid var(--line); border-radius:10px; padding:8px}
+.timeline{display:grid; gap:10px}
+.event{border:1px solid var(--line); border-radius:10px; padding:8px}
+.event .meta{color:var(--muted); font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a class="brand" href="admin.html" title="Dashboard">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/><div class="t">GoBuy Admin</div>
+    </a>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a class="active" href="admin-open-cases.html"><i class="fa-regular fa-life-ring"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+    <header class="topbar">
+      <div class="search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="q" type="search" placeholder="Search cases, customers, topics…"/>
+      </div>
+      <div class="k-actions">
+        <!-- ✅ Now a real link to the new-case page -->
+        <a class="btn" id="newCase" href="admin-case-new.html"><i class="fa-solid fa-plus"></i> New case</a>
+        <button class="btn" id="notif"><i class="fa-regular fa-bell"></i></button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <div class="content">
+      <div class="h1">Open Cases</div>
+
+      <section class="panel">
+        <div class="ph">
+          <div class="t">Cases</div>
+          <div class="controls">
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="Open" selected>Open</option>
+              <option value="">All</option>
+              <option value="Waiting">Waiting on Customer</option>
+              <option value="Escalated">Escalated</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+            <select id="priorityFilter" aria-label="Filter by priority">
+              <option value="">Any priority</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <select id="assigneeFilter" aria-label="Filter by assignee">
+              <option value="">Anyone</option>
+              <option value="Unassigned">Unassigned</option>
+              <option value="A. Sharma">A. Sharma</option>
+              <option value="R. Khadka">R. Khadka</option>
+              <option value="P. Gurung">P. Gurung</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pb">
+          <table class="table" id="casesTable">
+            <thead>
+              <tr>
+                <th>Case</th>
+                <th>Customer</th>
+                <th>Topic</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assignee</th>
+                <th>Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody><!-- JS fills --></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </section>
+</div>
+
+<!-- Drawer -->
+<div id="drawer" class="drawer" aria-hidden="true">
+  <div class="backdrop"></div>
+  <aside class="panel" role="dialog" aria-modal="true" aria-label="Case details">
+    <header>
+      <div id="dTitle" style="font-weight:900">Case</div>
+      <button class="btn" id="dClose"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+    <div class="body">
+      <div class="kv"><div>Customer</div><div id="dCustomer"></div></div>
+      <div class="kv"><div>Topic</div><div id="dTopic"></div></div>
+      <div class="kv"><div>Priority</div><div id="dPriority"></div></div>
+      <div class="kv"><div>Status</div><div id="dStatus"></div></div>
+      <div class="kv"><div>Assignee</div><div id="dAssignee"></div></div>
+
+      <div class="note">
+        <label for="internalNote"><strong>Add internal note</strong></label>
+        <textarea id="internalNote" placeholder="Type a note for the team…"></textarea>
+        <button class="btn" id="saveNote"><i class="fa-regular fa-floppy-disk"></i> Save note</button>
+      </div>
+
+      <div>
+        <strong>Timeline</strong>
+        <div id="timeline" class="timeline"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ---------- Seed + local storage merge ---------- */
+const SEED = [
+  {id:'C-1029', customer:'Sunil K', topic:'Refund request', priority:'High', status:'Open', assignee:'Unassigned', updated:'12 min', timeline:[
+    {at:'12 min ago', by:'System', text:'Case created'},
+    {at:'9 min ago', by:'Sunil K', text:'Product didn’t match description'}
+  ]},
+  {id:'C-1033', customer:'Puja R', topic:'Size mismatch', priority:'Medium', status:'Waiting', assignee:'A. Sharma', updated:'28 min', timeline:[
+    {at:'2 h ago', by:'Agent', text:'Requested images of label'},
+  ]},
+  {id:'C-1037', customer:'Ravi M', topic:'Delay follow-up', priority:'Low', status:'Open', assignee:'R. Khadka', updated:'1 h', timeline:[
+    {at:'1 h ago', by:'R. Khadka', text:'Checked courier hub ETA'}
+  ]},
+  {id:'C-1041', customer:'Bhawana S', topic:'Payment posted twice', priority:'High', status:'Escalated', assignee:'P. Gurung', updated:'5 min', timeline:[
+    {at:'30 min ago', by:'Agent', text:'Forwarded to billing'}
+  ]},
+  {id:'C-1044', customer:'Arjun L', topic:'Wrong color received', priority:'Medium', status:'Open', assignee:'Unassigned', updated:'3 min', timeline:[
+    {at:'3 min ago', by:'System', text:'Case created'}
+  ]}
+];
+
+function loadCases(){
+  const local = JSON.parse(localStorage.getItem('ADMIN_CASES')||'[]');
+  if(!local.length){ localStorage.setItem('ADMIN_CASES', JSON.stringify(SEED)); return SEED.slice(); }
+  return local;
+}
+function saveCases(list){ localStorage.setItem('ADMIN_CASES', JSON.stringify(list)); }
+
+/* ---------- Badges ---------- */
+const pBadge = p => `<span class="badge ${p==='High'?'p-high':p==='Medium'?'p-medium':'p-low'}">${p}</span>`;
+function sBadge(s){
+  const map = {Open:'b-open', Waiting:'b-wait', Escalated:'b-escalated', Resolved:'b-ok', Closed:'b-closed'};
+  return `<span class="badge ${map[s]||'b-open'}">${s}</span>`;
+}
+
+/* ---------- Render table ---------- */
+let CASES = loadCases();
+const tbody = document.querySelector('#casesTable tbody');
+
+function renderTable(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const sf = document.getElementById('statusFilter').value;
+  const pf = document.getElementById('priorityFilter').value;
+  const af = document.getElementById('assigneeFilter').value;
+
+  tbody.innerHTML = '';
+  CASES
+    .filter(c => (!sf || c.status===sf))
+    .filter(c => (!pf || c.priority===pf))
+    .filter(c => (!af || (af==='Unassigned' ? c.assignee==='Unassigned' : c.assignee===af)))
+    .filter(c => (c.id+c.customer+c.topic+c.assignee).toLowerCase().includes(q))
+    .forEach(c=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="#" data-view="${c.id}">${c.id}</a></td>
+        <td>${c.customer}</td>
+        <td>${c.topic}</td>
+        <td>${pBadge(c.priority)}</td>
+        <td>${sBadge(c.status)}</td>
+        <td>${c.assignee}</td>
+        <td>${c.updated} ago</td>
+        <td class="actions">
+          <button class="btn view" data-view="${c.id}"><i class="fa-regular fa-eye"></i> View</button>
+          <button class="btn assign" data-assign="${c.id}"><i class="fa-solid fa-user-plus"></i> Assign</button>
+          ${c.status!=='Closed' ? `<button class="btn close" data-close="${c.id}"><i class="fa-regular fa-circle-xmark"></i> Close</button>`:''}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+}
+
+/* ---------- Handlers ---------- */
+document.getElementById('q').addEventListener('input', renderTable);
+document.getElementById('statusFilter').addEventListener('change', renderTable);
+document.getElementById('priorityFilter').addEventListener('change', renderTable);
+document.getElementById('assigneeFilter').addEventListener('change', renderTable);
+
+tbody.addEventListener('click', e=>{
+  const v = e.target.closest('[data-view]');
+  if(v){ e.preventDefault(); openDrawer(v.getAttribute('data-view')); return; }  // ← prevent jump on #
+  const a = e.target.closest('[data-assign]');
+  if(a){ assignCase(a.getAttribute('data-assign')); return; }
+  const c = e.target.closest('[data-close]');
+  if(c){ closeCase(c.getAttribute('data-close')); return; }
+});
+
+function assignCase(id){
+  const caseObj = CASES.find(x=>x.id===id); if(!caseObj) return;
+  const name = prompt('Assign to (e.g., A. Sharma):', caseObj.assignee==='Unassigned'?'':caseObj.assignee);
+  if(name===null) return;
+  caseObj.assignee = name.trim() || 'Unassigned';
+  caseObj.updated = 'now';
+  caseObj.timeline = caseObj.timeline || [];
+  caseObj.timeline.unshift({at:'now', by:'Admin', text:`Assigned to ${caseObj.assignee}`});
+  saveCases(CASES); renderTable();
+}
+function closeCase(id){
+  const caseObj = CASES.find(x=>x.id===id); if(!caseObj) return;
+  if(!confirm(`Close ${id}? You can reopen later by changing status.`)) return;
+  caseObj.status = 'Closed';
+  caseObj.updated = 'now';
+  caseObj.timeline.unshift({at:'now', by:'Admin', text:'Case closed'});
+  saveCases(CASES); renderTable();
+}
+
+/* ---------- Drawer (view details) ---------- */
+const drawer = document.getElementById('drawer');
+const dClose = document.getElementById('dClose');
+drawer.querySelector('.backdrop').addEventListener('click', ()=>drawer.classList.remove('show'));
+dClose.addEventListener('click', ()=>drawer.classList.remove('show'));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') drawer.classList.remove('show'); });
+
+function openDrawer(id){
+  const c = CASES.find(x=>x.id===id); if(!c) return;
+  drawer.classList.add('show');
+  drawer.setAttribute('aria-hidden','false');
+  document.getElementById('dTitle').textContent = `${c.id} • ${c.customer}`;
+  document.getElementById('dCustomer').textContent = c.customer;
+  document.getElementById('dTopic').textContent = c.topic;
+  document.getElementById('dPriority').innerHTML = pBadge(c.priority);
+  document.getElementById('dStatus').innerHTML = sBadge(c.status);
+  document.getElementById('dAssignee').textContent = c.assignee;
+
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  (c.timeline||[]).forEach(ev=>{
+    const div = document.createElement('div');
+    div.className='event';
+    div.innerHTML = `<div>${ev.text}</div><div class="meta">${ev.by} • ${ev.at}</div>`;
+    tl.appendChild(div);
+  });
+
+  document.getElementById('saveNote').onclick = () =>{
+    const t = document.getElementById('internalNote');
+    const text = t.value.trim(); if(!text) return alert('Note is empty.');
+    c.timeline = c.timeline || [];
+    c.timeline.unshift({at:'now', by:'Admin', text:`(note) ${text}`});
+    c.updated='now'; t.value='';
+    saveCases(CASES); openDrawer(id); // re-render
+  };
+}
+
+/* ---------- Topbar: notifications only (new case is an <a>) ---------- */
+document.getElementById('notif').addEventListener('click', ()=> location.href='admin-notifications.html');
+
+/* ---------- Boot ---------- */
+renderTable();
+</script>
+</body>
+</html>

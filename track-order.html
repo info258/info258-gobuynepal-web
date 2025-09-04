@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track Order</title>
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1;
+      --card:#1f1f1f;
+      --white:#fff;
+      --green:#2ecc71;
+      --red:#e74c3c;
+      --gray:#5b5b5b;
+      --shadow:0 10px 18px rgba(0,0,0,.12);
+      --radius:14px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:#fff; color:#111; padding-bottom:88px; /* bottom nav space */
+    }
+
+    .page{ max-width:450px; margin:0 auto; padding:20px 14px 100px; }
+    .title{ color:var(--purple); font-size:26px; font-weight:800; margin-bottom:14px; }
+
+    .card{
+      position:relative;
+      background:var(--card); color:var(--white);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:16px; margin-top:10px;
+      outline:none; /* for keyboard focus we add a shadow below */
+    }
+    .card.clickable{ cursor:pointer; }
+    .card.clickable:focus-visible{ box-shadow:0 0 0 3px rgba(122,30,161,.35), var(--shadow); }
+
+    .order-id{ font-weight:800; font-size:18px; margin-bottom:10px; }
+    .row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+
+    /* clickable chips that link to details page */
+    .chip{
+      display:inline-block;
+      padding:6px 10px; border-radius:10px; font-size:13px; font-weight:700; color:#fff;
+      text-decoration:none; /* so anchors look like chips */
+      transition:transform .06s ease;
+    }
+    .chip:active{ transform:translateY(1px); }
+    .chip.green{ background:var(--green); }
+    .chip.purple{ background:var(--purple); }
+    .chip.gray{ background:var(--gray); }
+
+    .btn{
+      border:none; border-radius:10px; padding:10px 14px; font-weight:800; font-size:14px; color:#fff; cursor:pointer;
+    }
+    .btn.cancel{ background:var(--red); }
+
+    /* bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid #e5e5e5;
+      display:flex; justify-content:space-around; align-items:center;
+      padding:8px 0; box-shadow:0 -2px 8px rgba(0,0,0,.06); z-index:999;
+    }
+    .nav-item{
+      color:var(--purple); text-decoration:none; font-size:12px;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .nav-item i{ font-size:20px; margin-bottom:4px; }
+    .nav-item.active span{ font-weight:800; }
+  </style>
+</head>
+<body>
+
+  <main class="page">
+    <h1 class="title">TRACK ORDER</h1>
+
+    <!-- Example order card (click anywhere on this card to open details) -->
+    <section
+      class="card clickable"
+      data-order="5678"
+      role="link"
+      tabindex="0"
+      aria-label="Open details for Order #5678"
+    >
+      <div class="order-id">Order #5678</div>
+
+      <div class="row" aria-label="Status timeline">
+        <a class="chip green"  href="order-status.html?order=5678">Order Confirmed</a>
+        <a class="chip purple" href="order-status.html?order=5678">Order Placed</a>
+        <a class="chip purple" href="order-status.html?order=5678">Confirmed</a>
+        <a class="chip gray"   href="order-status.html?order=5678">Shipped</a>
+        <a class="chip gray"   href="order-status.html?order=5678">Delivered</a>
+      </div>
+
+      <button class="btn cancel" onclick="cancelOrder('5678')" aria-label="Cancel Order 5678">Cancel Order</button>
+    </section>
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+    <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+    <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+    <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+    <a class="nav-item" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+  </nav>
+
+  <script>
+    // Make the entire card navigate to order-status unless clicking on an <a> or <button>
+    document.querySelectorAll('.card.clickable').forEach(card => {
+      const go = () => {
+        const id = card.getAttribute('data-order');
+        if (id) window.location.href = `order-status.html?order=${encodeURIComponent(id)}`;
+      };
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('a, button')) return; // let links/buttons work normally
+        go();
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
+    });
+
+    function cancelOrder(id){
+      if(confirm('Cancel Order #' + id + '?')) {
+        alert('Order #' + id + ' cancelled.');
+        // TODO: update backend / Firestore
+      }
+    }
+  </script>
+</body>
+</html>

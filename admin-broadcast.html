@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Broadcast Center</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680;
+  --accent:#d35400; --ok:#2ecc71; --warn:#f1c40f; --info:#7a1ea1;
+  --bg:#f6f7fb; --card:#fff; --ink:#1f2033; --muted:#7e8190; --line:#e6e7ef;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+  --darkcard:#1f1f1f; --darktext:#f7f7f7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:inherit}
+
+/* topbar */
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.back{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--purple)}
+.h1{font-weight:900; color:#3c3270; font-size:18px}
+.spacer{flex:1}
+.topbar .btn{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 12px; cursor:pointer
+}
+.topbar .btn.primary{background:var(--purple); color:#fff; border-color:transparent}
+.topbar .btn:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+
+/* layout */
+.page{max-width:1200px; margin:16px auto; padding:0 14px}
+.grid{display:grid; grid-template-columns:1.2fr .8fr; gap:16px}
+@media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.pb{padding:14px}
+
+/* form */
+.form{display:grid; gap:12px}
+.row{display:grid; gap:8px}
+label{font-size:13px; color:#555; font-weight:700}
+input[type="text"], input[type="url"], input[type="datetime-local"], textarea, select{
+  width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff;
+}
+textarea{min-height:110px; resize:vertical}
+small.help{color:var(--muted)}
+.inline{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.pill{border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px; cursor:pointer}
+.pill.active{background:#f2e9ff; color:var(--purple); border-color:#ead9ff}
+hr.sep{border:none; border-top:1px dashed var(--line); margin:6px 0}
+
+/* templates */
+.templates{display:flex; gap:8px; flex-wrap:wrap}
+.template-btn{
+  border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:8px; font-size:12px; cursor:pointer
+}
+.template-btn:hover{background:#fafafa}
+
+/* preview (dark alert card) */
+.preview-wrap{display:grid; gap:14px}
+.preview{
+  background:var(--darkcard); color:var(--darktext); border-radius:12px; padding:14px; position:relative; overflow:hidden;
+  min-height:90px;
+}
+.preview::before{content:""; position:absolute; left:0; top:0; width:5px; height:100%; background:var(--purple)}
+.p-row{display:flex; gap:12px}
+.p-ico{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:#111}
+.p-ico.ok{background:var(--ok); color:#fff}
+.p-ico.warn{background:var(--warn); color:#111}
+.p-ico.info{background:#b08ce0; color:#fff}
+.p-text{line-height:1.35}
+.p-meta{color:#bdbdbd; font-size:12px; margin-top:4px}
+.p-img{margin-top:10px; border-radius:8px; max-height:180px; width:100%; object-fit:cover; display:none}
+
+.actions-right{display:flex; gap:8px; flex-wrap:wrap}
+.actions-right .btn{border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 10px; cursor:pointer}
+.actions-right .btn.danger{color:#e74c3c}
+
+/* history */
+.history{display:grid; gap:10px}
+.h-item{
+  display:grid; grid-template-columns:36px 1fr auto; gap:10px; align-items:center;
+  border:1px solid var(--line); background:#fff; border-radius:12px; padding:8px 10px;
+}
+.h-l{width:36px;height:36px;border-radius:10px;background:#faf8ff;border:1px solid #e6def7;display:flex;align-items:center;justify-content:center;color:var(--purple)}
+.h-t{font-weight:800}
+.h-s{font-size:12px; color:var(--muted)}
+.badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; color:#fff}
+.b-ok{background:var(--ok)} .b-warn{background:var(--warn); color:#111} .b-info{background:#7a1ea1}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back" href="admin.html"><i class="fa-solid fa-chevron-left"></i> Back to dashboard</a>
+  <div class="h1">Broadcast Center</div>
+  <div class="spacer"></div>
+  <button id="saveDraftBtn" class="btn"><i class="fa-regular fa-floppy-disk"></i> Save draft</button>
+  <button id="sendBtn" class="btn primary"><i class="fa-solid fa-paper-plane"></i> Send</button>
+</header>
+
+<main class="page">
+  <section class="grid">
+    <!-- Composer -->
+    <article class="panel">
+      <div class="ph"><div class="t">Compose announcement</div></div>
+      <div class="pb">
+        <div class="form" id="form">
+          <div class="row">
+            <label for="title">Title</label>
+            <input id="title" type="text" placeholder="e.g., Order #1234 confirmed"/>
+          </div>
+
+          <div class="row">
+            <label for="message">Message</label>
+            <textarea id="message" placeholder="Write the body of your announcement…"></textarea>
+          </div>
+
+          <div class="row">
+            <label>Audience</label>
+            <div class="inline">
+              <button class="pill active" data-audience="all">All users</button>
+              <button class="pill" data-audience="pending">Pending payments</button>
+              <button class="pill" data-audience="segment">Custom list</button>
+            </div>
+            <input id="customList" type="text" placeholder="Comma-separated emails / user IDs" style="display:none"/>
+            <small class="help">Choose who should receive this. “Custom list” will target only the IDs/emails you enter.</small>
+          </div>
+
+          <div class="row">
+            <label>Channels</label>
+            <div class="inline">
+              <label class="pill active"><input type="checkbox" id="chInApp" checked> In-app alert</label>
+              <label class="pill"><input type="checkbox" id="chEmail"> Email (mock)</label>
+              <label class="pill" title="Coming soon"><input type="checkbox" id="chSms" disabled> SMS (soon)</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <label for="style">Style</label>
+            <select id="style">
+              <option value="ok">Success</option>
+              <option value="warn">Warning</option>
+              <option value="info" selected>Info</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="actionLink">Action link (optional)</label>
+            <input id="actionLink" type="url" placeholder="https://example.com/order/1234"/>
+            <small class="help">Tap in the alert can open this URL/deep link.</small>
+          </div>
+
+          <div class="row">
+            <label>Schedule</label>
+            <div class="inline">
+              <label class="pill active"><input type="radio" name="sched" value="now" checked> Send now</label>
+              <label class="pill"><input type="radio" name="sched" value="later"> Schedule for later</label>
+              <input id="scheduleAt" type="datetime-local" style="display:none">
+            </div>
+          </div>
+
+          <hr class="sep"/>
+
+          <div class="row">
+            <label for="image">Image / screenshot (optional)</label>
+            <input id="image" type="file" accept="image/*">
+          </div>
+
+          <div class="row">
+            <label>Quick templates</label>
+            <div class="templates">
+              <button class="template-btn" data-t="confirm">Order confirmed</button>
+              <button class="template-btn" data-t="pending">Payment pending</button>
+              <button class="template-btn" data-t="delivered">Delivered successfully</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Preview + History -->
+    <article class="panel">
+      <div class="ph">
+        <div class="t">Live preview</div>
+        <div class="actions-right">
+          <button id="clearForm" class="btn"><i class="fa-regular fa-trash-can"></i> Clear</button>
+        </div>
+      </div>
+      <div class="pb preview-wrap">
+        <div id="preview" class="preview">
+          <div class="p-row">
+            <div id="pIco" class="p-ico info"><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="p-text">
+              <div id="pTitle"><strong>Announcement title</strong></div>
+              <div id="pMsg" style="margin-top:2px">Your message will appear here as users will see it.</div>
+              <div class="p-meta" id="pMeta">just now • in-app</div>
+            </div>
+          </div>
+          <img id="pImg" class="p-img" alt="preview image"/>
+        </div>
+
+        <div class="ph" style="padding:0; border:none"><div class="t" style="padding:0 0 6px">History</div></div>
+        <div id="history" class="history"></div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<script>
+/* ---------- Mini state ---------- */
+const qs = sel => document.querySelector(sel);
+const qsa = sel => Array.from(document.querySelectorAll(sel));
+
+const state = {
+  audience:'all',
+  channels:{inapp:true, email:false, sms:false},
+  style:'info',
+  sched:'now',
+  scheduleAt:'',
+  title:'',
+  message:'',
+  link:'',
+  imageData:null
+};
+
+/* ---------- Bind UI ---------- */
+const titleEl = qs('#title');
+const msgEl   = qs('#message');
+const linkEl  = qs('#actionLink');
+const styleEl = qs('#style');
+const imgEl   = qs('#image');
+const schedRadios = qsa('input[name="sched"]');
+const scheduleAt  = qs('#scheduleAt');
+const chInApp = qs('#chInApp'), chEmail=qs('#chEmail'), chSms=qs('#chSms');
+const audiencePills = qsa('[data-audience]');
+const customList = qs('#customList');
+
+/* Preview parts */
+const pIco = qs('#pIco'); const pTitle = qs('#pTitle'); const pMsg = qs('#pMsg');
+const pMeta = qs('#pMeta'); const pImg = qs('#pImg');
+
+/* History store */
+const KEY = 'gbn_broadcasts';
+
+/* ---------- Helpers ---------- */
+function updatePreview(){
+  const iconClass = {ok:'fa-check', warn:'fa-triangle-exclamation', info:'fa-bullhorn'}[state.style];
+  pIco.className = 'p-ico '+(state.style==='ok'?'ok':state.style==='warn'?'warn':'info');
+  pIco.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+
+  pTitle.innerHTML = `<strong>${state.title || 'Announcement title'}</strong>`;
+  pMsg.textContent = state.message || 'Your message will appear here as users will see it.';
+  const ch = [
+    state.channels.inapp?'in-app':null,
+    state.channels.email?'email':null,
+    state.channels.sms?'sms':null
+  ].filter(Boolean).join(', ');
+  pMeta.textContent = `${state.sched==='now'?'just now':'scheduled'} • ${ch || 'no channels'}`;
+
+  if(state.imageData){
+    pImg.src = state.imageData; pImg.style.display='block';
+  }else{
+    pImg.removeAttribute('src'); pImg.style.display='none';
+  }
+}
+
+function readForm(){
+  state.title   = titleEl.value.trim();
+  state.message = msgEl.value.trim();
+  state.link    = linkEl.value.trim();
+  state.style   = styleEl.value;
+  state.channels = { inapp: chInApp.checked, email: chEmail.checked, sms: chSms.checked };
+  state.sched   = schedRadios.find(r=>r.checked).value;
+  state.scheduleAt = scheduleAt.value;
+  updatePreview();
+}
+
+['input','change','keyup'].forEach(ev=>{
+  titleEl.addEventListener(ev, readForm);
+  msgEl.addEventListener(ev, readForm);
+  linkEl.addEventListener(ev, readForm);
+  styleEl.addEventListener(ev, readForm);
+  chInApp.addEventListener(ev, readForm);
+  chEmail.addEventListener(ev, readForm);
+});
+
+/* Audience pills */
+audiencePills.forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    audiencePills.forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    state.audience = btn.dataset.audience;
+    customList.style.display = state.audience==='segment' ? '' : 'none';
+  });
+});
+
+/* Schedule controls */
+schedRadios.forEach(r=>{
+  r.addEventListener('change', ()=>{
+    state.sched = r.value;
+    scheduleAt.style.display = (state.sched==='later') ? '' : 'none';
+    updatePreview();
+  });
+});
+
+/* Image */
+imgEl.addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file){ state.imageData=null; updatePreview(); return; }
+  const reader = new FileReader();
+  reader.onload = () => { state.imageData = reader.result; updatePreview(); };
+  reader.readAsDataURL(file);
+});
+
+/* Quick templates */
+qsa('.template-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const t = b.dataset.t;
+    if(t==='confirm'){
+      titleEl.value='Order #1234 confirmed';
+      msgEl.value='Your order #1234 has been confirmed. We will notify you when it ships.';
+      styleEl.value='ok';
+    }else if(t==='pending'){
+      titleEl.value='Payment pending for order #1234';
+      msgEl.value='Complete your payment to avoid cancellation.';
+      styleEl.value='warn';
+    }else{
+      titleEl.value='Order #1234 delivered successfully';
+      msgEl.value='Thanks for shopping with GoBuy Nepal! Tap to view details.';
+      styleEl.value='ok';
+    }
+    readForm();
+  });
+});
+
+/* Clear form */
+qs('#clearForm').addEventListener('click', ()=>{
+  titleEl.value=''; msgEl.value=''; linkEl.value=''; styleEl.value='info';
+  chInApp.checked=true; chEmail.checked=false;
+  schedRadios[0].checked=true; scheduleAt.value=''; scheduleAt.style.display='none';
+  imgEl.value=''; state.imageData=null;
+  readForm();
+});
+
+/* Save draft */
+qs('#saveDraftBtn').addEventListener('click', ()=>{
+  readForm();
+  const draft = {...state, custom: customList.value, savedAt:new Date().toISOString(), type:'draft', title: state.title||'(untitled)'};
+  const arr = JSON.parse(localStorage.getItem(KEY)||'[]'); arr.unshift(draft);
+  localStorage.setItem(KEY, JSON.stringify(arr));
+  alert('Draft saved.');
+  renderHistory();
+});
+
+/* Send */
+qs('#sendBtn').addEventListener('click', ()=>{
+  readForm();
+  if(!state.title || !state.message){ alert('Please fill title and message.'); return; }
+  if(!state.channels.inapp && !state.channels.email && !state.channels.sms){ alert('Select at least one channel.'); return; }
+  if(state.sched==='later' && !state.scheduleAt){ alert('Choose schedule date & time.'); return; }
+
+  const payload = {
+    id:'B'+Date.now(),
+    ...state,
+    custom:customList.value,
+    createdAt:new Date().toISOString(),
+    type:'sent',
+    title:state.title
+  };
+  const arr = JSON.parse(localStorage.getItem(KEY)||'[]'); arr.unshift(payload);
+  localStorage.setItem(KEY, JSON.stringify(arr));
+
+  alert('Broadcast queued ✔️ (mock). You can now wire this into Firestore/Cloud Messaging.');
+  renderHistory();
+});
+
+/* History */
+function renderHistory(){
+  const box = qs('#history'); box.innerHTML='';
+  const arr = JSON.parse(localStorage.getItem(KEY)||'[]');
+  if(arr.length===0){
+    box.innerHTML = '<div class="h-s" style="padding:6px 2px">No broadcasts yet.</div>'; return;
+  }
+  arr.forEach(item=>{
+    const div = document.createElement('div'); div.className='h-item';
+    const badgeClass = item.style==='ok'?'b-ok':item.style==='warn'?'b-warn':'b-info';
+    div.innerHTML=`
+      <div class="h-l"><i class="fa-solid fa-bullhorn"></i></div>
+      <div>
+        <div class="h-t">${item.title} <span class="badge ${badgeClass}" style="margin-left:6px">${item.type}</span></div>
+        <div class="h-s">${new Date(item.createdAt||item.savedAt).toLocaleString()} • ${item.audience}</div>
+      </div>
+      <div class="h-s">${item.channels.inapp?'in-app ':''}${item.channels.email?'email ':''}${item.channels.sms?'sms':''}</div>
+    `;
+    box.appendChild(div);
+  });
+}
+
+/* Init */
+readForm();
+renderHistory();
+
+/* Optional: if you click the bullhorn button on admin.html with id="broadcast",
+   just make sure it does:  location.href='admin-broadcast.html'  */
+</script>
+</body>
+</html>

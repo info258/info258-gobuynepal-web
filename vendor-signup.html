@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Signup • GoBuy Nepal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{
+      --purple:#7a1ea1; --ink:#1f2033; --muted:#7e8190; --bg:#fafbff; --card:#fff;
+      --line:#ececf3; --bad:#e74c3c; --ok:#2ecc71; --shadow:0 10px 18px rgba(0,0,0,.08);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .page{max-width:560px;margin:0 auto;padding:18px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    h1{font-size:24px;font-weight:900;color:var(--purple);margin:0 0 6px}
+    .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+    .label{display:block;margin:12px 0 6px;font-size:13px;color:#444;font-weight:600}
+    .input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font-size:15px;background:#fff}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .half{flex:1 1 240px}
+    .error{color:var(--bad);font-size:12px;margin-top:6px;display:none}
+    .hint{color:var(--muted);font-size:12px;margin-top:6px}
+    .btn{width:100%;margin-top:14px;border:0;background:var(--purple);color:#fff;font-weight:800;
+      padding:12px 14px;border-radius:12px;cursor:pointer;box-shadow:0 8px 18px rgba(122,30,161,.18)}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .files{display:grid;grid-template-columns:1fr;gap:12px}
+    .filebox{border:1px dashed var(--line);border-radius:12px;padding:12px}
+    .filetop{display:flex;align-items:center;gap:8px;font-weight:700}
+    .preview{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .preview img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+    .filemeta{font-size:12px;color:var(--muted)}
+    .pwdwrap{position:relative}
+    .toggle-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;color:#666}
+    .alt{margin-top:12px;font-size:13px;text-align:center}
+    .alt a{color:var(--purple);text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <h1>Vendor Registration</h1>
+      <p class="sub">Provide your company details and verification documents.</p>
+
+      <form id="vendorForm" novalidate>
+        <div class="row">
+          <div class="half">
+            <label class="label" for="vendorId">Vendor ID (unique)</label>
+            <input class="input" id="vendorId" placeholder="e.g., GBN-VD-001" required/>
+            <div class="error" id="errVendorId">Enter a unique Vendor ID (min 3 chars).</div>
+          </div>
+          <div class="half">
+            <label class="label" for="vendorName">Vendor Name</label>
+            <input class="input" id="vendorName" placeholder="e.g., Everest Traders" required/>
+            <div class="error" id="errVendorName">Enter your vendor/brand name.</div>
+          </div>
+        </div>
+
+        <label class="label" for="company">Company Name</label>
+        <input class="input" id="company" placeholder="Registered company name" required/>
+        <div class="error" id="errCompany">Enter your company name.</div>
+
+        <label class="label" for="address">Company Address</label>
+        <input class="input" id="address" placeholder="Street, City, Province, Nepal" required/>
+        <div class="error" id="errAddress">Enter your company address.</div>
+
+        <div class="row">
+          <div class="half">
+            <label class="label" for="phone">Company Phone (Nepal)</label>
+            <input class="input" id="phone" placeholder="+977 98XXXXXXXX" required/>
+            <div class="error" id="errPhone">Phone must be Nepali mobile (97/98 + 8 digits, +977 optional).</div>
+          </div>
+          <div class="half">
+            <label class="label" for="email">Email</label>
+            <input class="input" id="email" type="email" placeholder="vendor@example.com" required/>
+            <div class="error" id="errEmail">Enter a valid email.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="half">
+            <label class="label" for="password">Password</label>
+            <div class="pwdwrap">
+              <input class="input" id="password" type="password" placeholder="Min 8 chars, letter & number" required/>
+              <button class="toggle-eye" type="button" data-target="password"><i class="fa-regular fa-eye"></i></button>
+            </div>
+            <div class="error" id="errPwd">Min 8 chars with at least one letter & number.</div>
+          </div>
+          <div class="half">
+            <label class="label" for="confirm">Confirm Password</label>
+            <div class="pwdwrap">
+              <input class="input" id="confirm" type="password" placeholder="Re-enter password" required/>
+              <button class="toggle-eye" type="button" data-target="confirm"><i class="fa-regular fa-eye"></i></button>
+            </div>
+            <div class="error" id="errConfirm">Passwords do not match.</div>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="files">
+          <div class="filebox">
+            <div class="filetop"><i class="fa-solid fa-id-card"></i> Owner ID</div>
+            <input class="input" id="ownerId" type="file" accept="image/*,application/pdf" required/>
+            <div class="preview" id="prevOwnerId"></div>
+            <div class="error" id="errOwnerId">Upload owner ID (image or PDF).</div>
+          </div>
+
+          <div class="filebox">
+            <div class="filetop"><i class="fa-solid fa-file-invoice-dollar"></i> PAN Document</div>
+            <input class="input" id="panDoc" type="file" accept="image/*,application/pdf" required/>
+            <div class="preview" id="prevPanDoc"></div>
+            <div class="error" id="errPanDoc">Upload PAN document.</div>
+          </div>
+
+          <div class="filebox">
+            <div class="filetop"><i class="fa-solid fa-file-signature"></i> Company Registration</div>
+            <input class="input" id="regDoc" type="file" accept="image/*,application/pdf" required/>
+            <div class="preview" id="prevRegDoc"></div>
+            <div class="error" id="errRegDoc">Upload registration document.</div>
+          </div>
+
+          <div class="filebox">
+            <div class="filetop"><i class="fa-solid fa-building-columns"></i> Bank Document (Cheque)</div>
+            <input class="input" id="bankDoc" type="file" accept="image/*,application/pdf" required/>
+            <div class="preview" id="prevBankDoc"></div>
+            <div class="error" id="errBankDoc">Upload bank/cheque document.</div>
+          </div>
+
+          <div class="filebox">
+            <div class="filetop"><i class="fa-solid fa-image"></i> Company Logo / Profile Photo</div>
+            <input class="input" id="logo" type="file" accept="image/*" required/>
+            <div class="preview" id="prevLogo"></div>
+            <div class="error" id="errLogo">Upload a logo/profile photo.</div>
+          </div>
+        </div>
+
+        <p class="hint"><i class="fa-solid fa-circle-info"></i> This is a demo setup. Files are <b>not</b> uploaded; only their names, types, and sizes are saved locally. In production, send files to your server/cloud.</p>
+
+        <button id="btnSubmit" class="btn" type="submit" disabled>
+          <i class="fa-solid fa-user-check"></i> &nbsp;Create Vendor Account
+        </button>
+        <p class="alt">Already registered? <a href="vendor-login.html">Log in</a></p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    // === Helpers ===
+    const $ = (s)=>document.querySelector(s);
+    const byId = (id)=>document.getElementById(id);
+    const emailRx = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/i;
+    // Nepal mobile: optional +977, then 97/98 + 8 digits
+    const npPhoneRx = /^(?:\+?977[-\s]?)?(?:97|98)\d{8}$/;
+
+    const form = byId('vendorForm');
+    const btn  = byId('btnSubmit');
+
+    const fields = {
+      vendorId: byId('vendorId'),
+      vendorName: byId('vendorName'),
+      company: byId('company'),
+      address: byId('address'),
+      phone: byId('phone'),
+      email: byId('email'),
+      password: byId('password'),
+      confirm: byId('confirm'),
+      ownerId: byId('ownerId'),
+      panDoc: byId('panDoc'),
+      regDoc: byId('regDoc'),
+      bankDoc: byId('bankDoc'),
+      logo: byId('logo'),
+    };
+
+    const errs = {
+      vendorId: byId('errVendorId'),
+      vendorName: byId('errVendorName'),
+      company: byId('errCompany'),
+      address: byId('errAddress'),
+      phone: byId('errPhone'),
+      email: byId('errEmail'),
+      password: byId('errPwd'),
+      confirm: byId('errConfirm'),
+      ownerId: byId('errOwnerId'),
+      panDoc: byId('errPanDoc'),
+      regDoc: byId('errRegDoc'),
+      bankDoc: byId('errBankDoc'),
+      logo: byId('errLogo'),
+    };
+
+    // Image/file previews
+    function previewFile(input, containerId){
+      const cont = byId(containerId);
+      cont.innerHTML = '';
+      const f = input.files && input.files[0];
+      if(!f){ return; }
+      if (f.type.startsWith('image/')){
+        const img = document.createElement('img');
+        img.alt = f.name;
+        const url = URL.createObjectURL(f);
+        img.src = url;
+        cont.appendChild(img);
+      } else {
+        const div = document.createElement('div');
+        div.className = 'filemeta';
+        div.textContent = `${f.name} • ${f.type || 'file'} • ${(f.size/1024).toFixed(1)} KB`;
+        cont.appendChild(div);
+      }
+    }
+
+    [['ownerId','prevOwnerId'],['panDoc','prevPanDoc'],['regDoc','prevRegDoc'],['bankDoc','prevBankDoc'],['logo','prevLogo']]
+    .forEach(([id,prev])=>{
+      byId(id).addEventListener('change', e=>previewFile(e.target, prev));
+    });
+
+    // Password eye toggles
+    document.querySelectorAll('.toggle-eye').forEach(btnEye=>{
+      btnEye.addEventListener('click', ()=>{
+        const target = byId(btnEye.getAttribute('data-target'));
+        const icon = btnEye.querySelector('i');
+        if (target.type === 'password'){ target.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+        else { target.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+        target.focus();
+      });
+    });
+
+    function validPwd(v){ return v.length>=8 && /[A-Za-z]/.test(v) && /\d/.test(v); }
+
+    function setErr(el, show){ el.style.display = show ? 'block' : 'none'; }
+
+    function validate(){
+      let ok = true;
+      setErr(errs.vendorId, !(fields.vendorId.value.trim().length >= 3)) && (ok=false);
+      setErr(errs.vendorName, !fields.vendorName.value.trim()) && (ok=false);
+      setErr(errs.company, !fields.company.value.trim()) && (ok=false);
+      setErr(errs.address, !fields.address.value.trim()) && (ok=false);
+      setErr(errs.phone, !npPhoneRx.test(fields.phone.value.trim().replace(/\s+/g,''))) && (ok=false);
+      setErr(errs.email, !emailRx.test(fields.email.value.trim())) && (ok=false);
+
+      const pwd = fields.password.value;
+      setErr(errs.password, !validPwd(pwd)) && (ok=false);
+      setErr(errs.confirm, fields.confirm.value !== pwd) && (ok=false);
+
+      ['ownerId','panDoc','regDoc','bankDoc','logo'].forEach(id=>{
+        const has = fields[id].files && fields[id].files.length>0;
+        setErr(errs[id], !has);
+        if(!has) ok=false;
+      });
+
+      btn.disabled = !ok;
+      return ok;
+    }
+
+    form.addEventListener('input', validate);
+    form.addEventListener('change', validate);
+    validate();
+
+    // SHA-256 hashing (demo). Falls back to weak hash if SubtleCrypto unavailable.
+    async function sha256(text){
+      try{
+        const enc = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest('SHA-256', enc);
+        return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+      }catch(_){
+        // Fallback (NOT secure; demo only)
+        let h=0; for (let i=0;i<text.length;i++){ h=(h<<5)-h+text.charCodeAt(i); h|=0; }
+        return 'weak_'+(h>>>0).toString(16);
+      }
+    }
+
+    function fileMeta(f){
+      return f ? { name:f.name, type:f.type, size:f.size } : null;
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!validate()) return;
+
+      const vendors = JSON.parse(localStorage.getItem('vendors')||'[]');
+      const id = fields.vendorId.value.trim();
+      const email = fields.email.value.trim().toLowerCase();
+
+      if (vendors.some(v=>v.vendorId===id)){
+        alert('Vendor ID already exists. Choose another.'); return;
+      }
+      if (vendors.some(v=>v.email===email)){
+        alert('Email already registered. Try logging in.'); return;
+      }
+
+      const pwdHash = await sha256(fields.password.value);
+
+      const vendor = {
+        vendorId: id,
+        vendorName: fields.vendorName.value.trim(),
+        company: fields.company.value.trim(),
+        address: fields.address.value.trim(),
+        phone: fields.phone.value.trim(),
+        email,
+        passwordHash: pwdHash, // demo only
+        documents: {
+          ownerId: fileMeta(fields.ownerId.files[0]),
+          panDoc:  fileMeta(fields.panDoc.files[0]),
+          regDoc:  fileMeta(fields.regDoc.files[0]),
+          bankDoc: fileMeta(fields.bankDoc.files[0]),
+          logo:    fileMeta(fields.logo.files[0]),
+        },
+        verification: { kyc:'pending', bank:'pending' },
+        createdAt: new Date().toISOString()
+      };
+
+      vendors.push(vendor);
+      localStorage.setItem('vendors', JSON.stringify(vendors));
+      localStorage.setItem('vendorAuth', vendor.vendorId);
+
+      // In a real app, upload files with FormData to your backend here.
+
+      location.href = 'vendor-dashboard.html';
+    });
+  </script>
+</body>
+</html>

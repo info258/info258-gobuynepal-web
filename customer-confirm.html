@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Confirm Order</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{
+  --purple:#6a2fb7; --ink:#1f2033; --muted:#8a8da1; --line:#ececf4;
+  --ok:#2ecc71; --warn:#f39c12; --bg:#f7f7fb; --card:#1f2033;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:980px;margin:22px auto;padding:0 16px}
+.h1{font-size:44px;font-weight:1000;color:#5b2eb6;letter-spacing:.5px;margin-bottom:16px}
+.banner{
+  background:var(--card); color:#fff; border-radius:18px; padding:18px; box-shadow:0 20px 40px rgba(0,0,0,.10);
+  display:grid; gap:16px; border:1px solid #2b2c43;
+}
+.row{display:flex; align-items:center; gap:12px}
+.row .spacer{flex:1}
+.badge{
+  display:inline-block; background:#f39c12; color:#fff; padding:8px 14px; border-radius:999px; font-weight:900; letter-spacing:.2px
+}
+.badge.paid{background:var(--ok)}
+.btn{
+  display:inline-flex; align-items:center; gap:8px; background:#7b3fe4; color:#fff; padding:12px 18px; border:none; border-radius:12px;
+  font-weight:800; cursor:pointer; text-decoration:none; box-shadow:0 10px 18px rgba(123,63,228,.25)
+}
+.btn:disabled{opacity:.55; cursor:not-allowed}
+.kv{display:grid; grid-template-columns:140px 1fr; gap:8px; row-gap:14px}
+.kv .k{color:#cdd0ee}
+.divider{height:1px;background:#2b2c43;margin:8px 0}
+.f-right{float:right}
+.money{font-variant-numeric:tabular-nums}
+.alert{background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; color:#333}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h1">CONFIRM ORDER</div>
+
+  <div id="error" class="alert" style="display:none"></div>
+
+  <section id="card" class="banner" style="display:none">
+
+    <div class="row">
+      <div style="font-weight:900;font-size:28px">Order <span id="oId">#</span></div>
+      <div class="spacer"></div>
+      <span id="oStatus" class="badge">Awaiting Payment</span>
+    </div>
+
+    <div class="row">
+      <a id="payBtn" class="btn"><i class="fa-solid fa-credit-card"></i> Pay Now</a>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="kv">
+      <div class="k">Customer</div><div id="oSeller">GoBuy Nepal</div>
+      <div class="k">Item</div><div id="oItem">—</div>
+      <div class="k">Total</div><div id="oTotal" class="money">NPR 0.00</div>
+      <div class="k">Balance</div><div id="oBalance" class="money">NPR 0.00</div>
+    </div>
+
+    <div class="divider"></div>
+    <div style="color:#cdd0ee">After payment, this page updates to <b>Paid</b> and the seller’s dashboard updates instantly.</div>
+  </section>
+</div>
+
+<script>
+const fmt = n => 'NPR ' + (Number(n||0)).toFixed(2);
+
+// read order id from ?order= or ?id=
+const params = new URLSearchParams(location.search);
+const orderId = params.get('order') || params.get('id');
+
+const $ = sel => document.querySelector(sel);
+const showError = msg => { const e = $('#error'); e.textContent = msg; e.style.display='block'; };
+
+if(!orderId){
+  showError('Invalid link: missing order id.');
+} else {
+  // find order from localStorage (ADMIN_ORDERS is what your admin pages use)
+  const orders = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]');
+  const o = orders.find(x => String(x.id) === String(orderId));
+
+  if(!o){
+    showError(`We couldn't find order #${orderId}.`);
+  } else {
+    // fill UI
+    $('#card').style.display='grid';
+    $('#oId').textContent = '#' + orderId;
+    const status = o.status || (o.payment && o.payment.status) || 'Awaiting Payment';
+    const statusEl = $('#oStatus');
+    statusEl.textContent = status;
+    if(String(status).toLowerCase() === 'paid'){ statusEl.classList.add('paid'); }
+
+    const itemName = (o.items && o.items[0] && o.items[0].name) || (o.item && o.item.name) || (o.customer && o.customer.request && o.customer.request) || '—';
+    const qty = (o.items && o.items[0] && o.items[0].qty) || o.qty || 1;
+
+    $('#oSeller').textContent = o.merchant || 'GoBuy Nepal';
+    $('#oItem').textContent = `${itemName} × ${qty}`;
+
+    const total = Number(o.charges?.total ?? o.total ?? 0);
+    const paid = Number(o.charges?.paid ?? o.amountPaid ?? o.paid ?? 0);
+    const balance = Math.max(0, total - paid);
+
+    $('#oTotal').textContent   = fmt(total);
+    $('#oBalance').textContent = fmt(balance);
+
+    // link Pay Now → payments.html?order=<id>
+    const payBtn = $('#payBtn');
+    payBtn.href = `payments.html?order=${encodeURIComponent(orderId)}`;
+    payBtn.addEventListener('click', (e)=>{
+      // allow normal navigation using href
+    });
+
+    // if already paid, disable button
+    if(String(status).toLowerCase()==='paid' || balance<=0){
+      payBtn.setAttribute('disabled','disabled');
+      payBtn.style.pointerEvents='none';
+      payBtn.textContent = 'Paid';
+      statusEl.classList.add('paid');
+      statusEl.textContent = 'Paid';
+    }
+  }
+}
+</script>
+</body>
+</html>

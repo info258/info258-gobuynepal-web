@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login • GoBuy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{
+      --purple:#7a1ea1; --ink:#1f2033; --muted:#7e8190; --bg:#fafbff; --card:#fff;
+      --line:#ececf3; --bad:#e74c3c; --ok:#0d9488; --shadow:0 12px 24px rgba(27,31,35,.08);
+      --radius:16px;
+    }
+    body{
+      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;
+      min-height:100vh;padding:20px;
+    }
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+      padding:26px;max-width:420px;width:100%}
+    h1{font-size:24px;font-weight:900;color:var(--purple);margin-bottom:8px;text-align:center}
+    .sub{font-size:14px;color:var(--muted);margin-bottom:20px;text-align:center}
+    .label{display:block;font-size:13px;margin-bottom:6px;color:#444}
+    .input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:15px;margin-bottom:14px}
+    .btn{width:100%;padding:12px;border:none;border-radius:12px;background:var(--purple);color:#fff;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 6px 14px rgba(122,30,161,.18)}
+    .error{color:var(--bad);font-size:13px;margin:8px 0;display:none;text-align:center}
+    .ok{color:var(--ok);font-size:13px;margin:8px 0;display:none;text-align:center}
+    .note{margin-top:12px;font-size:12px;color:var(--muted);text-align:center}
+  </style>
+</head>
+<body>
+  <section class="card">
+    <h1>Admin Login</h1>
+    <p class="sub">Authorized staff only</p>
+
+    <form id="adminForm" novalidate>
+      <label class="label" for="email">Email</label>
+      <input class="input" type="email" id="email" required placeholder="admin@gobuy.com"/>
+
+      <label class="label" for="password">Password</label>
+      <input class="input" type="password" id="password" required placeholder="Password"/>
+
+      <div class="error" id="errMsg">Invalid credentials.</div>
+      <div class="ok" id="okMsg">Signed in. Checking admin access…</div>
+
+      <button class="btn" type="submit" id="loginBtn">Log In</button>
+      <p class="note">© GoBuy Nepal Admin</p>
+    </form>
+  </section>
+
+  <script type="module">
+    // ---------- Settings ----------
+    const DEST = 'admin.html'; // change if your dashboard file is different
+
+    // Hardcoded DEV admin for emulator only
+    const DEFAULT_ADMIN_EMAIL = 'admin@gobuy.com';
+    const DEFAULT_ADMIN_PASS  = 'admin123';
+
+    // ---------- DOM ----------
+    const $ = (id)=>document.getElementById(id);
+    const form   = $('adminForm');
+    const emailI = $('email');
+    const passI  = $('password');
+    const err    = $('errMsg');
+    const ok     = $('okMsg');
+    const btn    = $('loginBtn');
+
+    const showErr = (m)=>{ err.textContent=m; err.style.display='block'; ok.style.display='none'; };
+    const showOk  = (m)=>{ ok.textContent=m; ok.style.display='block'; err.style.display='none'; };
+    const clearMsg= ()=>{ err.style.display='none'; ok.style.display='none'; };
+
+    // ---------- Firebase ----------
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      signOut, onAuthStateChanged, connectAuthEmulator
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    import {
+      initializeFirestore, connectFirestoreEmulator,
+      doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    const cfg = {
+      apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+      authDomain:"customer-login-e5ecd.firebaseapp.com",
+      projectId:"customer-login-e5ecd",
+      storageBucket:"customer-login-e5ecd.appspot.com",
+      messagingSenderId:"569269085839",
+      appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+    };
+
+    const app  = getApps().length ? getApp() : initializeApp(cfg);
+    const db   = initializeFirestore(app, { experimentalForceLongPolling:true, useFetchStreams:false });
+    const auth = getAuth(app);
+
+    // ----- Emulator detection + overrides (supports ?emuHost, ?auPort, ?fsPort) -----
+    const qp   = new URLSearchParams(location.search);
+    const host = location.hostname;
+    const localish = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+)$/.test(host) || qp.has('emu');
+
+    const EMU_HOST = (qp.get('emuHost') || localStorage.getItem('EMU_HOST') || '127.0.0.1').trim();
+    const AU_PORT  = Number(qp.get('auPort') || 9099);
+    const FS_PORT  = Number(qp.get('fsPort') || 8080);
+
+    if (localish) {
+      try {
+        connectAuthEmulator(auth, `http://${EMU_HOST}:${AU_PORT}`, { disableWarnings:true });
+        connectFirestoreEmulator(db, EMU_HOST, FS_PORT);
+      } catch (e) {
+        console.warn('Emulator connect failed:', e);
+      }
+    }
+
+    async function isAdmin(uid){
+      const s = await getDoc(doc(db,'admins',uid));
+      return s.exists() && s.data().active === true;
+    }
+
+    // If already signed-in and admin, go straight in
+    onAuthStateChanged(auth, async (u)=>{
+      if (!u) return;
+      try {
+        if (await isAdmin(u.uid)) {
+          localStorage.setItem('adminAuth','true');
+          location.href = DEST;
+        }
+      } catch {/* ignore */}
+    });
+
+    // ---------- Login flow ----------
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      clearMsg();
+
+      const email = emailI.value.trim().toLowerCase();
+      const pass  = passI.value;
+      if (!email || !pass){ showErr('Enter email and password.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Signing in…';
+
+      try {
+        // Try normal sign-in first
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        showOk('Signed in. Checking admin access…');
+
+        // If not admin but we are on emulator AND creds match default admin, seed admin doc
+        if (!(await isAdmin(cred.user.uid)) && localish &&
+            email === DEFAULT_ADMIN_EMAIL && pass === DEFAULT_ADMIN_PASS) {
+          await setDoc(doc(db,'admins',cred.user.uid), { active:true, seededAt: new Date().toISOString() }, { merge:true });
+        }
+
+        // Final admin check
+        if (!(await isAdmin(cred.user.uid))) {
+          await signOut(auth);
+          showErr('This account is not an admin.');
+          btn.disabled = false; btn.textContent = 'Log In';
+          return;
+        }
+
+        // Success
+        localStorage.setItem('adminAuth','true');
+        location.href = DEST;
+
+      } catch (e1) {
+        // If user not found AND we are on emulator AND creds equal default admin, auto-create + mark admin
+        const code = e1?.code || '';
+        const canAutoCreate = localish && email === DEFAULT_ADMIN_EMAIL && pass === DEFAULT_ADMIN_PASS;
+
+        if ((code === 'auth/user-not-found' || code === 'auth/invalid-credential') && canAutoCreate) {
+          try {
+            const u = (await createUserWithEmailAndPassword(auth, email, pass)).user;
+            await setDoc(doc(db,'admins',u.uid), { active:true, seededAt: new Date().toISOString() }, { merge:true });
+            localStorage.setItem('adminAuth','true');
+            location.href = DEST;
+            return;
+          } catch (e2) {
+            console.error(e2);
+            showErr('Auto-create failed: ' + (e2.code || 'error'));
+          }
+        } else {
+          console.error(e1);
+          if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
+            showErr('Invalid email or password.');
+          } else if (code === 'auth/network-request-failed') {
+            showErr('Network error. Check emulator/Internet.');
+          } else {
+            showErr('Login failed. ' + code);
+          }
+        }
+
+        btn.disabled = false; btn.textContent = 'Log In';
+      }
+    });
+  </script>
+</body>
+</html>

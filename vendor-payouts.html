@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Payouts • GoBuy Nepal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--purple:#7a1ea1;--ink:#1f2033;--muted:#7e8190;--bg:#f6f7fb;--card:#fff;--line:#ececf3;--radius:16px;--shadow:0 12px 24px rgba(27,31,35,.06)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{display:flex;min-height:100vh}.aside{width:260px;background:#fff;border-right:1px solid var(--line);padding:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#7a1ea1;font-size:20px;margin-bottom:14px}
+.nav a{display:flex;align-items:center;gap:12px;padding:12px 10px;border-radius:12px;color:#4a4d57;text-decoration:none}
+.nav a.active,.nav a:hover{background:#f3e9f9;color:#6d22a2}
+.main{flex:1;padding:18px 22px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.h1{font-size:30px;font-weight:900;margin:8px 0 16px}
+.input{padding:10px 12px;border:1px solid var(--line);border-radius:12px;width:100%}
+.btn{border:0;background:var(--purple);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+.table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.table th,.table td{padding:10px 12px;background:#fff}
+.tag{padding:4px 8px;border-radius:999px;font-size:12px;background:#f0f0f4}
+</style></head><body><div class="wrap">
+<aside class="aside">
+  <div class="brand"><i class="fa-solid fa-store"></i> GoBuy Nepal</div>
+  <nav class="nav">
+    <a href="vendor-dashboard.html"><i class="fa-solid fa-house"></i>Dashboard</a>
+    <a href="vendor-orders.html"><i class="fa-solid fa-clipboard-list"></i>Orders</a>
+    <a href="vendor-products.html"><i class="fa-solid fa-tags"></i>Products</a>
+    <a class="active" href="vendor-payouts.html"><i class="fa-solid fa-wallet"></i>Payouts</a>
+    <a href="vendor-chat.html"><i class="fa-solid fa-comments"></i>Chat</a>
+    <a href="vendor-settings.html"><i class="fa-solid fa-gear"></i>Settings</a>
+  </nav>
+</aside>
+<main class="main">
+  <h1 class="h1">Payouts</h1>
+
+  <section class="card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end">
+      <div><label>Amount (₹)</label><input class="input" id="pay_amt" type="number" min="0" step="0.01"/></div>
+      <div><label>Bank Account</label><input class="input" id="pay_bank" placeholder="Account number"/></div>
+      <div><button class="btn" id="reqPayout"><i class="fa-solid fa-paper-plane"></i> Request Payout</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <table class="table"><thead><tr><th>ID</th><th>Amount</th><th>Bank</th><th>Status</th></tr></thead><tbody id="payBody"></tbody></table>
+  </section>
+</main>
+</div>
+<script>
+const VID=localStorage.getItem('vendorAuth'); if(!VID){ location.href='vendor-login.html?next=vendor-payouts.html'; }
+function key(){ return 'vd_payouts_'+VID; }
+function read(){ return JSON.parse(localStorage.getItem(key())||'[]'); }
+function write(v){ localStorage.setItem(key(), JSON.stringify(v)); }
+const body=document.getElementById('payBody'); const btn=document.getElementById('reqPayout');
+function render(){ body.innerHTML = read().map(p=>`<tr><td>${p.id}</td><td>₹${p.amount}</td><td>${p.bank}</td><td><span class="tag">${p.status}</span></td></tr>`).join(''); }
+btn.onclick=()=>{ const amt=Number(document.getElementById('pay_amt').value||0), bank=document.getElementById('pay_bank').value.trim();
+  if(amt<=0||!bank){alert('Amount and bank required');return;}
+  const list=read(); list.push({id:'PY-'+Date.now().toString(36).toUpperCase(),amount:amt,bank,status:'Pending'}); write(list); document.getElementById('pay_amt').value=''; document.getElementById('pay_bank').value=''; render();
+};
+render();
+</script>
+</body></html>

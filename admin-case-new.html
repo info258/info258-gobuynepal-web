@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • New Case</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680; --accent:#d35400;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --blue:#3aa0ff;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px;
+}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions button{
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer
+}
+.k-actions button:hover{background:#fafafa}
+.avatar{
+  width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=15') center/cover no-repeat;
+  border:1px solid var(--line)
+}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* Form panel */
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.pb{padding:14px}
+
+.form{display:grid; gap:14px; max-width:900px}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+@media (max-width:720px){ .two{grid-template-columns:1fr} }
+
+label{font-size:12px; color:#575b6d; font-weight:700; letter-spacing:.2px; text-transform:uppercase}
+input[type="text"],input[type="email"],input[type="tel"],input[type="date"],select,textarea{
+  width:100%; padding:12px; border:1px solid var(--line); border-radius:10px; background:#fff; font-size:14px;
+}
+textarea{min-height:120px; resize:vertical}
+
+.help{font-size:12px; color:var(--muted)}
+.files{
+  display:grid; gap:8px; padding:10px; border:1px dashed #d7d8e5; border-radius:12px; background:#fafbff;
+}
+.file-list{display:flex; flex-wrap:wrap; gap:8px}
+.pill{
+  display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line);
+  border-radius:999px; padding:6px 10px; font-size:12px;
+}
+
+.actions{display:flex; gap:10px; justify-content:flex-end; padding-top:6px}
+.btn{
+  border:1px solid var(--line); background:#fff; color:#333; border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer
+}
+.btn.primary{background:var(--purple); color:#fff; border-color:transparent}
+.btn.danger{color:#e74c3c}
+
+.toast{
+  position:fixed; right:16px; bottom:16px; background:#1f1f1f; color:#fff; padding:12px 14px; border-radius:10px;
+  box-shadow:0 8px 18px rgba(0,0,0,.15); display:none; z-index:10;
+}
+.toast.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <div class="brand">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/>
+      <div class="t">GoBuy Admin</div>
+    </div>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a class="active" href="admin-open-cases.html"><i class="fa-regular fa-circle-question"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" placeholder="Search…"/>
+      </div>
+      <div class="k-actions">
+        <button onclick="location.href='admin-open-cases.html'"><i class="fa-solid fa-list"></i> All cases</button>
+        <button onclick="location.href='admin-notifications.html'"><i class="fa-regular fa-bell"></i></button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="h1">New Case</div>
+
+      <section class="panel">
+        <div class="ph">
+          <div class="t">Create support case</div>
+          <div class="help">Fields marked * are required</div>
+        </div>
+
+        <div class="pb">
+          <form id="caseForm" class="form">
+            <div class="two">
+              <div>
+                <label for="custName">Customer Name *</label>
+                <input id="custName" name="custName" type="text" required/>
+              </div>
+              <div>
+                <label for="orderId">Related Order</label>
+                <input id="orderId" name="orderId" type="text" placeholder="#1234"/>
+              </div>
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="name@email.com"/>
+              </div>
+              <div>
+                <label for="phone">Phone</label>
+                <input id="phone" name="phone" type="tel" placeholder="+977…"/>
+              </div>
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="subject">Subject *</label>
+                <input id="subject" name="subject" type="text" required/>
+              </div>
+              <div>
+                <label for="category">Category *</label>
+                <select id="category" name="category" required>
+                  <option value="">Choose…</option>
+                  <option>Refund</option>
+                  <option>Damage</option>
+                  <option>Delay</option>
+                  <option>Size Issue</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="priority">Priority *</label>
+                <select id="priority" name="priority" required>
+                  <option value="">Choose…</option>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                  <option>Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label for="sla">Target Date</label>
+                <input id="sla" name="sla" type="date"/>
+              </div>
+            </div>
+
+            <div>
+              <label for="desc">Description *</label>
+              <textarea id="desc" name="desc" required placeholder="Describe the issue in detail…"></textarea>
+            </div>
+
+            <div>
+              <label>Attachments</label>
+              <div class="files">
+                <input id="files" type="file" accept="image/*,video/*" multiple/>
+                <div class="help">Images/videos previewed here (demo stores only filenames, not file data).</div>
+                <div id="fileList" class="file-list" aria-live="polite"></div>
+              </div>
+            </div>
+
+            <div class="two">
+              <div>
+                <label for="contact">Preferred Contact</label>
+                <select id="contact" name="contact">
+                  <option>Email</option>
+                  <option>Phone</option>
+                  <option>Chat</option>
+                </select>
+              </div>
+              <div>
+                <label for="assignee">Assignee</label>
+                <input id="assignee" name="assignee" type="text" placeholder="Agent name"/>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn" onclick="history.back()">Cancel</button>
+              <button type="submit" class="btn primary"><i class="fa-solid fa-plus"></i> Create Case</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite">Case created</div>
+
+<script>
+/* preview selected filenames (no file data saved in demo) */
+const fileInput = document.getElementById('files');
+const fileList  = document.getElementById('fileList');
+fileInput.addEventListener('change', () => {
+  fileList.innerHTML = '';
+  [...fileInput.files].forEach(f => {
+    const el = document.createElement('span');
+    el.className = 'pill';
+    el.innerHTML = `<i class="fa-regular fa-file"></i> ${f.name}`;
+    fileList.appendChild(el);
+  });
+});
+
+/* ID like C-8123 */
+function genCaseId(){
+  const n = Math.floor(1000 + Math.random()*9000);
+  return 'C-' + n;
+}
+
+/* tiny toast */
+function toast(msg='Saved'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+/* handle submit */
+document.getElementById('caseForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+
+  const data = {
+    id: genCaseId(),
+    createdAt: new Date().toISOString(),
+    status: 'Open',
+    customer: {
+      name: document.getElementById('custName').value.trim(),
+      email: document.getElementById('email').value.trim() || null,
+      phone: document.getElementById('phone').value.trim() || null
+    },
+    orderId: document.getElementById('orderId').value.trim() || null,
+    subject: document.getElementById('subject').value.trim(),
+    category: document.getElementById('category').value,
+    priority: document.getElementById('priority').value,
+    description: document.getElementById('desc').value.trim(),
+    targetDate: document.getElementById('sla').value || null,
+    contact: document.getElementById('contact').value,
+    assignee: document.getElementById('assignee').value.trim() || null,
+    attachments: [...(fileInput.files||[])].map(f => ({name:f.name, type:f.type, size:f.size}))
+  };
+
+  // basic required checks (extra safety besides required attributes)
+  if(!data.customer.name || !data.subject || !data.category || !data.priority || !data.description){
+    alert('Please fill all required fields.');
+    return;
+  }
+
+  const storeKey = 'ADMIN_CASES';
+  const arr = JSON.parse(localStorage.getItem(storeKey) || '[]');
+  arr.unshift(data);
+  localStorage.setItem(storeKey, JSON.stringify(arr));
+
+  toast('Case ' + data.id + ' created');
+  setTimeout(()=>{ window.location.href = 'admin-open-cases.html?created=' + encodeURIComponent(data.id); }, 600);
+});
+</script>
+</body>
+</html>

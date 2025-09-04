@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Explore • GoBuy Nepal</title>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- i18n (optional, if you use it elsewhere) -->
+  <script defer src="i18n.js"></script>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88;
+      --shadow:0 10px 18px rgba(0,0,0,.08); --radius:14px;
+      --orange:#d35400; --green:#2ecc71; --danger:#e74c3c;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:3; background:#fff;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px 10px;
+    }
+    .top-btn{ color:var(--purple); font-size:18px; text-decoration:none; }
+    .title{ font-weight:900; color:#444 }
+    .right{ width:28px }
+
+    /* Search */
+    .search-wrap{ padding:12px; }
+    .search{
+      border:1px solid #dcdde3; border-radius:12px; display:flex; align-items:center; gap:8px; padding:10px 12px;
+      background:#fff; box-shadow:var(--shadow);
+    }
+    .search i{ color:#7b7f88 }
+    .search input{
+      border:none; outline:none; flex:1; font-size:15px; background:transparent;
+    }
+
+    /* Chips */
+    .chips{ display:flex; gap:8px; overflow:auto; padding:0 12px 2px; margin-top:6px }
+    .chip{
+      white-space:nowrap; background:#f5f5fb; border:1px solid #e5def3; color:#6b5ea3;
+      padding:8px 12px; border-radius:999px; font-weight:800; cursor:pointer; user-select:none;
+    }
+    .chip.active{ background:#fff; color:var(--purple); border-color:#d9c9ee; box-shadow:var(--shadow) }
+
+    /* Section title */
+    .section{margin:16px 12px 8px;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px}
+
+    /* Card */
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin:0 12px 14px;padding:12px}
+
+    /* Paste link row */
+    .paste{ display:grid; gap:8px }
+    .paste-row{ display:flex; gap:8px }
+    .paste input{
+      flex:1; border:1px solid #dcdde3; border-radius:10px; padding:11px 12px; outline:none; font-size:15px;
+    }
+    .btn{ border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer }
+    .btn-primary{ background:var(--purple); color:#fff }
+    .btn-outline{ background:#fff; color:var(--purple); border:2px solid var(--purple) }
+
+    /* Stores grid */
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+    .store{
+      border:1px solid var(--line); border-radius:12px; background:#fff; padding:12px;
+      display:grid; gap:8px; position:relative;
+    }
+    .store .ico{
+      width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900
+    }
+    .store .name{ font-weight:900 }
+    .store .tag{ font-size:12px; color:#666 }
+    .fav{
+      position:absolute; right:8px; top:8px; background:#fff; border:1px solid #eee; width:30px;height:30px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;color:#b0b3bb; cursor:pointer;
+    }
+    .fav.on{ color:#f5b301 }
+
+    /* Horizontal scroller */
+    .scroll{ display:flex; gap:10px; overflow:auto; padding-bottom:6px }
+    .pill{
+      min-width:200px; border:1px solid var(--line); border-radius:12px; background:#fff; padding:12px; display:grid; gap:6px
+    }
+    .pill .hdr{ display:flex; align-items:center; gap:8px }
+    .pill .hdr .ico{ width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff }
+    .pill .t{ font-weight:900 }
+    .pill .s{ font-size:12px; color:#666 }
+
+    /* Recents */
+    .recent{ border:1px dashed #d9c9ee; background:#faf8ff; border-radius:12px; padding:10px }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid var(--line);
+      display:flex; justify-content:space-around; align-items:center; padding:8px 0; z-index:999;
+      box-shadow:0 -2px 8px rgba(0,0,0,.05);
+    }
+    .nav-item{ color:var(--purple); text-decoration:none; font-size:12px; display:flex; flex-direction:column; align-items:center }
+    .nav-item i{ font-size:20px; margin-bottom:4px }
+    .nav-item.active span{ font-weight:800 }
+
+    /* Toast */
+    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;z-index:9999}
+    .toast.show{opacity:1}
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="dashboard.html" aria-label="Back to Home"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Explore</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="searchBox" type="text" placeholder="Search stores or categories e.g. electronics, fashion">
+    </div>
+  </div>
+
+  <!-- Category chips -->
+  <div class="chips" id="chips">
+    <span class="chip active" data-cat="all">All</span>
+    <span class="chip" data-cat="electronics">Electronics</span>
+    <span class="chip" data-cat="fashion">Fashion</span>
+    <span class="chip" data-cat="beauty">Beauty</span>
+    <span class="chip" data-cat="home">Home</span>
+    <span class="chip" data-cat="sports">Sports</span>
+    <span class="chip" data-cat="toys">Toys</span>
+    <span class="chip" data-cat="auto">Auto</span>
+    <span class="chip" data-cat="books">Books</span>
+  </div>
+
+  <!-- Paste link -> Request Order -->
+  <div class="section">Paste product link</div>
+  <section class="card paste">
+    <div class="paste-row">
+      <input id="linkInput" type="url" placeholder="https://www.amazon.com/your-product" inputmode="url">
+      <button id="goRequest" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Request</button>
+    </div>
+    <div style="font-size:12px;color:#777">
+      Paste a product URL from any store, then tap <strong>Request</strong> to fill the order form.
+    </div>
+  </section>
+
+  <!-- Top stores -->
+  <div class="section">Top stores</div>
+  <section class="card">
+    <div id="stores" class="grid"><!-- filled by JS --></div>
+  </section>
+
+  <!-- Trending now -->
+  <div class="section">Trending now</div>
+  <section class="card">
+    <div id="trending" class="scroll"><!-- filled by JS --></div>
+  </section>
+
+  <!-- Recently visited -->
+  <div class="section" id="recentTitle" style="display:none">Recently visited</div>
+  <section class="card recent" id="recentBox" style="display:none">
+    <div id="recentList" class="scroll"></div>
+  </section>
+</main>
+
+<!-- Toast -->
+<div id="toast" class="toast">Saved</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span data-i18n="nav_home">Home</span></a>
+  <a class="nav-item active" href="explore.html"><i class="fas fa-compass"></i><span data-i18n="nav_explore">Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span data-i18n="nav_cart">Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span data-i18n="nav_alerts">Alerts</span></a>
+  <a class="nav-item" href="profile.html"><i class="fas fa-user"></i><span data-i18n="nav_profile">Profile</span></a>
+</nav>
+
+<script>
+  // ---------- Data ----------
+  const STORES = [
+    { id:'amazon',   name:'Amazon',   url:'https://www.amazon.com',    cat:['electronics','home','books','fashion'], color:'#232f3e', icon:'fa-brands fa-amazon', tagline:'Everything store' },
+    { id:'ebay',     name:'eBay',     url:'https://www.ebay.com',      cat:['electronics','auto','fashion','toys'], color:'#0064d2', icon:'fa-brands fa-ebay',   tagline:'Bids & deals' },
+    { id:'alibaba',  name:'Alibaba',  url:'https://www.alibaba.com',   cat:['electronics','home','auto'],           color:'#ff6a00',icon:'fa-brands fa-alibaba',tagline:'Global sourcing' },
+    { id:'etsy',     name:'Etsy',     url:'https://www.etsy.com',      cat:['home','beauty','fashion'],             color:'#f45800',icon:'fa-brands fa-etsy',    tagline:'Handmade & unique' },
+    { id:'apple',    name:'Apple',    url:'https://www.apple.com',     cat:['electronics'],                          color:'#000000',icon:'fa-brands fa-apple',   tagline:'iPhone • Mac • iPad' },
+    { id:'daraz',    name:'Daraz',    url:'https://www.daraz.com.np',  cat:['electronics','fashion','home','beauty'],color:'#f85606',icon:'fa-solid fa-bag-shopping', tagline:'Nepal marketplace' },
+    { id:'myntra',   name:'Myntra',   url:'https://www.myntra.com',    cat:['fashion'],                              color:'#ff3f6c',icon:'fa-solid fa-shirt',    tagline:'Trendy fashion' },
+    { id:'bookdepo', name:'Book Depo',url:'https://www.bookdepository.com',cat:['books'],                           color:'#4a5568',icon:'fa-solid fa-book',     tagline:'Books w/ free ship' }
+  ];
+
+  const TRENDING = [
+    { id:'t1', title:'Wireless earbuds under $30', store:'amazon',  color:'#232f3e' },
+    { id:'t2', title:'Refurb iPhones deals',       store:'ebay',    color:'#0064d2' },
+    { id:'t3', title:'Custom gifts & crafts',      store:'etsy',    color:'#f45800' },
+    { id:'t4', title:'Gaming keyboards',           store:'daraz',   color:'#f85606' },
+    { id:'t5', title:'Minimal desk lamps',         store:'alibaba', color:'#ff6a00' }
+  ];
+
+  // ---------- Storage ----------
+  const KEY_FAVS   = 'gbn_fav_stores';     // string[] of store ids
+  const KEY_RECENT = 'gbn_recent_stores';  // string[] of store ids
+  const favs = new Set(JSON.parse(localStorage.getItem(KEY_FAVS) || '[]'));
+  let recents = JSON.parse(localStorage.getItem(KEY_RECENT) || '[]');
+
+  // ---------- Helpers ----------
+  const $ = id => document.getElementById(id);
+  const toast = $('toast');
+  function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1200); }
+  function saveFavs(){ localStorage.setItem(KEY_FAVS, JSON.stringify([...favs])); }
+  function saveRecents(){ localStorage.setItem(KEY_RECENT, JSON.stringify(recents)); }
+
+  function addRecent(storeId){
+    recents = [storeId, ...recents.filter(id=>id!==storeId)].slice(0,10);
+    saveRecents();
+    renderRecents();
+  }
+
+  // ---------- Render: Stores ----------
+  function storeTile(s){
+    const div = document.createElement('div');
+    div.className = 'store';
+    div.innerHTML = `
+      <div class="ico" style="background:${s.color}"><i class="${s.icon}"></i></div>
+      <div class="name">${s.name}</div>
+      <div class="tag">${s.tagline}</div>
+      <button class="fav ${favs.has(s.id)?'on':''}" title="Favorite" aria-label="Favorite ${s.name}"><i class="fa-solid fa-star"></i></button>
+      <button class="btn btn-outline" style="margin-top:4px"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit</button>
+      <button class="btn btn-primary" style="margin-top:6px"><i class="fa-solid fa-paper-plane"></i> Request Order</button>
+    `;
+    // actions
+    const [favBtn, visitBtn, reqBtn] = div.querySelectorAll('button');
+    favBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(favs.has(s.id)) favs.delete(s.id); else favs.add(s.id);
+      favBtn.classList.toggle('on');
+      saveFavs();
+    });
+    visitBtn.addEventListener('click', ()=>{
+      window.open(s.url, '_blank', 'noopener');
+      addRecent(s.id);
+      showToast(`Opened ${s.name}`);
+    });
+    reqBtn.addEventListener('click', ()=>{
+      // prefill link -> request form (also stash in localStorage for convenience)
+      localStorage.setItem('gbn_last_link', s.url);
+      location.href = 'request-order.html?link=' + encodeURIComponent(s.url);
+    });
+    return div;
+  }
+
+  function renderStores(){
+    const wrap = $('stores'); wrap.innerHTML = '';
+    const q = $('searchBox').value.trim().toLowerCase();
+    const activeCat = document.querySelector('.chip.active')?.getAttribute('data-cat') || 'all';
+
+    const list = STORES.filter(s=>{
+      const matchCat = (activeCat==='all') || s.cat.includes(activeCat);
+      const matchText = !q || s.name.toLowerCase().includes(q) || (s.tagline||'').toLowerCase().includes(q) || s.cat.join(' ').includes(q);
+      return matchCat && matchText;
+    });
+
+    if(list.length===0){
+      wrap.innerHTML = `<div class="hint" style="grid-column:1/-1;text-align:center;color:#777">No matches. Try a different keyword or category.</div>`;
+      return;
+    }
+    list.forEach(s => wrap.appendChild(storeTile(s)));
+  }
+
+  // ---------- Render: Trending ----------
+  function renderTrending(){
+    const wrap = $('trending'); wrap.innerHTML = '';
+    TRENDING.forEach(t=>{
+      const s = STORES.find(x=>x.id===t.store);
+      const div = document.createElement('div');
+      div.className = 'pill';
+      div.innerHTML = `
+        <div class="hdr">
+          <div class="ico" style="background:${t.color}"><i class="${s?.icon || 'fa-solid fa-bolt'}"></i></div>
+          <div class="t">${t.title}</div>
+        </div>
+        <div class="s">${s ? s.name : ''}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="flex:1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+          <button class="btn btn-primary" style="flex:1"><i class="fa-solid fa-paper-plane"></i> Request</button>
+        </div>
+      `;
+      const [openBtn, reqBtn] = div.querySelectorAll('button');
+      openBtn.addEventListener('click', ()=>{
+        if(s){ window.open(s.url, '_blank', 'noopener'); addRecent(s.id); showToast(`Opened ${s.name}`); }
+      });
+      reqBtn.addEventListener('click', ()=>{
+        if(s){ localStorage.setItem('gbn_last_link', s.url); location.href = 'request-order.html?link=' + encodeURIComponent(s.url); }
+      });
+      wrap.appendChild(div);
+    });
+  }
+
+  // ---------- Render: Recents ----------
+  function renderRecents(){
+    const box = $('recentBox'), title = $('recentTitle'), listWrap = $('recentList'); listWrap.innerHTML = '';
+    if(!recents.length){ box.style.display='none'; title.style.display='none'; return; }
+    title.style.display='block'; box.style.display='block';
+    recents.forEach(id=>{
+      const s = STORES.find(x=>x.id===id); if(!s) return;
+      const pill = document.createElement('div');
+      pill.className = 'pill';
+      pill.style.minWidth = '180px';
+      pill.innerHTML = `
+        <div class="hdr">
+          <div class="ico" style="background:${s.color}"><i class="${s.icon}"></i></div>
+          <div class="t">${s.name}</div>
+        </div>
+        <div class="s">${s.tagline||''}</div>
+        <button class="btn btn-outline"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+      `;
+      pill.querySelector('button').addEventListener('click', ()=>{
+        window.open(s.url, '_blank', 'noopener');
+        addRecent(s.id);
+      });
+      listWrap.appendChild(pill);
+    });
+  }
+
+  // ---------- Paste link flow ----------
+  $('goRequest').addEventListener('click', ()=>{
+    const url = $('linkInput').value.trim();
+    if(!url){ alert('Paste a product link first.'); return; }
+    // basic url check
+    try{ new URL(url); }catch{ alert('Please enter a valid URL (including https://)'); return; }
+    localStorage.setItem('gbn_last_link', url);
+    location.href = 'request-order.html?link=' + encodeURIComponent(url);
+  });
+
+  // ---------- Filters ----------
+  $('chips').addEventListener('click', (e)=>{
+    const el = e.target.closest('.chip'); if(!el) return;
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    renderStores();
+  });
+  $('searchBox').addEventListener('input', renderStores);
+
+  // ---------- Init ----------
+  renderStores();
+  renderTrending();
+  renderRecents();
+</script>
+</body>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span data-i18n="nav_home">Home</span></a>
+  <a class="nav-item active" href="explore.html"><i class="fas fa-compass"></i><span data-i18n="nav_explore">Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span data-i18n="nav_cart">Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span data-i18n="nav_alerts">Alerts</span></a>
+  <a class="nav-item" href="profile.html"><i class="fas fa-user"></i><span data-i18n="nav_profile">Profile</span></a>
+</nav>
+</html>

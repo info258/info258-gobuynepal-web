@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Personal ID Info • GoBuy Nepal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{ --purple:#7a1ea1; --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88; --danger:#e74c3c; --ok:#18a957; --warn:#b78300; --shadow:0 10px 18px rgba(0,0,0,.08) }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:120px}
+    .page{max-width:520px;margin:0 auto;padding-bottom:220px}
+    .topbar{position:sticky;top:0;z-index:7;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;gap:10px}
+    .top-left{display:flex;align-items:center;gap:10px}
+    .top-btn{color:var(--purple);font-size:18px;text-decoration:none}
+    .title{font-weight:900;color:#444}
+    .avatar{position:relative;width:36px;height:36px;border-radius:50%;overflow:hidden;border:1px solid #eee;flex:0 0 36px}
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .tick{position:absolute;right:-2px;bottom:-2px;width:16px;height:16px;border-radius:50%;background:#fff;display:none;place-items:center;border:1px solid #cfd3d9}
+    .tick i{color:var(--ok);font-size:12px}
+    .avatar.approved .tick{display:grid}
+    .status{position:sticky; top:60px; z-index:6; background:#faf8ff; border-bottom:1px solid var(--line); color:#5b5ea3; padding:8px 14px; font-size:12px}
+    .status .ok{color:var(--ok);font-weight:800}
+    .status .warn{color:var(--warn);font-weight:800}
+    .status .bad{color:#b00020;font-weight:800}
+    .section{margin:16px 12px 10px;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin:0 12px 14px;padding:12px 12px 6px}
+    .row{display:grid;gap:6px;margin-bottom:10px}
+    label{font-weight:700;font-size:13px;color:#333}
+    input[type="text"],input[type="date"],select,textarea{width:100%;padding:11px 12px;border:1px solid #dcdde3;border-radius:10px;outline:none;font-size:15px;background:#fff;transition:border-color .15s}
+    input.err,select.err,textarea.err{border-color:var(--danger)}
+    textarea{min-height:92px;resize:vertical}
+    .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .upbox{border:2px dashed #d7ccf0;border-radius:12px;padding:10px;text-align:center;color:#6b5ea3;position:relative;background:#faf8ff}
+    .upbox input{display:none}
+    .upbox .hint{font-size:12px}
+    .upbox .pick{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #d7ccf0;padding:8px 10px;border-radius:8px;font-weight:800;color:var(--purple);cursor:pointer;margin-top:6px}
+    .upbox img{width:100%;height:150px;object-fit:cover;border-radius:8px;display:none;background:#f2f2f8}
+    .upbox.show img{display:block}
+    .upbox.show .hint,.upbox.show .pick{display:none}
+    .actions{position:fixed;left:0;right:0;bottom:76px;display:flex;justify-content:center;z-index:8}
+    .actions .wrap{width:100%;max-width:520px;padding:0 12px;display:flex;gap:10px}
+    .btn{border:none;border-radius:12px;padding:13px 14px;font-weight:900;cursor:pointer;flex:1}
+    .btn-primary{background:var(--purple);color:#fff}
+    .btn-outline{background:#fff;color:#e74c3c;border:2px solid #e74c3c;flex:0 0 120px}
+    .btn[disabled]{opacity:.65;cursor:not-allowed}
+    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;z-index:9}
+    .toast.show{opacity:1}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <div class="top-left">
+        <a class="top-btn" href="profile.html" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></a>
+        <div class="title">Personal ID Info</div>
+      </div>
+      <div class="avatar" id="avatar"><img id="avatarImg" alt="Profile"><div class="tick"><i class="fa-solid fa-check"></i></div></div>
+    </div>
+
+    <div id="status" class="status">Checking sign-in…</div>
+
+    <div class="section">Profile photo</div>
+    <div class="card">
+      <div class="row">
+        <div class="upbox" id="boxProfile">
+          <img id="imgProfile" alt="Profile preview">
+          <div class="hint"><strong>Profile picture</strong><br/>JPEG/PNG (recommended)</div>
+          <button type="button" class="pick" id="pickProfile"><i class="fa-solid fa-camera"></i> Upload</button>
+          <input id="fileProfile" type="file" accept="image/*">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">Personal details</div>
+    <div class="card">
+      <div class="row"><label for="fullName">Full Name</label><input id="fullName" type="text" placeholder="As on your ID" required></div>
+      <div class="row"><label for="dob">Date of Birth</label><input id="dob" type="date" required></div>
+      <div class="row"><label for="nationality">Nationality</label><input id="nationality" type="text" placeholder="e.g., Nepalese" required></div>
+    </div>
+
+    <div class="section">Document</div>
+    <div class="card">
+      <div class="row">
+        <label for="idType">ID Type</label>
+        <select id="idType" required>
+          <option value="">Select type</option>
+          <option>Passport</option><option>National ID</option><option>Driver's License</option><option>Other</option>
+        </select>
+      </div>
+      <div class="row"><label for="idNumber">ID Number</label><input id="idNumber" type="text" placeholder="Document number" required></div>
+      <div class="row"><label for="expiry">Expiry Date (if any)</label><input id="expiry" type="date"></div>
+
+      <div class="row">
+        <label>Upload ID Photos</label>
+        <div class="upload-grid">
+          <div class="upbox" id="boxFront">
+            <img id="imgFront" alt="Front">
+            <div class="hint"><strong>Front side</strong><br/>JPEG/PNG</div>
+            <button type="button" class="pick" id="pickFront"><i class="fa-solid fa-camera"></i> Upload</button>
+            <input id="fileFront" type="file" accept="image/*">
+          </div>
+          <div class="upbox" id="boxBack">
+            <img id="imgBack" alt="Back">
+            <div class="hint"><strong>Back side</strong><br/>JPEG/PNG</div>
+            <button type="button" class="pick" id="pickBack"><i class="fa-solid fa-camera"></i> Upload</button>
+            <input id="fileBack" type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">Address</div>
+    <div class="card">
+      <div class="row"><label for="address">Street Address</label><input id="address" type="text" placeholder="House / Street / Area" required></div>
+      <div class="row"><label for="city">City</label><input id="city" type="text" placeholder="e.g., Kathmandu" required></div>
+      <div class="row" style="grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="row"><label for="postal">Postal Code</label><input id="postal" type="text" placeholder="e.g., 44600"></div>
+        <div class="row"><label for="country">Country</label><input id="country" type="text" value="Nepal" placeholder="Nepal" required></div>
+      </div>
+      <div class="row"><label for="notes">Notes (optional)</label><textarea id="notes" placeholder="Any additional info for verification"></textarea></div>
+    </div>
+
+    <div class="actions">
+      <div class="wrap">
+        <button class="btn btn-outline" id="btnReset" type="button">Reset</button>
+        <button class="btn btn-primary" id="btnSave" type="button">Save</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, updateProfile,
+      signInAnonymously, connectAuthEmulator
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    import {
+      getFirestore, doc, onSnapshot, setDoc, serverTimestamp,
+      connectFirestoreEmulator
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+    import {
+      getStorage, ref, uploadString, getDownloadURL, connectStorageEmulator
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
+
+    // --- Production project (appspot bucket) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+      authDomain: "customer-login-e5ecd.firebaseapp.com",
+      projectId: "customer-login-e5ecd",
+      storageBucket: "customer-login-e5ecd.appspot.com",
+      messagingSenderId: "569269085839",
+      appId: "1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+    };
+
+    const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    const storage = getStorage(app);
+
+    // ---- Use emulators automatically on localhost; also auto sign-in ----
+    const isLocal = /^(localhost|127\.0\.0\.1|::1)$/.test(location.hostname);
+    if (isLocal) {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings:true });
+      connectFirestoreEmulator(db, "127.0.0.1", 8080);
+      connectStorageEmulator(storage, "127.0.0.1", 9199);
+      // If nobody is signed in on the emulator, sign in anonymously
+      onAuthStateChanged(auth, (u) => { if (!u) signInAnonymously(auth).catch(()=>{}); });
+    }
+
+    // ---------- DOM ----------
+    const $ = (id)=>document.getElementById(id);
+    const F = {
+      fullName:$('fullName'), dob:$('dob'), nationality:$('nationality'),
+      idType:$('idType'), idNumber:$('idNumber'), expiry:$('expiry'),
+      address:$('address'), city:$('city'), postal:$('postal'),
+      country:$('country'), notes:$('notes')
+    };
+    const toast=$('toast'), statusBar=$('status');
+    const imgFront=$('imgFront'), imgBack=$('imgBack'), imgProfile=$('imgProfile');
+    const boxFront=$('boxFront'), boxBack=$('boxBack'), boxProfile=$('boxProfile');
+    const pickFront=$('pickFront'), pickBack=$('pickBack'), pickProfile=$('pickProfile');
+    const fileFront=$('fileFront'), fileBack=$('fileBack'), fileProfile=$('fileProfile');
+    const btnSave=$('btnSave'), btnReset=$('btnReset'), avatar=$('avatar'), avatarImg=$('avatarImg');
+
+    const showToast=(m,ok=true)=>{ toast.textContent=m; toast.style.background=ok?'#222':'#b00020'; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 2400); };
+    const setUpbox=(box,img,src)=>{ if(src){ img.src=src; box.classList.add('show'); } else { img.removeAttribute('src'); box.classList.remove('show'); } };
+    const failFast = (e) => /Failed to fetch|unreachable|network|ECONNREFUSED|CORS/i.test(String(e||""));
+
+    // Compress → DataURL
+    function compressToDataURL(file, max=1024, q=0.8){
+      return new Promise((resolve,reject)=>{
+        const r=new FileReader();
+        r.onload=()=>{ const img=new Image();
+          img.onload=()=>{ let {width,height}=img;
+            if(width>height && width>max){ height=height*(max/width); width=max; }
+            else if(height>max){ width=width*(max/height); height=max; }
+            const c=document.createElement('canvas'); c.width=width; c.height=height;
+            c.getContext('2d').drawImage(img,0,0,width,height);
+            resolve(c.toDataURL('image/jpeg',q));
+          }; img.src=r.result;
+        }; r.onerror=()=>reject(new Error('read-fail'));
+        r.readAsDataURL(file);
+      });
+    }
+
+    // Image state (data URLs)
+    let frontDataUrl=null, backDataUrl=null, profileDataUrl=null;
+
+    pickFront.addEventListener('click', ()=> fileFront.click());
+    pickBack .addEventListener('click', ()=> fileBack.click());
+    pickProfile.addEventListener('click', ()=> fileProfile.click());
+
+    fileFront.addEventListener('change', async()=>{ const f=fileFront.files[0]; if(!f) return;
+      if(!/^image\//.test(f.type)) return showToast('Front must be an image',false);
+      if(f.size>8*1024*1024)     return showToast('Front image too large (8MB max)',false);
+      frontDataUrl=await compressToDataURL(f,1200,.8); setUpbox(boxFront,imgFront,frontDataUrl);
+    });
+    fileBack.addEventListener('change', async()=>{ const f=fileBack.files[0]; if(!f) return;
+      if(!/^image\//.test(f.type)) return showToast('Back must be an image',false);
+      if(f.size>8*1024*1024)     return showToast('Back image too large (8MB max)',false);
+      backDataUrl=await compressToDataURL(f,1200,.8); setUpbox(boxBack,imgBack,backDataUrl);
+    });
+    fileProfile.addEventListener('change', async()=>{ const f=fileProfile.files[0]; if(!f) return;
+      if(!/^image\//.test(f.type)) return showToast('Profile must be an image',false);
+      if(f.size>6*1024*1024)     return showToast('Profile image too large (6MB max)',false);
+      profileDataUrl=await compressToDataURL(f,600,.85); setUpbox(boxProfile,imgProfile,profileDataUrl);
+    });
+
+    // Auth + hydrate
+    onAuthStateChanged(auth, (user)=>{
+      if(!user){
+        statusBar.innerHTML = '<span class="bad">Not signed in.</span> Redirecting…';
+        // On emulator we auto sign-in above; on prod redirect:
+        if (!isLocal) setTimeout(()=> location.replace('index.html?next=' + encodeURIComponent('id-info.html')), 800);
+        return;
+      }
+      statusBar.textContent = `Signed in as ${user.email || user.uid}`;
+      avatarImg.src = user.photoURL || 'https://via.placeholder.com/80?text=U';
+
+      const userRef = doc(db,'users',user.uid);
+      onSnapshot(userRef, (snap)=>{
+        const data = snap.data() || {}; const k = data.kyc || {};
+        if (!k.status)                  statusBar.innerHTML = 'Fill the form and click <strong>Save</strong> to submit for review.';
+        if (k.status === 'processing')  statusBar.innerHTML = '<span class="warn">Processing</span> — Awaiting admin approval.';
+        if (k.status === 'approved')    statusBar.innerHTML = '<span class="ok">Approved</span> — Your identity has been verified.';
+        if (k.status === 'rejected')    statusBar.innerHTML = `<span class="bad">Rejected</span>${k.reviewNote ? ' — '+k.reviewNote : ''}`;
+
+        Object.entries(F).forEach(([key, el])=>{ el.value = (k[key] ?? ''); });
+        if (data.photoURL) avatarImg.src = data.photoURL;
+        document.getElementById('avatar').classList.toggle('approved', k.status === 'approved');
+
+        setUpbox(boxFront , imgFront , k.frontUrl   || null);
+        setUpbox(boxBack  , imgBack  , k.backUrl    || null);
+        setUpbox(boxProfile, imgProfile, data.photoURL || k.profileUrl || null);
+      }, (err)=>{
+        if (failFast(err)) showToast('Emulator/Network unreachable.', false);
+      });
+    });
+
+    function validate(){
+      const required=['fullName','dob','nationality','idType','idNumber','address','city','country'];
+      let firstBad=null;
+      required.forEach(k=>{
+        const el=F[k]; const ok=!!el.value.trim();
+        el.classList.toggle('err',!ok);
+        if(!ok && !firstBad) firstBad=el;
+      });
+      if(firstBad){ firstBad.scrollIntoView({behavior:'smooth', block:'center'}); showToast('Please fill all required fields', false); return false; }
+      return true;
+    }
+
+    async function uploadDataUrl(path, dataUrl){
+      const r = ref(storage, path);
+      await uploadString(r, dataUrl, 'data_url', { contentType:'image/jpeg', cacheControl:'public,max-age=31536000' });
+      return await getDownloadURL(r);
+    }
+
+    btnSave.addEventListener('click', async ()=>{
+      const user=auth.currentUser;
+      if(!user){ showToast('Please sign in.',false); return; }
+      if(!validate()) return;
+
+      btnSave.disabled = true; btnReset.disabled=true;
+      const orig = btnSave.textContent; btnSave.textContent = 'Saving…';
+
+      const kyc = {
+        fullName:F.fullName.value.trim(), dob:F.dob.value, nationality:F.nationality.value.trim(),
+        idType:F.idType.value, idNumber:F.idNumber.value.trim(), expiry:F.expiry.value || null,
+        address:F.address.value.trim(), city:F.city.value.trim(), postal:F.postal.value.trim(),
+        country:F.country.value.trim(), notes:F.notes.value.trim(),
+        status:'processing', submittedAt: serverTimestamp(), updatedAt: serverTimestamp()
+      };
+
+      try{
+        if (profileDataUrl){ kyc.profileUrl = await uploadDataUrl(`users/${user.uid}/kyc/profile.jpg`, profileDataUrl); await updateProfile(user,{photoURL:kyc.profileUrl}).catch(()=>{}); }
+        if (frontDataUrl)  { kyc.frontUrl   = await uploadDataUrl(`users/${user.uid}/kyc/front.jpg`,   frontDataUrl); }
+        if (backDataUrl)   { kyc.backUrl    = await uploadDataUrl(`users/${user.uid}/kyc/back.jpg`,    backDataUrl); }
+
+        await setDoc(doc(db,'users',user.uid), { kyc, updatedAt: serverTimestamp() }, { merge:true });
+        profileDataUrl = frontDataUrl = backDataUrl = null;
+        showToast('Submitted • Processing');
+      }catch(e){
+        console.error('Save failed', e);
+        showToast(isLocal ? 'Emulators not running? (auth:9099/firestore:8080/storage:9199)' : 'Could not reach server. Disable VPN/ad-blocker.', false);
+      }finally{
+        btnSave.disabled=false; btnReset.disabled=false; btnSave.textContent=orig;
+      }
+    });
+
+    $('btnReset').addEventListener('click', ()=>{
+      Object.values(F).forEach(i=> { i.value=''; i.classList.remove('err'); });
+      F.country.value = 'Nepal';
+      setUpbox(boxFront,imgFront,null); setUpbox(boxBack,imgBack,null); setUpbox(boxProfile,imgProfile,null);
+      frontDataUrl=backDataUrl=profileDataUrl=null;
+      showToast('Cleared (not yet saved)');
+    });
+  </script>
+</body>
+</html>

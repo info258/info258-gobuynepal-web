@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Terms & Policies • GoBuy Nepal</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88;
+      --green:#2ecc71; --danger:#e74c3c; --orange:#d35400;
+      --radius:14px; --shadow:0 10px 18px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px}
+    .top-btn{color:var(--purple);font-size:18px;text-decoration:none}
+    .title{font-weight:900;color:#444}
+    .right{width:28px}
+
+    /* Header card */
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin:10px 12px;padding:14px}
+    .lede{color:#333}
+    .small{font-size:12px;color:#777}
+    .badge{
+      display:inline-block;background:#f5f5fb;border:1px solid #e5def3;color:#6b5ea3;
+      padding:5px 10px;border-radius:999px;font-weight:800;font-size:12px;margin-right:6px
+    }
+
+    /* TOC chips */
+    .chips{display:flex;gap:8px;overflow:auto;padding:0 12px 2px;margin-top:6px}
+    .chip{white-space:nowrap;background:#f5f5fb;border:1px solid #e5def3;color:#6b5ea3;
+      padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer;user-select:none}
+    .chip:active{transform:translateY(1px)}
+
+    /* Sections */
+    .section-title{margin:16px 12px 8px;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px}
+    details.tsec{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;box-shadow:var(--shadow);margin:10px 12px}
+    .tsec summary{list-style:none;cursor:pointer;padding:14px 14px;display:flex;align-items:flex-start;gap:10px}
+    .tsec summary::-webkit-details-marker{display:none}
+    .q{font-weight:900;color:#333;flex:1}
+    .caret{color:#b0b3bb;transition:transform .2s ease;margin-top:2px}
+    details[open] .caret{transform:rotate(90deg)}
+    .content{padding:0 14px 14px;color:#333;line-height:1.6;border-top:1px dashed #eee}
+    .content ul{margin-left:18px;margin-top:6px}
+    .content li{margin:6px 0}
+    .note{font-size:12px;color:#777;margin-top:8px}
+
+    /* Actions */
+    .actions{position:fixed;left:0;right:0;bottom:70px;display:flex;justify-content:center;pointer-events:none;z-index:50}
+    .actions .wrap{width:100%;max-width:450px;padding:0 12px;display:flex;gap:10px;pointer-events:auto}
+    .btn{border:none;border-radius:12px;padding:13px 14px;font-weight:900;cursor:pointer}
+    .btn-primary{background:var(--purple);color:#fff;flex:1}
+    .btn-outline{background:#fff;color:var(--purple);border:2px solid var(--purple)}
+    .btn-ghost{background:#fff;color:#444;border:2px solid #ddd}
+
+    /* Bottom nav */
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+      display:flex;justify-content:space-around;align-items:center;padding:8px 0;z-index:999;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+    .nav-item{color:var(--purple);text-decoration:none;font-size:12px;display:flex;flex-direction:column;align-items:center}
+    .nav-item i{font-size:20px;margin-bottom:4px}
+    .nav-item.active span{font-weight:800}
+
+    .accept-row{margin-top:8px;display:flex;align-items:center;gap:8px}
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="profile.html" aria-label="Back to Profile"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Terms & Policies</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Header -->
+  <section class="card">
+    <div class="lede">
+      These Terms of Service and Policies govern your use of the GoBuy Nepal app and services. By using the app, you agree to these terms.
+    </div>
+    <div class="small" style="margin-top:6px">
+      <span class="badge"><i class="fa-regular fa-clock"></i> Last updated</span>
+      <span id="lastUpdated">—</span>
+      <div id="acceptBadge" class="small" style="margin-top:6px; display:none;">
+        <span class="badge" style="background:#eef9f2;border-color:#d6f1df;color:#2e7d32"><i class="fa-solid fa-check"></i> Accepted</span>
+        <span id="acceptedOn">—</span>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px">
+      <strong>Note:</strong> This content is a general template and not legal advice. Please consult a qualified attorney to tailor it for your business.
+    </div>
+  </section>
+
+  <!-- Quick TOC -->
+  <div class="chips">
+    <span class="chip" onclick="jumpTo('tos')">Terms of Service</span>
+    <span class="chip" onclick="jumpTo('privacy')">Privacy</span>
+    <span class="chip" onclick="jumpTo('cookies')">Cookies</span>
+    <span class="chip" onclick="jumpTo('payments')">Payments & Refunds</span>
+    <span class="chip" onclick="jumpTo('shipping')">Shipping & Delivery</span>
+    <span class="chip" onclick="jumpTo('conduct')">User Conduct</span>
+    <span class="chip" onclick="jumpTo('prohibited')">Prohibited Items</span>
+    <span class="chip" onclick="jumpTo('disputes')">Disputes</span>
+    <span class="chip" onclick="jumpTo('contact')">Contact</span>
+  </div>
+
+  <div class="section-title">Details</div>
+
+  <!-- Sections -->
+  <details class="tsec" id="tos" open>
+    <summary><div class="q">Terms of Service</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li><strong>Eligibility:</strong> You must be at least 18 or have parental consent to use the service.</li>
+        <li><strong>Account:</strong> Keep your login secure; you are responsible for all activity under your account.</li>
+        <li><strong>Service scope:</strong> We facilitate cross-border ordering, payment, and delivery/pickup for items you request.</li>
+        <li><strong>Quotes:</strong> Prices/ETAs are estimates and may change due to stock, currency, shipping, or customs.</li>
+        <li><strong>Changes:</strong> We may update these terms. Continued use means you accept the updated version.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="privacy">
+    <summary><div class="q">Privacy Policy</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li><strong>Data we collect:</strong> Contact info, order details, chats, addresses, and device info for security.</li>
+        <li><strong>How we use it:</strong> To provide support, process orders, prevent fraud, and improve the app.</li>
+        <li><strong>Sharing:</strong> With logistics and payment partners as needed to fulfill your order; not sold to third parties.</li>
+        <li><strong>Retention:</strong> We keep data only as long as necessary to provide the service and comply with law.</li>
+        <li><strong>Your rights:</strong> Access, update, or delete your data by contacting Support; some data may be retained for legal purposes.</li>
+      </ul>
+      <div class="note">If you connect Firebase, refer to Google’s privacy terms for Auth, Firestore, and Storage.</div>
+    </div>
+  </details>
+
+  <details class="tsec" id="cookies">
+    <summary><div class="q">Cookies & Local Storage</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li>We use local storage for preferences (language, membership, addresses) and functional cookies for sessions.</li>
+        <li>You can clear them in app settings or your browser; some features may stop working until you sign in again.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="payments">
+    <summary><div class="q">Payments & Refunds</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li><strong>Payment methods:</strong> Cards and wallets (eSewa/Khalti/PayPal) may be supported; we store only brand + last4 + expiry locally for display.</li>
+        <li><strong>Charges:</strong> Total includes item price, shipping, taxes/duties, and service fees as applicable.</li>
+        <li><strong>Refunds:</strong> If an item cannot be sourced or shipped, we’ll refund the unfulfilled portion to your original method.</li>
+        <li><strong>Disputes/chargebacks:</strong> Contact us first; unauthorized chargebacks may lead to account limits.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="shipping">
+    <summary><div class="q">Shipping, Delivery & Pickup</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li><strong>Delivery windows:</strong> Standard 3–5 days, Express 1–2 days after dispatch; customs may affect ETA.</li>
+        <li><strong>Address accuracy:</strong> You are responsible for correct addresses; failed deliveries may incur re-delivery fees.</li>
+        <li><strong>Pickup:</strong> Choose a branch and time slot; bring a valid ID or authorization if someone else picks up.</li>
+        <li><strong>Risk of loss:</strong> Passes upon delivery/pickup; shipment protection may apply per your plan.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="conduct">
+    <summary><div class="q">User Conduct</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li>No fraudulent orders, abusive content in chat, or attempts to bypass payment.</li>
+        <li>Do not use the service for illegal purposes or to acquire restricted items.</li>
+        <li>We may suspend or terminate accounts that violate these rules.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="prohibited">
+    <summary><div class="q">Prohibited & Restricted Items</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li>Weapons, explosives, illegal drugs/substances, hazardous chemicals.</li>
+        <li>Counterfeit goods, stolen items, wildlife products, or items banned by origin/destination laws.</li>
+        <li>Batteries or liquids may require special handling and can be declined.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="disputes">
+    <summary><div class="q">Dispute Resolution</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <ul>
+        <li>Contact Support via the in-app chat or email first; we aim to resolve within a reasonable time.</li>
+        <li>For unresolved issues, local laws of Nepal apply, and venue may be Kathmandu District Court unless otherwise required.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="tsec" id="contact">
+    <summary><div class="q">Contact</div><i class="fa-solid fa-angle-right caret"></i></summary>
+    <div class="content">
+      <p>Email: <a href="mailto:support@gobuynepal.example">support@gobuynepal.example</a></p>
+      <p>Chat: Use <em>Quick Chat</em> inside the app.</p>
+      <p>Address: Kathmandu, Nepal</p>
+      <div class="accept-row">
+        <input id="acceptChk" type="checkbox">
+        <label for="acceptChk">I have read and agree to the Terms & Policies.</label>
+      </div>
+      <div class="note">You can withdraw consent by contacting Support. Some features require agreement to function.</div>
+    </div>
+  </details>
+
+</main>
+
+<!-- Actions -->
+<div class="actions">
+  <div class="wrap">
+    <button class="btn btn-ghost" id="printBtn" type="button"><i class="fa-solid fa-print"></i> Print / PDF</button>
+    <button class="btn btn-outline" id="resetBtn" type="button">Reset</button>
+    <button class="btn btn-primary" id="acceptBtn" type="button">Accept</button>
+  </div>
+</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+</nav>
+
+<script>
+  // Keys
+  const KEY_ACCEPT = 'gbn_terms_accept'; // { accepted:true, ts: ISO }
+  const $ = (id)=>document.getElementById(id);
+
+  // Set "Last updated" to today's date in Nepal time
+  (function setLastUpdated(){
+    const fmt = new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Kathmandu', year:'numeric', month:'long', day:'numeric' });
+    $('lastUpdated').textContent = fmt.format(new Date());
+  })();
+
+  // Jump to section
+  function jumpTo(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.open = true;
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // Load acceptance state
+  (function loadAccept(){
+    try{
+      const data = JSON.parse(localStorage.getItem(KEY_ACCEPT) || 'null');
+      if(data && data.accepted){
+        $('acceptChk').checked = true;
+        $('acceptBtn').textContent = 'Accepted';
+        $('acceptBtn').disabled = true;
+        $('acceptBadge').style.display = 'block';
+        const fmt = new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Kathmandu', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        $('acceptedOn').textContent = 'Accepted on ' + fmt.format(new Date(data.ts));
+      }
+    }catch{}
+  })();
+
+  // Accept
+  $('acceptBtn').addEventListener('click', ()=>{
+    if(!$('acceptChk').checked){
+      alert('Please read and check the agreement box first.');
+      return;
+    }
+    const payload = { accepted:true, ts: new Date().toISOString() };
+    localStorage.setItem(KEY_ACCEPT, JSON.stringify(payload));
+    $('acceptBtn').textContent = 'Accepted';
+    $('acceptBtn').disabled = true;
+    $('acceptBadge').style.display = 'block';
+    const fmt = new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Kathmandu', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    $('acceptedOn').textContent = 'Accepted on ' + fmt.format(new Date());
+    alert('Thanks! Your acceptance has been saved on this device.');
+  });
+
+  // Reset acceptance
+  $('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Reset acceptance status on this device?')) return;
+    localStorage.removeItem(KEY_ACCEPT);
+    $('acceptChk').checked = false;
+    $('acceptBtn').textContent = 'Accept';
+    $('acceptBtn').disabled = false;
+    $('acceptBadge').style.display = 'none';
+  });
+
+  // Print / Save as PDF
+  $('printBtn').addEventListener('click', ()=> window.print());
+
+  // Optional: close other sections when one opens
+  document.addEventListener('toggle', (e)=>{
+    if(e.target.tagName.toLowerCase()!=='details' || !e.target.open) return;
+    document.querySelectorAll('details.tsec[open]').forEach(d=>{ if(d!==e.target) d.open=false; });
+  });
+</script>
+</body>
+</html>

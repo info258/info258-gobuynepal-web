@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Live Chats</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --blue:#3a7bd5;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout shell */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){ .nav a{grid-template-columns:28px; justify-items:center} .nav a span, .nav a small{display:none} }
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line);
+  border-radius:999px; padding:8px 12px;
+}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px}
+.k-actions .btn{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=5') center/cover no-repeat;border:1px solid var(--line)}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* Chat layout */
+.chat{
+  display:grid; grid-template-columns:320px 1fr; gap:16px; min-height:70vh;
+}
+@media (max-width:900px){ .chat{grid-template-columns:1fr} }
+
+/* Threads list */
+.threads{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  display:flex; flex-direction:column; min-width:0; overflow:hidden;
+}
+.threads header{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  border-bottom:1px solid var(--line); padding:10px 12px;
+}
+.threads .list{display:grid; gap:10px; padding:10px}
+.thread{
+  display:grid; grid-template-columns:36px 1fr auto; gap:10px; align-items:center;
+  border:1px solid var(--line); background:#fff; border-radius:12px; padding:8px 10px; cursor:pointer;
+}
+.thread:hover{background:#fafafa}
+.thread .avatar{
+  width:36px;height:36px;border-radius:10px;background:#faf8ff;border:1px solid #e6def7; display:flex; align-items:center; justify-content:center; color:var(--purple)
+}
+.thread .name{font-weight:900; color:#0a3ea9; text-decoration:underline}
+.thread .last{font-size:12px; color:var(--muted)}
+.unread{display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; border-radius:999px; padding:0 6px; background:#6c40ad; color:#fff; font-size:12px; font-weight:800}
+
+/* Chat window */
+.window{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+  display:grid; grid-template-rows:auto 1fr auto; min-width:0; overflow:hidden;
+}
+.window header{
+  display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line)
+}
+.window header .title{font-weight:900}
+.tags{display:flex; gap:6px; flex-wrap:wrap}
+.tag{border:1px solid var(--line); background:#f7f7ff; color:#4d3b78; padding:4px 8px; border-radius:999px; font-size:12px}
+
+.messages{padding:12px; overflow:auto; display:grid; gap:10px; background:linear-gradient(#fcfcfe,#f7f8fb)}
+.msg{max-width:80%; border-radius:14px; padding:8px 12px; border:1px solid var(--line); box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.msg .meta{font-size:11px; color:var(--muted); margin-top:4px}
+.msg.user{background:#fff}
+.msg.agent{background:#eaf3ff; margin-left:auto; border-color:#d6e8ff}
+.quick{display:flex; gap:8px; padding:8px 12px; border-top:1px dashed var(--line); background:#fff}
+.quick button{border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; font-size:12px; cursor:pointer}
+.quick button:hover{background:#fafafa}
+
+.compose{display:grid; grid-template-columns:1fr auto; gap:10px; padding:12px; border-top:1px solid var(--line); background:#fff}
+.compose input{border:1px solid var(--line); border-radius:999px; padding:10px 12px; outline:none}
+.compose button{border:1px solid var(--line); background:var(--purple); color:#fff; font-weight:800; border-radius:12px; padding:10px 14px; cursor:pointer}
+.compose button:hover{filter:brightness(1.02)}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <div class="brand">
+      <img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/>
+      <div class="t">GoBuy Admin</div>
+    </div>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a class="active" href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-cases.html"><i class="fa-regular fa-circle-question"></i><span>Cases</span></a>
+      <a href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <header class="topbar">
+      <div class="search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="searchThreads" type="search" placeholder="Search chats, names, order IDs…"/>
+      </div>
+      <div class="k-actions">
+        <button class="btn" id="newChat"><i class="fa-solid fa-plus"></i> New chat</button>
+        <button class="btn" onclick="location.href='admin-notifications.html'"><i class="fa-regular fa-bell"></i></button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <div class="content">
+      <div class="h1">Live Chats</div>
+
+      <section class="chat" aria-label="Live chat workspace">
+
+        <!-- Threads list -->
+        <aside class="threads">
+          <header>
+            <div style="font-weight:900">Chats</div>
+            <div class="tag" id="countTag">0 online</div>
+          </header>
+          <div id="threadList" class="list" aria-label="Chat threads"><!-- JS fills --></div>
+        </aside>
+
+        <!-- Chat window -->
+        <section class="window" aria-live="polite">
+          <header>
+            <div class="title" id="chatTitle">Select a chat</div>
+            <div class="tags" id="chatTags">
+              <!-- dynamic tags -->
+            </div>
+          </header>
+
+          <div id="messages" class="messages" aria-label="Messages">
+            <div class="msg user"><div>Pick a conversation from the left to start.</div></div>
+          </div>
+
+          <div id="quick" class="quick" hidden>
+            <button data-t="Thanks, noted.">Thanks, noted.</button>
+            <button data-t="Your order is confirmed ✅">Order confirmed ✅</button>
+            <button data-t="Here’s your tracking link: https://track.example/xyz">Send tracking</button>
+          </div>
+
+          <form id="composer" class="compose" autocomplete="off">
+            <input id="messageInput" type="text" placeholder="Type a message…" disabled/>
+            <button id="sendBtn" type="submit" disabled><i class="fa-solid fa-paper-plane"></i> Send</button>
+          </form>
+        </section>
+
+      </section>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------------- Demo data (replace with API/Firestore later) ---------------- */
+const CHATS = [
+  {
+    user:'Helena Hills', unread:2, last:'Can I change address?',
+    tags:['Order #8101','New customer'],
+    messages:[
+      {from:'user', text:'Hi! Can I change address?', at:'7:40 PM'},
+      {from:'agent', text:'Sure — please send the new address ✍️', at:'7:41 PM'}
+    ]
+  },
+  {
+    user:'Sare K', unread:0, last:'Paid now ✅',
+    tags:['Order #1234','Paid'],
+    messages:[
+      {from:'user', text:'Paid now ✅', at:'5:18 PM'},
+      {from:'agent', text:'Awesome, we will confirm shortly.', at:'5:19 PM'}
+    ]
+  },
+  {
+    user:'Anil L', unread:1, last:'Any update?',
+    tags:['Order #5678','In transit'],
+    messages:[
+      {from:'user', text:'Any update?', at:'4:31 PM'},
+      {from:'agent', text:'Yes, it left the hub today. ETA 2 days.', at:'4:35 PM'}
+    ]
+  }
+];
+
+/* ---------------- Utilities ---------------- */
+const qs = s => document.querySelector(s);
+function getParam(name){
+  return new URLSearchParams(location.search).get(name);
+}
+function scrollBottom(el){ el.scrollTop = el.scrollHeight; }
+
+/* ---------------- Threads rendering ---------------- */
+const listEl = qs('#threadList');
+const countTag = qs('#countTag');
+function renderThreads(filter=''){
+  listEl.innerHTML = '';
+  let count = 0;
+  CHATS.filter(c => (c.user + c.last).toLowerCase().includes(filter.toLowerCase()))
+       .forEach((c, idx) => {
+        const item = document.createElement('div');
+        item.className = 'thread';
+        item.setAttribute('role','button');
+        item.tabIndex = 0;
+        item.dataset.index = idx;
+        item.innerHTML = `
+          <div class="avatar"><i class="fa-solid fa-user"></i></div>
+          <div>
+            <div class="name">${c.user}</div>
+            <div class="last">${c.last}</div>
+          </div>
+          <div>${c.unread ? `<span class="unread">${c.unread}</span>` : `<a href="#" class="last-link" data-open="${idx}" style="font-size:12px;color:#666">Open</a>`}</div>
+        `;
+        item.addEventListener('click', () => openChat(idx));
+        item.addEventListener('keydown', e => { if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openChat(idx); }});
+        listEl.appendChild(item);
+        count++;
+       });
+  countTag.textContent = `${count} active`;
+}
+
+/* ---------------- Single chat rendering ---------------- */
+let active = -1;
+const msgBox = qs('#messages');
+const titleEl = qs('#chatTitle');
+const tagsEl = qs('#chatTags');
+const inputEl = qs('#messageInput');
+const sendBtn = qs('#sendBtn');
+const quickRow = qs('#quick');
+
+function openChat(i){
+  const c = CHATS[i]; if(!c) return;
+  active = i;
+  // Mark read
+  c.unread = 0;
+  renderThreads(qs('#searchThreads').value);
+
+  // Header
+  titleEl.textContent = c.user;
+  tagsEl.innerHTML = '';
+  (c.tags||[]).forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t;
+    tagsEl.appendChild(span);
+  });
+
+  // Messages
+  msgBox.innerHTML = '';
+  (c.messages||[]).forEach(m => {
+    const div = document.createElement('div');
+    div.className = `msg ${m.from==='agent'?'agent':'user'}`;
+    div.innerHTML = `<div>${m.text}</div><div class="meta">${m.at}</div>`;
+    msgBox.appendChild(div);
+  });
+  scrollBottom(msgBox);
+
+  // Enable composer + quick
+  inputEl.disabled = sendBtn.disabled = false;
+  inputEl.focus();
+  quickRow.hidden = false;
+}
+
+/* ---------------- Composer ---------------- */
+function nowTime(){
+  const d = new Date();
+  return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+}
+qs('#composer').addEventListener('submit', e => {
+  e.preventDefault();
+  if(active<0) return;
+  const text = inputEl.value.trim(); if(!text) return;
+  CHATS[active].messages.push({from:'agent', text, at:nowTime()});
+  CHATS[active].last = text;
+  inputEl.value = '';
+  openChat(active);
+});
+quickRow.addEventListener('click', e=>{
+  const t = e.target.closest('button')?.dataset.t;
+  if(!t) return;
+  inputEl.value = t;
+  inputEl.focus();
+});
+
+/* ---------------- Searching + new chat ---------------- */
+qs('#searchThreads').addEventListener('input', e => renderThreads(e.target.value));
+qs('#newChat').addEventListener('click', () => {
+  const name = prompt('Customer name?');
+  if(!name) return;
+  CHATS.unshift({user:name, unread:0, last:'New conversation', tags:['New'], messages:[]});
+  renderThreads(qs('#searchThreads').value);
+  openChat(0);
+});
+
+/* ---------------- Deep-link from dashboard (admin-chat.html?user=Name) ---------------- */
+function openFromParam(){
+  const u = getParam('user'); if(!u) return;
+  const idx = CHATS.findIndex(c => c.user.toLowerCase() === u.toLowerCase());
+  if(idx>=0){ openChat(idx); }
+}
+
+/* ---------------- Boot ---------------- */
+renderThreads();
+openFromParam();
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Case • GoBuy Nepal</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88;
+      --shadow:0 10px 18px rgba(0,0,0,.08); --radius:14px;
+      --orange:#d35400; --green:#2ecc71; --red:#e74c3c;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:3; background:#fff;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px 10px;
+    }
+    .top-btn{ color:var(--purple); font-size:18px; text-decoration:none; }
+    .title{ font-weight:900; color:#444 }
+    .right{ width:28px }
+
+    /* Form card */
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin:10px 12px 14px;padding:12px}
+    .legend{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px;margin:16px 12px 8px}
+
+    .row{display:grid;gap:6px;margin-bottom:10px}
+    label{font-weight:800;font-size:13px;color:#333}
+    select, input[type="text"], input[type="email"], input[type="tel"], textarea{
+      width:100%;padding:11px 12px;border:1px solid #dcdde3;border-radius:10px;outline:none;font-size:15px;background:#fff
+    }
+    textarea{min-height:110px;resize:vertical;line-height:1.45}
+    .count{font-size:12px;color:#777;text-align:right}
+    .hint{font-size:12px;color:#777}
+
+    /* Attachments */
+    .attach{ display:grid; gap:8px }
+    .thumbs{ display:flex; gap:10px; flex-wrap:wrap }
+    .thumb{ position:relative; width:72px; height:72px; border:1px solid #e5e7ef; border-radius:10px; overflow:hidden; background:#fafafa }
+    .thumb img{ width:100%; height:100%; object-fit:cover }
+    .thumb button{
+      position:absolute; top:4px; right:4px; width:22px;height:22px;border-radius:50%;border:none;background:#fff;color:#e74c3c;cursor:pointer;border:1px solid #eee
+    }
+
+    /* Actions */
+    .actions{position:fixed;left:0;right:0;bottom:70px;display:flex;justify-content:center;pointer-events:none;z-index:50}
+    .actions .wrap{width:100%;max-width:450px;padding:0 12px;display:flex;gap:10px;pointer-events:auto}
+    .btn{border:none;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer}
+    .btn-primary{background:var(--purple);color:#fff;flex:1}
+    .btn-ghost{background:#fff;color:#444;border:2px solid #ddd}
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid var(--line);
+      display:flex; justify-content:space-around; align-items:center; padding:8px 0; z-index:999;
+      box-shadow:0 -2px 8px rgba(0,0,0,.05);
+    }
+    .nav-item{ color:var(--purple); text-decoration:none; font-size:12px; display:flex; flex-direction:column; align-items:center }
+    .nav-item i{ font-size:20px; margin-bottom:4px }
+    .nav-item.active span{ font-weight:800 }
+
+    /* Toast + success */
+    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;z-index:9999}
+    .toast.show{opacity:1}
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:2000; }
+    .modal{ background:#fff; border-radius:14px; width:92%; max-width:420px; padding:16px; box-shadow:var(--shadow); text-align:center }
+    .modal .big{ font-weight:900; margin-top:6px }
+    .modal .id{ margin-top:4px; font-family:ui-monospace, Menlo, monospace; color:#6b5ea3 }
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="help.html" aria-label="Back to Help"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Create Case</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Case form -->
+  <form id="caseForm" novalidate>
+    <div class="legend">Case details</div>
+    <section class="card">
+      <div class="row">
+        <label for="category">Category</label>
+        <select id="category" required>
+          <option value="">Select a category…</option>
+          <option value="orders">Orders</option>
+          <option value="shipping">Shipping</option>
+          <option value="payments">Payments</option>
+          <option value="account">Account</option>
+          <option value="membership">Membership</option>
+          <option value="bug">App Bug</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="priority">Priority</label>
+        <select id="priority">
+          <option>Normal</option>
+          <option>Low</option>
+          <option>High</option>
+          <option>Urgent</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="orderId">Order ID (optional)</label>
+        <input id="orderId" type="text" placeholder="e.g., 1234 or GB-5678">
+      </div>
+
+      <div class="row">
+        <label for="subject">Subject</label>
+        <input id="subject" type="text" maxlength="100" placeholder="Short summary (max 100)" required>
+      </div>
+
+      <div class="row">
+        <label for="desc">Description</label>
+        <textarea id="desc" maxlength="1000" placeholder="Describe the issue in detail (min 10 characters)" required></textarea>
+        <div class="count"><span id="descCount">0</span>/1000</div>
+      </div>
+    </section>
+
+    <div class="legend">Contact</div>
+    <section class="card">
+      <div class="row">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" required inputmode="email">
+      </div>
+      <div class="row">
+        <label for="phone">Phone (optional)</label>
+        <input id="phone" type="tel" placeholder="+977-98XXXXXXXX" inputmode="tel">
+      </div>
+      <div class="hint">We’ll notify you about updates at this email / phone.</div>
+    </section>
+
+    <div class="legend">Attachments (optional)</div>
+    <section class="card attach">
+      <div class="row" style="display:flex;gap:8px;align-items:center">
+        <label class="btn btn-ghost" for="fileInput"><i class="fa-regular fa-image"></i> Add image</label>
+        <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none">
+        <div class="hint">Up to 3 images • Max 1.5 MB each.</div>
+      </div>
+      <div id="thumbs" class="thumbs"></div>
+    </section>
+  </form>
+</main>
+
+<!-- Actions -->
+<div class="actions">
+  <div class="wrap">
+    <button class="btn btn-ghost" id="saveDraft" type="button">Save Draft</button>
+    <button class="btn btn-primary" id="submitBtn" type="button">Submit Case</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">Saved</div>
+
+<!-- Success Overlay -->
+<div id="overlay" class="overlay">
+  <div class="modal">
+    <div style="font-size:32px;color:var(--green)"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="big">Case Created</div>
+    <div class="id" id="caseIdLbl">CASE-—</div>
+    <div class="hint" style="margin-top:8px">We’ll get back to you soon. You can view updates in Alerts.</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-ghost" onclick="location.href='faqs.html'"><i class="fa-regular fa-rectangle-list"></i> FAQs</button>
+      <button class="btn btn-primary" onclick="location.href='help.html'"><i class="fa-regular fa-circle-question"></i> Help</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help</span></a>
+</nav>
+
+<script>
+  // ---------- Helpers ----------
+  const $ = id => document.getElementById(id);
+  const toast = $('toast');
+  function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1200); }
+  function fmtNepal(date){
+    return new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Kathmandu', year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' }).format(date);
+  }
+  function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+
+  // Prefill from storage and query
+  (function init(){
+    $('email').value = localStorage.getItem('gbn_user_email') || '';
+    $('phone').value = localStorage.getItem('gbn_user_phone') || '';
+    const url = new URL(location.href);
+    const oid = url.searchParams.get('orderId');
+    if(oid) $('orderId').value = oid;
+  })();
+
+  // Description counter
+  $('desc').addEventListener('input', ()=> $('descCount').textContent = $('desc').value.length);
+
+  // ---------- Attachments ----------
+  let files = []; // {name,size,dataURL}
+  const MAX_FILES = 3, MAX_MB = 1.5;
+
+  function renderThumbs(){
+    const box = $('thumbs'); box.innerHTML = '';
+    files.forEach((f,i)=>{
+      const t = document.createElement('div');
+      t.className = 'thumb';
+      t.innerHTML = `<img alt="Attachment ${i+1}"><button type="button" title="Remove"><i class="fa-solid fa-xmark"></i></button>`;
+      t.querySelector('img').src = f.dataURL;
+      t.querySelector('button').onclick = ()=>{ files.splice(i,1); renderThumbs(); };
+      box.appendChild(t);
+    });
+  }
+  $('fileInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0]; e.target.value='';
+    if(!file) return;
+    if(files.length >= MAX_FILES){ alert('You can attach up to 3 images.'); return; }
+    if(file.size > MAX_MB*1024*1024){ alert('Each image must be under '+MAX_MB+' MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = ()=>{ files.push({name:file.name,size:file.size,dataURL:reader.result}); renderThumbs(); };
+    reader.readAsDataURL(file);
+  });
+
+  // ---------- Draft ----------
+  const KEY_DRAFT = 'gbn_case_draft';
+  $('saveDraft').addEventListener('click', ()=>{
+    const d = {
+      category:$('category').value, priority:$('priority').value, orderId:$('orderId').value,
+      subject:$('subject').value, desc:$('desc').value, email:$('email').value, phone:$('phone').value, files
+    };
+    localStorage.setItem(KEY_DRAFT, JSON.stringify(d));
+    showToast('Draft saved');
+  });
+  // Load draft
+  (function(){
+    try{
+      const d = JSON.parse(localStorage.getItem(KEY_DRAFT)||'null'); if(!d) return;
+      $('category').value = d.category || '';
+      $('priority').value = d.priority || 'Normal';
+      $('orderId').value = d.orderId || '';
+      $('subject').value = d.subject || '';
+      $('desc').value = d.desc || '';
+      $('email').value = d.email || $('email').value;
+      $('phone').value = d.phone || '';
+      files = Array.isArray(d.files)? d.files.slice(0,MAX_FILES) : [];
+      renderThumbs();
+      $('descCount').textContent = $('desc').value.length;
+    }catch{}
+  })();
+
+  // ---------- Submit ----------
+  const KEY_CASES = 'gbn_cases';
+  function loadCases(){ try{return JSON.parse(localStorage.getItem(KEY_CASES)||'[]');}catch{return [];} }
+  function saveCases(list){ localStorage.setItem(KEY_CASES, JSON.stringify(list)); }
+  function nextCaseId(){
+    const key='gbn_case_seq'; let n=parseInt(localStorage.getItem(key)||'0',10); n+=1; localStorage.setItem(key,String(n));
+    const y=new Date().getFullYear(); return `CASE-${y}-${String(n).padStart(4,'0')}`;
+  }
+  function validate(){
+    const cat=$('category').value, subj=$('subject').value.trim(), desc=$('desc').value.trim(), email=$('email').value.trim();
+    if(!cat) return 'Select a category';
+    if(subj.length<3) return 'Subject is too short';
+    if(desc.length<10) return 'Description must be at least 10 characters';
+    if(!email) return 'Email is required';
+    if(!isEmail(email)) return 'Enter a valid email';
+    return '';
+  }
+
+  $('submitBtn').addEventListener('click', ()=>{
+    const err = validate();
+    if(err){ alert(err); return; }
+    // remember contact
+    localStorage.setItem('gbn_user_email', $('email').value.trim());
+    if($('phone').value.trim()) localStorage.setItem('gbn_user_phone', $('phone').value.trim());
+
+    const id = nextCaseId(); const now = new Date();
+    const payload = {
+      id, status:'Open',
+      createdAt: now.toISOString(), createdAtLocal: fmtNepal(now),
+      category:$('category').value, priority:$('priority').value,
+      orderId:$('orderId').value.trim(), subject:$('subject').value.trim(), description:$('desc').value.trim(),
+      contact:{ email:$('email').value.trim(), phone:$('phone').value.trim() },
+      attachments: files.map(f=>({name:f.name,size:f.size,dataURL:f.dataURL}))
+    };
+    const list = loadCases(); list.unshift(payload); saveCases(list);
+    localStorage.removeItem(KEY_DRAFT);
+
+    // Success UI
+    $('caseIdLbl').textContent = id;
+    $('overlay').style.display = 'flex';
+    setTimeout(()=> location.href='help.html', 1500);
+
+    // If you also want Firestore, you can add it here (optional).
+  });
+</script>
+</body>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help</span></a>
+</nav>
+</html>

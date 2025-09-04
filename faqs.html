@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FAQs • GoBuy Nepal</title>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef; --muted:#7b7f88;
+      --shadow:0 10px 18px rgba(0,0,0,.08); --radius:14px;
+      --green:#2ecc71; --orange:#d35400;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:3; background:#fff;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px 10px;
+    }
+    .top-btn{ color:var(--purple); font-size:18px; text-decoration:none; }
+    .title{ font-weight:900; color:#444 }
+    .right{ width:28px }
+
+    /* Search */
+    .search-wrap{ padding:12px; }
+    .search{
+      border:1px solid #dcdde3; border-radius:12px; display:flex; align-items:center; gap:8px; padding:10px 12px;
+      background:#fff; box-shadow:var(--shadow);
+    }
+    .search i{ color:#7b7f88 }
+    .search input{
+      border:none; outline:none; flex:1; font-size:15px; background:transparent;
+    }
+
+    /* Chips */
+    .chips{ display:flex; gap:8px; overflow:auto; padding:0 12px 2px; margin-top:6px }
+    .chip{
+      white-space:nowrap; background:#f5f5fb; border:1px solid #e5def3; color:#6b5ea3;
+      padding:8px 12px; border-radius:999px; font-weight:800; cursor:pointer; user-select:none;
+    }
+    .chip.active{ background:#fff; color:var(--purple); border-color:#d9c9ee; box-shadow:var(--shadow) }
+
+    /* FAQ list */
+    .list{ padding:10px 12px 14px; display:grid; gap:10px }
+    details.faq{
+      border:1px solid var(--line); border-radius:12px; background:#fff; overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .faq summary{
+      list-style:none; cursor:pointer; padding:14px 14px; display:flex; align-items:flex-start; gap:10px;
+    }
+    .faq summary::-webkit-details-marker{ display:none }
+    .q{
+      font-weight:900; color:#333; flex:1;
+    }
+    .caret{
+      color:#b0b3bb; transition:transform .2s ease; margin-top:2px;
+    }
+    details[open] .caret{ transform:rotate(90deg) }
+    .a{
+      padding:0 14px 14px; color:#333; line-height:1.55; border-top:1px dashed #eee;
+    }
+    .meta{ font-size:12px; color:#777; margin-top:8px }
+
+    /* Help card */
+    .help-card{
+      margin:6px 12px 18px; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+      padding:14px; display:grid; gap:10px;
+    }
+    .help-cta{ display:flex; gap:10px }
+    .btn{
+      border:none; border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; flex:1;
+    }
+    .btn-primary{ background:var(--purple); color:#fff }
+    .btn-outline{ background:#fff; color:var(--purple); border:2px solid var(--purple) }
+
+    /* Bottom nav */
+    .bottom-nav{
+      position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid var(--line);
+      display:flex; justify-content:space-around; align-items:center; padding:8px 0; z-index:999;
+      box-shadow:0 -2px 8px rgba(0,0,0,.05);
+    }
+    .nav-item{ color:var(--purple); text-decoration:none; font-size:12px; display:flex; flex-direction:column; align-items:center }
+    .nav-item i{ font-size:20px; margin-bottom:4px }
+    .nav-item.active span{ font-weight:800 }
+    .hint{ font-size:12px; color:#777 }
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="help.html" aria-label="Back to Help"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">FAQs</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="searchBox" type="text" placeholder="Search questions, e.g. delivery time">
+    </div>
+  </div>
+
+  <!-- Category chips -->
+  <div class="chips" id="chips">
+    <span class="chip active" data-cat="all">All</span>
+    <span class="chip" data-cat="orders">Orders</span>
+    <span class="chip" data-cat="shipping">Shipping</span>
+    <span class="chip" data-cat="payments">Payments</span>
+    <span class="chip" data-cat="account">Account</span>
+    <span class="chip" data-cat="membership">Membership</span>
+    <span class="chip" data-cat="chat">Chat</span>
+  </div>
+
+  <!-- FAQs -->
+  <section class="list" id="faqList">
+    <!-- Orders -->
+    <details class="faq" data-cat="orders">
+      <summary>
+        <div class="q">How do I request an order from Amazon or AliExpress?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        Tap <strong>REQUEST ORDER</strong> on the dashboard and paste the product link. Add quantity, country, weight (if known) and any specs (color/size). Submit and we’ll confirm price + delivery window.
+        <div class="meta">Category: Orders</div>
+      </div>
+    </details>
+
+    <details class="faq" data-cat="orders">
+      <summary>
+        <div class="q">Where can I see my pending/confirmed orders?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        Go to <strong>CONFIRM ORDER</strong> for payments/status, and <strong>TRACK ORDER</strong> for live progress (Placed → Confirmed → Shipped → Delivered).
+        <div class="meta">Category: Orders</div>
+      </div>
+    </details>
+
+    <!-- Shipping -->
+    <details class="faq" data-cat="shipping">
+      <summary>
+        <div class="q">How long does delivery take?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        Standard: <strong>3–5 days</strong> after dispatch. Express: <strong>1–2 days</strong>. Exact ETA depends on origin and customs clearance. Track progress in <em>Track Order</em>.
+        <div class="meta">Category: Shipping</div>
+      </div>
+    </details>
+
+    <details class="faq" data-cat="shipping">
+      <summary>
+        <div class="q">Do you offer pickup instead of delivery?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        Yes. Set <strong>Pickup & Delivery Options</strong> → choose branch (Kathmandu, Pokhara, Lalitpur) and a time slot. We’ll notify you when it’s ready.
+        <div class="meta">Category: Shipping</div>
+      </div>
+    </details>
+
+    <!-- Payments -->
+    <details class="faq" data-cat="payments">
+      <summary>
+        <div class="q">Which payment methods are supported?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        You can save cards (Visa/Mastercard) and wallets like <strong>eSewa / Khalti / PayPal</strong> under <em>Payments info</em>, then pick a default for 1-tap checkout.
+        <div class="meta">Category: Payments</div>
+      </div>
+    </details>
+
+    <details class="faq" data-cat="payments">
+      <summary>
+        <div class="q">Is my card information stored?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        We only display <strong>brand + last 4 + expiry</strong> locally for your reference. Full card number and CVV are never stored in the browser.
+        <div class="meta">Category: Payments</div>
+      </div>
+    </details>
+
+    <!-- Account -->
+    <details class="faq" data-cat="account">
+      <summary>
+        <div class="q">How do I change my password or profile details?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        Go to <strong>Profile</strong> → <em>Change Password</em> to update your password. Edit personal details in <em>Personal ID Info</em> and address in <em>Pickup & Delivery Options</em>.
+        <div class="meta">Category: Account</div>
+      </div>
+    </details>
+
+    <!-- Membership -->
+    <details class="faq" data-cat="membership">
+      <summary>
+        <div class="q">What are the benefits of Plus or Pro?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        <strong>Plus</strong>: Priority chat, unlimited requests, shipment protection up to $100. <strong>Pro</strong>: VIP support, express handling, protection up to $500. Choose under <em>Membership</em>.
+        <div class="meta">Category: Membership</div>
+      </div>
+    </details>
+
+    <!-- Chat -->
+    <details class="faq" data-cat="chat">
+      <summary>
+        <div class="q">How do I contact support?</div>
+        <i class="fa-solid fa-angle-right caret"></i>
+      </summary>
+      <div class="a">
+        Tap <strong>Quick Chat</strong> on the dashboard to message us. We reply in-app and notify you under <em>Alerts</em>.
+        <div class="meta">Category: Chat</div>
+      </div>
+    </details>
+  </section>
+
+  <!-- Need more help -->
+  <section class="help-card">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--purple)">
+        <i class="fa-regular fa-circle-question"></i>
+      </div>
+      <div style="font-weight:900">Still need help?</div>
+    </div>
+    <div class="help-cta">
+      <button class="btn btn-outline" onclick="location.href='create-case.html'"><i class="fa-regular fa-rectangle-list"></i> Create Case</button>
+      <button class="btn btn-primary" onclick="location.href='chat.html'"><i class="fa-regular fa-message"></i> Quick Chat</button>
+    </div>
+    <div class="hint">We’ll get back to you as soon as possible.</div>
+  </section>
+</main>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help</span></a>
+</nav>
+
+<script>
+  // --- Search + Category filter ---
+  const searchBox = document.getElementById('searchBox');
+  const chips = document.getElementById('chips');
+  const faqList = document.getElementById('faqList');
+
+  let activeCat = 'all';
+
+  function normalize(s){ return (s||'').toLowerCase().trim(); }
+
+  function applyFilters(){
+    const q = normalize(searchBox.value);
+    const items = faqList.querySelectorAll('details.faq');
+
+    let visibleCount = 0;
+    items.forEach(d => {
+      const cat = d.getAttribute('data-cat');
+      const qText = d.querySelector('.q').textContent;
+      const aText = d.querySelector('.a').textContent;
+      const matchCat = (activeCat === 'all') || (cat === activeCat);
+      const matchText = !q || qText.toLowerCase().includes(q) || aText.toLowerCase().includes(q);
+      const show = matchCat && matchText;
+      d.style.display = show ? 'block' : 'none';
+      if (show) visibleCount++;
+    });
+
+    // If nothing matches, show a gentle message
+    if (!document.getElementById('noResults')) {
+      const div = document.createElement('div');
+      div.id = 'noResults';
+      div.className = 'hint';
+      div.style.textAlign = 'center';
+      div.style.margin = '6px 12px 2px';
+      div.textContent = 'No results. Try a different keyword or category.';
+      faqList.parentNode.insertBefore(div, faqList);
+    }
+    document.getElementById('noResults').style.display = visibleCount ? 'none' : 'block';
+  }
+
+  // Category chips interaction
+  chips.addEventListener('click', (e)=>{
+    const el = e.target.closest('.chip'); if(!el) return;
+    chips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    activeCat = el.getAttribute('data-cat') || 'all';
+    applyFilters();
+  });
+
+  // Search typing
+  searchBox.addEventListener('input', applyFilters);
+
+  // Close others when one opens (optional)
+  faqList.addEventListener('toggle', (e)=>{
+    if (e.target.tagName.toLowerCase() !== 'details' || !e.target.open) return;
+    faqList.querySelectorAll('details.faq[open]').forEach(d => { if (d !== e.target) d.open = false; });
+  });
+
+  // Initial filter
+  applyFilters();
+</script>
+</body>
+</html>

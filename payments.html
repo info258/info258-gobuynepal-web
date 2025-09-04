@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payments • GoBuy Nepal</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --purple:#7a1ea1; --purple-700:#5b1680;
+      --bg:#fff; --card:#fff; --line:#e9e9ef;
+      --muted:#7b7f88; --green:#2ecc71; --danger:#e74c3c; --orange:#d35400;
+      --radius:14px; --shadow:0 10px 18px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#1e1e1e;padding-bottom:96px}
+    .page{max-width:450px;margin:0 auto;padding-bottom:140px}
+
+    /* Topbar */
+    .topbar{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px}
+    .top-btn{color:var(--purple);font-size:18px;text-decoration:none}
+    .title{font-weight:900;color:#444}
+    .right{width:28px}
+
+    .section{margin:16px 12px 10px;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px}
+
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+      margin:0 12px 14px;padding:12px}
+
+    /* Saved methods list */
+    .method{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;background:#fff}
+    .m-icon{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+    .m-body{flex:1}
+    .m-title{font-weight:800}
+    .m-sub{font-size:12px;color:#666}
+    .m-actions{display:flex;align-items:center;gap:10px}
+    .pill{background:#f5f5fb;border:1px solid #e5def3;border-radius:999px;padding:3px 8px;font-size:11px;color:#6b5ea3;font-weight:800}
+
+    .radio{width:18px;height:18px}
+
+    .btn-mini{border:none;border-radius:8px;padding:8px 10px;font-weight:800;cursor:pointer}
+    .btn-danger{background:#fff;color:var(--danger);border:2px solid var(--danger)}
+
+    /* Add forms */
+    .tabs{display:flex;gap:8px;margin:0 12px 8px}
+    .tab{flex:1;text-align:center;border:1px solid var(--line);border-radius:999px;padding:10px;font-weight:900;color:#666;background:#f7f7fb;cursor:pointer}
+    .tab.active{background:#fff;color:var(--purple);border-color:#d9c9ee;box-shadow:var(--shadow)}
+
+    .row{display:grid;gap:6px;margin-bottom:10px}
+    label{font-weight:700;font-size:13px;color:#333}
+    input[type="text"],input[type="tel"],input[type="month"],select,textarea{
+      width:100%;padding:11px 12px;border:1px solid #dcdde3;border-radius:10px;outline:none;font-size:15px;background:#fff
+    }
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    .btn{border:none;border-radius:12px;padding:13px 14px;font-weight:900;cursor:pointer}
+    .btn-primary{background:var(--purple);color:#fff}
+    .btn-outline{background:#fff;color:var(--purple);border:2px solid var(--purple)}
+
+    .note{font-size:12px;color:#777;margin-top:6px}
+
+    /* Toast */
+    .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#222;color:#fff;
+      padding:10px 14px;border-radius:10px;font-weight:700;opacity:0;transition:.25s;z-index:9999}
+    .toast.show{opacity:1}
+
+    /* Bottom nav */
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+      display:flex;justify-content:space-around;align-items:center;padding:8px 0;z-index:999;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+    .nav-item{color:var(--purple);text-decoration:none;font-size:12px;display:flex;flex-direction:column;align-items:center}
+    .nav-item i{font-size:20px;margin-bottom:4px}
+    .nav-item.active span{font-weight:800}
+  </style>
+</head>
+<body>
+
+<main class="page">
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="top-btn" href="profile.html" aria-label="Back to Profile"><i class="fa-solid fa-chevron-left"></i></a>
+    <div class="title">Payments info</div>
+    <div class="right"></div>
+  </div>
+
+  <!-- Saved methods -->
+  <div class="section">Saved methods</div>
+  <div class="card" id="savedList">
+    <div id="emptyMsg" class="note">No saved payment methods yet.</div>
+  </div>
+
+  <!-- Preferred currency -->
+  <div class="section">Preferences</div>
+  <div class="card">
+    <div class="row">
+      <label for="currency">Preferred currency</label>
+      <select id="currency">
+        <option value="NPR">NPR – Nepalese Rupee</option>
+        <option value="USD">USD – US Dollar</option>
+        <option value="INR">INR – Indian Rupee</option>
+        <option value="CNY">CNY – Chinese Yuan</option>
+        <option value="EUR">EUR – Euro</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Billing address -->
+  <div class="section">Billing address</div>
+  <div class="card">
+    <div class="row">
+      <label for="billName">Full Name</label>
+      <input id="billName" type="text" placeholder="Cardholder / Billing name">
+    </div>
+    <div class="row">
+      <label for="billStreet">Street Address</label>
+      <input id="billStreet" type="text" placeholder="House / Street / Area">
+    </div>
+    <div class="grid-2">
+      <div class="row">
+        <label for="billCity">City</label>
+        <input id="billCity" type="text" placeholder="e.g., Kathmandu">
+      </div>
+      <div class="row">
+        <label for="billPostal">Postal Code</label>
+        <input id="billPostal" type="text" placeholder="e.g., 44600">
+      </div>
+    </div>
+    <div class="row">
+      <label for="billCountry">Country</label>
+      <input id="billCountry" type="text" placeholder="Nepal">
+    </div>
+    <button class="btn btn-outline" id="saveAddressBtn">Save address</button>
+  </div>
+
+  <!-- Add method tabs -->
+  <div class="section">Add payment method</div>
+  <div class="tabs">
+    <button class="tab active" id="tabCard">Add Card</button>
+    <button class="tab" id="tabWallet">Add Wallet</button>
+  </div>
+
+  <!-- Add Card -->
+  <div class="card" id="cardForm">
+    <div class="row">
+      <label for="cardName">Name on Card</label>
+      <input id="cardName" type="text" placeholder="e.g., A. Sharma">
+    </div>
+    <div class="row">
+      <label for="cardNumber">Card Number</label>
+      <input id="cardNumber" type="tel" inputmode="numeric" autocomplete="cc-number" placeholder="•••• •••• •••• ••••">
+    </div>
+    <div class="grid-2">
+      <div class="row">
+        <label for="cardExpiry">Expiry (MM/YY)</label>
+        <input id="cardExpiry" type="tel" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY">
+      </div>
+      <div class="row">
+        <label for="cardCvv">CVV</label>
+        <input id="cardCvv" type="tel" inputmode="numeric" autocomplete="cc-csc" placeholder="•••">
+      </div>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="cardDefault"> Set as default</label>
+    </div>
+    <button class="btn btn-primary" id="saveCardBtn">Save Card</button>
+    <div class="note">We only store brand + last 4 + expiry for display. The full card number & CVV are never stored in the browser.</div>
+  </div>
+
+  <!-- Add Wallet -->
+  <div class="card" id="walletForm" style="display:none">
+    <div class="row">
+      <label for="walletProvider">Wallet Provider</label>
+      <select id="walletProvider">
+        <option value="eSewa">eSewa</option>
+        <option value="Khalti">Khalti</option>
+        <option value="PayPal">PayPal</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="walletId">Wallet ID / Phone / Email</label>
+      <input id="walletId" type="text" placeholder="e.g., 98XXXXXXXX or email">
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="walletDefault"> Set as default</label>
+    </div>
+    <button class="btn btn-primary" id="saveWalletBtn">Save Wallet</button>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div id="toast" class="toast">Saved</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html"><i class="fas fa-home"></i><span>Home</span></a>
+  <a class="nav-item" href="explore.html"><i class="fas fa-compass"></i><span>Explore</span></a>
+  <a class="nav-item" href="add-to-cart.html"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
+  <a class="nav-item" href="alerts.html"><i class="fas fa-bell"></i><span>Alerts</span></a>
+  <a class="nav-item active" href="profile.html"><i class="fas fa-user"></i><span>Profile</span></a>
+</nav>
+
+<script>
+  // ---------- Storage keys ----------
+  const KEY_PAYMENTS = 'gbn_payments';       // array of methods
+  const KEY_DEFAULT  = 'gbn_default_pay';    // method id
+  const KEY_CURR     = 'gbn_currency';
+  const KEY_ADDR     = 'gbn_billing_addr';
+
+  // ---------- Utilities ----------
+  const $ = id => document.getElementById(id);
+  const toast = $('toast');
+  function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1400); }
+  function getJSON(key, def){ try{ return JSON.parse(localStorage.getItem(key)) ?? def; }catch{ return def; } }
+  function setJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  // Brand detect (basic) + Luhn
+  function detectBrand(num){
+    if(/^4/.test(num)) return 'Visa';
+    if(/^(5[1-5]|2[2-7])/.test(num)) return 'Mastercard';
+    if(/^3[47]/.test(num)) return 'Amex';
+    if(/^6(?:011|5)/.test(num)) return 'Discover';
+    return 'Card';
+  }
+  function luhnCheck(num){
+    let s = 0, dbl = false;
+    for(let i=num.length-1;i>=0;i--){
+      let d = parseInt(num[i],10);
+      if(dbl){ d*=2; if(d>9) d-=9; }
+      s += d; dbl = !dbl;
+    }
+    return s % 10 === 0;
+  }
+  function formatCard(val){
+    return val.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim();
+  }
+  function formatExpiry(val){
+    const v = val.replace(/\D/g,'').slice(0,4);
+    if(v.length<=2) return v;
+    return v.slice(0,2) + '/' + v.slice(2);
+  }
+  function expiryValid(exp){
+    const m = parseInt(exp.slice(0,2),10);
+    const y = parseInt('20' + exp.slice(3),10);
+    if(!(m>=1 && m<=12) || isNaN(y)) return false;
+    const now = new Date(); const cm = now.getMonth()+1; const cy = now.getFullYear();
+    return (y>cy) || (y===cy && m>=cm);
+  }
+  const uid = ()=>'id-'+Math.random().toString(36).slice(2,10);
+
+  // ---------- State ----------
+  let methods = getJSON(KEY_PAYMENTS, []);
+  let defaultId = localStorage.getItem(KEY_DEFAULT) || '';
+
+  // ---------- DOM refs ----------
+  const savedList = $('savedList'); const emptyMsg = $('emptyMsg');
+
+  // Preferences / address
+  const currency = $('currency');
+  const billName=$('billName'),billStreet=$('billStreet'),billCity=$('billCity'),billPostal=$('billPostal'),billCountry=$('billCountry');
+
+  // Tabs / forms
+  const tabCard=$('tabCard'), tabWallet=$('tabWallet');
+  const cardForm=$('cardForm'), walletForm=$('walletForm');
+
+  // Card inputs
+  const cardName=$('cardName'), cardNumber=$('cardNumber'), cardExpiry=$('cardExpiry'), cardCvv=$('cardCvv'), cardDefault=$('cardDefault');
+  const saveCardBtn=$('saveCardBtn');
+
+  // Wallet inputs
+  const walletProvider=$('walletProvider'), walletId=$('walletId'), walletDefault=$('walletDefault');
+  const saveWalletBtn=$('saveWalletBtn');
+
+  // ---------- Load prefs/address ----------
+  (function initPrefs(){
+    const curr = localStorage.getItem(KEY_CURR) || 'NPR';
+    currency.value = curr;
+    const addr = getJSON(KEY_ADDR, {});
+    billName.value = addr.name || '';
+    billStreet.value = addr.street || '';
+    billCity.value = addr.city || '';
+    billPostal.value = addr.postal || '';
+    billCountry.value = addr.country || '';
+  })();
+
+  currency.addEventListener('change', ()=>{
+    localStorage.setItem(KEY_CURR, currency.value);
+    showToast('Currency saved');
+  });
+
+  $('saveAddressBtn').addEventListener('click', ()=>{
+    setJSON(KEY_ADDR, {
+      name: billName.value.trim(),
+      street: billStreet.value.trim(),
+      city: billCity.value.trim(),
+      postal: billPostal.value.trim(),
+      country: billCountry.value.trim()
+    });
+    showToast('Billing address saved');
+  });
+
+  // ---------- Render saved methods ----------
+  function renderMethods(){
+    savedList.querySelectorAll('.method').forEach(n=>n.remove());
+    emptyMsg.style.display = methods.length ? 'none' : 'block';
+
+    methods.forEach(m=>{
+      const row = document.createElement('div');
+      row.className = 'method';
+
+      const icon = document.createElement('div');
+      icon.className = 'm-icon';
+      icon.innerHTML = m.type === 'card'
+        ? '<i class="fa-regular fa-credit-card"></i>'
+        : '<i class="fa-solid fa-wallet"></i>';
+
+      const body = document.createElement('div');
+      body.className = 'm-body';
+
+      const title = document.createElement('div');
+      title.className = 'm-title';
+      title.textContent = m.type === 'card'
+        ? `${m.brand} •••• ${m.last4}`
+        : `${m.provider}`;
+
+      const sub = document.createElement('div');
+      sub.className = 'm-sub';
+      sub.textContent = m.type === 'card'
+        ? `${m.name} · exp ${m.exp}`
+        : `${m.walletId}`;
+
+      body.appendChild(title); body.appendChild(sub);
+
+      const actions = document.createElement('div');
+      actions.className = 'm-actions';
+
+      const defaultRadio = document.createElement('input');
+      defaultRadio.type = 'radio'; defaultRadio.className = 'radio';
+      defaultRadio.name = 'defaultPay'; defaultRadio.checked = (m.id === defaultId);
+      defaultRadio.title = 'Set default';
+      defaultRadio.addEventListener('change', ()=>{
+        defaultId = m.id;
+        localStorage.setItem(KEY_DEFAULT, defaultId);
+        showToast('Default payment updated');
+      });
+
+      const badge = document.createElement('span');
+      badge.className = 'pill';
+      badge.textContent = m.type === 'card' ? m.brand : 'Wallet';
+
+      const del = document.createElement('button');
+      del.className = 'btn-mini btn-danger';
+      del.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+      del.title = 'Remove';
+      del.addEventListener('click', ()=>{
+        if(confirm('Remove this payment method?')){
+          methods = methods.filter(x => x.id !== m.id);
+          if(defaultId === m.id){ defaultId = ''; localStorage.removeItem(KEY_DEFAULT); }
+          setJSON(KEY_PAYMENTS, methods);
+          renderMethods();
+          showToast('Removed');
+        }
+      });
+
+      actions.appendChild(badge);
+      actions.appendChild(defaultRadio);
+      actions.appendChild(del);
+
+      row.appendChild(icon); row.appendChild(body); row.appendChild(actions);
+      savedList.appendChild(row);
+    });
+  }
+
+  renderMethods();
+
+  // ---------- Tabs ----------
+  function activateTab(which){
+    const isCard = which === 'card';
+    tabCard.classList.toggle('active', isCard);
+    tabWallet.classList.toggle('active', !isCard);
+    cardForm.style.display = isCard ? 'block' : 'none';
+    walletForm.style.display = !isCard ? 'block' : 'none';
+  }
+  tabCard.addEventListener('click', ()=>activateTab('card'));
+  tabWallet.addEventListener('click', ()=>activateTab('wallet'));
+
+  // ---------- Inputs formatting ----------
+  cardNumber.addEventListener('input', ()=>{ cardNumber.value = formatCard(cardNumber.value); });
+  cardExpiry.addEventListener('input', ()=>{ cardExpiry.value = formatExpiry(cardExpiry.value); });
+  cardCvv.addEventListener('input', ()=>{ cardCvv.value = cardCvv.value.replace(/\D/g,'').slice(0,4); });
+
+  // ---------- Save Card ----------
+  saveCardBtn.addEventListener('click', ()=>{
+    const name = cardName.value.trim();
+    const rawNum = cardNumber.value.replace(/\s+/g,'');
+    const exp = cardExpiry.value.trim();
+    const cvv = cardCvv.value.trim();
+
+    if(!name || rawNum.length < 12){ alert('Enter a valid cardholder name and number.'); return; }
+    if(!luhnCheck(rawNum)){ alert('Card number failed validation.'); return; }
+    if(!/^\d{2}\/\d{2}$/.test(exp) || !expiryValid(exp)){ alert('Enter a valid future expiry (MM/YY).'); return; }
+    if(cvv.length < 3){ alert('Enter a valid CVV.'); return; }
+
+    const brand = detectBrand(rawNum);
+    const last4 = rawNum.slice(-4);
+
+    const id = uid();
+    const method = { id, type:'card', brand, last4, exp, name };
+
+    methods.push(method);
+    setJSON(KEY_PAYMENTS, methods);
+
+    if(cardDefault.checked){
+      defaultId = id; localStorage.setItem(KEY_DEFAULT, id);
+    }
+
+    // clear inputs (and never store full number/cvv)
+    cardName.value = ''; cardNumber.value = ''; cardExpiry.value=''; cardCvv.value=''; cardDefault.checked = false;
+
+    renderMethods();
+    showToast('Card saved');
+  });
+
+  // ---------- Save Wallet ----------
+  saveWalletBtn.addEventListener('click', ()=>{
+    const provider = walletProvider.value;
+    const wid = walletId.value.trim();
+    if(!wid){ alert('Enter wallet ID / phone / email.'); return; }
+
+    const id = uid();
+    const method = { id, type:'wallet', provider, walletId: wid };
+    methods.push(method);
+    setJSON(KEY_PAYMENTS, methods);
+
+    if(walletDefault.checked){
+      defaultId = id; localStorage.setItem(KEY_DEFAULT, id);
+    }
+
+    walletId.value = ''; walletDefault.checked = false;
+    renderMethods();
+    showToast('Wallet saved');
+  });
+</script>
+</body>
+</html>

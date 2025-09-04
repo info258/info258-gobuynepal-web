@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Confirm Order • GoBuy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{
+  --purple:#7a1ea1; --purple-600:#6b3fb3; --ink:#1f2033; --muted:#7e8190;
+  --ok:#22c55e; --warn:#e67e22; --danger:#ef4444;
+  --bg:#fafbff; --card:#1f2033; --line:#ececf3; --white:#fff;
+}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.page{max-width:860px;margin:24px auto 76px;padding:0 16px}
+.h1{font-weight:900;font-size:34px;color:#5f3ab8;letter-spacing:.4px;margin:8px 0 6px}
+.card{margin-top:14px;background:var(--card);color:var(--white);border-radius:18px;padding:16px;border:1px solid #0001;box-shadow:0 18px 36px rgba(0,0,0,.12)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.badge{background:var(--warn);color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;white-space:nowrap}
+.badge.ok{background:var(--ok)} .badge.cancelled{background:var(--danger)}
+.actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--purple-600);color:#fff;border-radius:12px;padding:12px 16px;font-weight:900;text-decoration:none;cursor:pointer;transition:transform .04s ease, filter .2s ease}
+.btn:active{transform:translateY(1px)} .btn.secondary{background:#64748b} .btn.info{background:#3b82f6}
+.meta{margin-top:14px;display:grid;gap:8px}
+.line{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.line div:last-child{font-weight:700}
+.note{color:#c8c9d3;font-size:13px;margin-top:6px}
+.box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.subtitle{font-size:14px;color:var(--muted);margin-bottom:8px}
+.list{display:grid;gap:8px;margin-top:8px}
+.pill{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;cursor:pointer;transition:background .15s ease, transform .04s}
+.pill:hover{background:#f8f8ff} .pill:active{transform:translateY(1px)}
+.input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+.nav{position:fixed;left:0;right:0;bottom:0;height:58px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center}
+.nav a{color:var(--muted);text-decoration:none;font-size:20px;padding:8px 14px;border-radius:10px}
+.nav a.active{color:var(--purple);background:#f3e9ff}
+.toast{position:fixed;z-index:40;left:50%;transform:translateX(-50%);bottom:84px;background:#1e272e;color:#fff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 24px rgba(0,0,0,.16);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);pointer-events:auto}
+@media (min-width:720px){ .toast{bottom:24px;left:auto;right:24px;transform:none}.toast.show{transform:translateY(-4px)} }
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="h1">CONFIRM ORDER</h1>
+
+    <!-- Helper (no id) -->
+    <section id="helper" class="box" style="display:none">
+      <div style="font-weight:800;margin-bottom:6px">Select your order</div>
+      <p class="subtitle">This page was opened without an ID. Pick from recent orders or enter one manually.</p>
+      <div id="recent" class="list"></div>
+      <form id="open-form" style="display:flex;gap:8px;margin-top:10px">
+        <input id="manualId" class="input" placeholder="Type order id (e.g., 8001)" inputmode="numeric" aria-label="Order ID"/>
+        <button class="btn" type="submit"><i class="fa-solid fa-arrow-right"></i>Open</button>
+      </form>
+    </section>
+
+    <!-- Order card -->
+    <article id="card" class="card" style="display:none">
+      <div class="row">
+        <div style="font-size:22px;font-weight:900">Order <span id="oid">#</span></div>
+        <div id="chip" class="badge">Awaiting Payment</div>
+      </div>
+
+      <div class="actions">
+        <a id="payLink" class="btn" href="#"><i class="fa-solid fa-bolt"></i><span>Pay Now</span></a>
+        <a id="shareLink" class="btn info" href="#"><i class="fa-solid fa-share-from-square"></i> Share Link</a>
+        <a id="copyLink" class="btn secondary" href="#"><i class="fa-solid fa-link"></i> Copy Link</a>
+      </div>
+
+      <div class="meta">
+        <div class="line"><div>Customer</div><div id="cust">—</div></div>
+        <div class="line"><div>Item</div><div id="item">—</div></div>
+        <div class="line"><div>Total</div><div id="total">—</div></div>
+        <div class="line"><div>Balance</div><div id="balance">—</div></div>
+        <p class="note">After payment, this page updates to <b>Paid</b> and the seller’s dashboard updates instantly.</p>
+      </div>
+    </article>
+  </div>
+
+  <nav class="nav" aria-label="App navigation">
+    <a href="#" class="active"><i class="fa-solid fa-house"></i></a>
+    <a href="#"><i class="fa-regular fa-pen-to-square"></i></a>
+    <a href="#"><i class="fa-solid fa-cart-shopping"></i></a>
+    <a href="#"><i class="fa-regular fa-bell"></i></a>
+    <a href="#"><i class="fa-regular fa-user"></i></a>
+  </nav>
+
+  <div id="toast" class="toast"><i class="fa-solid fa-circle-check" style="color:#22c55e"></i><span id="toast-text">Success</span></div>
+
+<script>
+/* ---------- Utilities ---------- */
+const $ = s => document.querySelector(s);
+const money = (n => new Intl.NumberFormat('en-NP',{style:'currency',currency:'NPR'}).format(Number(n||0)));
+const KEY='ADMIN_ORDERS';
+const qs = new URLSearchParams(location.search);
+
+function getOrders(){ return JSON.parse(localStorage.getItem(KEY)||'[]'); }
+function setOrders(v){ localStorage.setItem(KEY, JSON.stringify(v)); }
+function upsertOrder(o){ const a=getOrders(); const i=a.findIndex(x=>String(x.id)===String(o.id)); i>-1?a.splice(i,1,o):a.unshift(o); setOrders(a); }
+function getOrder(id){ return getOrders().find(o=>String(o.id)===String(id)); }
+function toast(t){ const el=document.getElementById('toast'); document.getElementById('toast-text').textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
+function setQuery(id){ const u=new URL(location.href); u.searchParams.set('order',id); history.replaceState({},'',u); }
+
+/* ---------- Demo seed (only if empty) ---------- */
+(function(){
+  if(getOrders().length) return;
+  const mk=(id,name,status='Awaiting Payment',total=2000)=>({
+    id,created:Date.now()-id*1000,customer:{name},items:[{name:'GoBuy Nepal',qty:1,price:total}],
+    totals:{total},payment:{status: status==='Paid'?'Paid':'Unpaid',amount: status==='Paid'?total:0},status
+  });
+  setOrders([
+    mk(8004,'GoBuy Nepal','Cancelled',1900),
+    mk(8003,'GoBuy Nepal','Awaiting Payment',1300),
+    mk(8002,'GoBuy Nepal','Awaiting Payment',2500),
+    mk(8001,'GoBuy Nepal','Awaiting Payment',1700)
+  ]);
+})();
+
+/* ---------- Rendering with status normalization ---------- */
+function render(o){
+  if(!o){ showHelper(); return; }
+
+  document.getElementById('helper').style.display='none';
+  document.getElementById('card').style.display='block';
+  localStorage.setItem('LAST_PAYLINK_ID', o.id);
+  setQuery(o.id);
+
+  document.getElementById('oid').textContent = '#'+o.id;
+  document.getElementById('cust').textContent = o.customer?.name || 'Customer';
+
+  const it = o.items?.[0] || {};
+  document.getElementById('item').textContent = `${it.name || '—'} × ${it.qty || 1}`;
+
+  const possibleTotal = [o.totals?.total, it.total, it.price, o.total, o.amount, o.payment?.due]
+    .find(v => v !== undefined && v !== null);
+  const total = Number(possibleTotal || 0);
+  const paid  = Number(o.payment?.amount || 0);
+  const balance = Math.max(0, total - paid);
+
+  document.getElementById('total').textContent   = money(total);
+  document.getElementById('balance').textContent = money(balance);
+
+  // Normalize status
+  let status = (o.status || o.payment?.status || 'Awaiting Payment');
+  if(status !== 'Cancelled' && (total <= 0 || paid >= total)){
+    status = 'Paid';
+    o.status = 'Paid';
+    o.payment = Object.assign({}, o.payment, { status:'Paid', amount: Math.max(paid,total), method: o.payment?.method || 'Online', at: o.payment?.at || Date.now() });
+    upsertOrder(o);
+  }
+
+  const chip = document.getElementById('chip');
+  chip.textContent = status;
+  chip.className = 'badge ' + (status==='Paid' ? 'ok' : status==='Cancelled' ? 'cancelled' : '');
+
+  // Primary action link
+  const payLink = document.getElementById('payLink');
+  const payText = payLink.querySelector('span');
+
+  if(status === 'Paid'){
+    payText.textContent = 'View Receipt';
+    payLink.href = `receipt.html?order=${o.id}`;
+  }else if(status === 'Cancelled'){
+    payText.textContent = 'Order Cancelled';
+    payLink.href = `confirm.html?order=${o.id}`;
+  }else{
+    if(balance <= 0){
+      payText.textContent = 'View Receipt';
+      payLink.href = `receipt.html?order=${o.id}`;
+    }else{
+      payText.textContent = 'Pay Now';
+      payLink.href = `checkout.html?order=${o.id}`;
+    }
+  }
+
+  // Share / Copy now navigate to dedicated pages
+  const confirmURL = new URL('confirm.html', location.href);
+  confirmURL.searchParams.set('order', o.id);
+  document.getElementById('shareLink').href = `share.html?order=${o.id}`;
+  document.getElementById('copyLink').href  = `copy.html?order=${o.id}`;
+}
+
+function showHelper(){
+  document.getElementById('card').style.display='none';
+  document.getElementById('helper').style.display='block';
+  const rec = getOrders().slice().sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,6);
+  const box = document.getElementById('recent'); box.innerHTML='';
+  if(!rec.length){ box.innerHTML='<div class="subtitle">No orders yet.</div>'; return; }
+  rec.forEach(o=>{
+    const b=document.createElement('button'); b.type='button'; b.className='pill';
+    const st=o.status||o.payment?.status||'Awaiting Payment';
+    b.innerHTML=`<span><b>#${o.id}</b> • ${o.customer?.name||'Customer'}</span><span class="subtitle">${st}</span>`;
+    b.onclick=()=>render(o); box.appendChild(b);
+  });
+}
+
+/* ---------- Init ---------- */
+(function(){
+  const id = qs.get('order') || qs.get('id') || localStorage.getItem('LAST_PAYLINK_ID') || '';
+  const o = id ? getOrder(id) : null;
+  if(o) render(o); else showHelper();
+})();
+document.getElementById('open-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const id = document.getElementById('manualId').value.trim();
+  const o = getOrder(id);
+  if(!o) { const t=document.getElementById('toast'); t.classList.add('show'); document.getElementById('toast-text').textContent='Order not found'; setTimeout(()=>t.classList.remove('show'),1800); return; }
+  render(o);
+});
+</script>
+</body>
+</html>

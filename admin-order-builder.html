@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Admin • Order Builder</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --ink:#1f2033; --muted:#7e8190; --line:#e6e7ef;
+  --bg:#f6f7fb; --card:#fff; --ok:#2ecc71; --bad:#e74c3c; --blue:#3aa0ff;
+  --radius:14px; --shadow:0 12px 24px rgba(27,31,35,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.page{max-width:980px;margin:18px auto;padding:0 16px; display:grid; gap:14px}
+
+.top{display:flex;align-items:center;gap:10px; flex-wrap:wrap}
+.top .t{font-weight:900;font-size:22px;color:#3c3270;margin-right:auto}
+.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;cursor:pointer}
+.btn:hover{background:#fafafa}
+.btn i{margin-right:8px}
+.btn.purple{border-color:#e6def7;color:#6b3fb3}
+.btn.green{border-color:#c7f9cc;color:#0f5132}
+.btn:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.h{padding:12px 14px;border-bottom:1px solid var(--line);font-weight:900}
+.body{padding:12px 14px;display:grid;gap:12px}
+
+label{font-size:13px;color:#3c3270;font-weight:800}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+.summary{border-top:1px dashed var(--line);padding-top:8px}
+.break{display:grid;gap:6px}
+.line{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.hr{height:1px;background:var(--line);margin:6px 0}
+.total{font-size:22px;font-weight:900}
+.note{color:var(--muted);font-size:12px}
+.toast{position:fixed;right:14px;bottom:14px;background:#1f2033;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 10px 20px rgba(0,0,0,.15);display:none;z-index:9999}
+.linkbox{display:flex;gap:8px;align-items:center}
+.linkbox input{flex:1}
+.small{font-size:12px;color:var(--muted)}
+.locked{background:#f6f7fb}
+.lock-note{font-size:12px;color:#6b7280;margin-top:-6px}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="top">
+    <div class="t">Order Builder</div>
+    <button class="btn" id="btnSave"><i class="fa-regular fa-floppy-disk"></i>Save draft</button>
+    <button class="btn" id="btnGen"><i class="fa-solid fa-hashtag"></i>Generate ID</button>
+    <button class="btn purple" id="btnPayLink"><i class="fa-solid fa-link"></i>Create Pay Link</button>
+    <button class="btn green" id="btnCreate"><i class="fa-solid fa-rocket"></i>Create Order</button>
+  </div>
+
+  <section class="card">
+    <div class="h">Build Payable Order</div>
+    <div class="body" id="builder">
+
+      <!-- Customer -->
+      <div class="grid2">
+        <div>
+          <label>Customer name</label>
+          <input id="c_name" placeholder="Full name">
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="c_phone" placeholder="+977-98xxxxxxx">
+        </div>
+        <div>
+          <label>Email</label>
+          <input id="c_email" placeholder="name@email.com">
+        </div>
+        <div>
+          <label>Reference / Notes</label>
+          <input id="c_ref" placeholder="e.g. Request form #R-2311">
+        </div>
+      </div>
+
+      <div>
+        <label>Customer notes / address</label>
+        <textarea id="c_notes" placeholder="Paste customer address or notes…"></textarea>
+        <div id="lockNoteC" class="lock-note" style="display:none">Locked (from customer request)</div>
+      </div>
+
+      <!-- Items -->
+      <div>
+        <label style="font-size:16px;font-weight:900">Items</label>
+        <div class="grid3" style="margin-top:6px">
+          <input id="i_name" placeholder="Product name">
+          <input id="i_specs" placeholder="Link / Specs (paste)">
+          <input id="i_qty" type="number" min="1" value="1" placeholder="Qty">
+        </div>
+        <div class="grid3" style="margin-top:6px">
+          <input id="i_price" type="number" min="0" step="0.01" value="0" placeholder="Price (NPR)">
+          <input id="i_weight" type="number" min="0" step="0.01" value="0" placeholder="Weight (kg)">
+          <input id="i_link" placeholder="Product link (optional)">
+        </div>
+        <div id="lockNoteI" class="lock-note" style="display:none">Locked (from customer request)</div>
+        <div class="small">If the request was a bulk list, the first item is shown here for quick pricing.</div>
+      </div>
+
+      <!-- Shipping & Logistics -->
+      <div>
+        <label style="font-size:16px;font-weight:900">Shipping & Logistics</label>
+        <div class="grid3" style="margin-top:6px">
+          <select id="ship_mode">
+            <option>Air</option><option>Sea</option><option>Courier</option>
+          </select>
+          <select id="ship_type">
+            <option>Home Delivery</option><option>Pickup Point</option>
+          </select>
+          <input id="ship_city" placeholder="Destination city (optional)">
+        </div>
+      </div>
+
+      <!-- Payment & Summary -->
+      <div>
+        <label style="font-size:16px;font-weight:900">Payment & Summary</label>
+        <div class="grid3" style="margin-top:6px">
+          <select id="pay_status">
+            <option selected>Awaiting Payment</option>
+            <option>Paid</option>
+            <option>Shipped</option>
+          </select>
+          <select id="pay_method">
+            <option>Cash</option><option>Bank</option><option>Card</option><option>eWallet</option>
+          </select>
+          <input id="amount_paid" type="number" min="0" step="0.01" value="0" placeholder="Amount Paid (NPR)">
+        </div>
+
+        <div class="grid3" style="margin-top:6px">
+          <input id="duty_custom" type="number" min="0" step="0.01" value="0" placeholder="Custom Duty (NPR)">
+          <input id="duty_excise" type="number" min="0" step="0.01" value="0" placeholder="Excise Duty (NPR)">
+          <input id="delivery_internal" type="number" min="0" step="0.01" value="0" placeholder="Internal Delivery (NPR)">
+        </div>
+        <div class="grid3" style="margin-top:6px">
+          <input id="shipping_cost" type="number" min="0" step="0.01" value="0" placeholder="Shipping (NPR)">
+          <input id="vat" type="number" min="0" step="0.01" value="0" placeholder="VAT (NPR)">
+          <input id="service_charge" type="number" min="0" step="0.01" value="0" placeholder="Service Charge (NPR)">
+        </div>
+        <div class="grid3" style="margin-top:6px">
+          <input id="discount" type="number" min="0" step="0.01" value="0" placeholder="Discount (NPR)">
+          <div></div><div></div>
+        </div>
+
+        <div class="summary">
+          <div class="break" id="breakdown"></div>
+          <div class="hr"></div>
+          <div class="line"><div class="total">Total</div><div class="total" id="total">NPR 0.00</div></div>
+          <div class="line"><div>Amount Paid</div><div id="paid">NPR 0.00</div></div>
+          <div class="line"><div><b>Balance</b></div><div id="balance"><b>NPR 0.00</b></div></div>
+          <div class="note" id="statusChip">Status: Awaiting Payment</div>
+          <div id="linkWrap" class="linkbox" style="display:none;margin-top:8px">
+            <input id="payUrl" readonly>
+            <button class="btn" id="copyBtn"><i class="fa-regular fa-copy"></i>Copy</button>
+            <a class="btn purple" id="openBtn" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i>Open</a>
+          </div>
+          <div class="small">Creating a Pay Link or Order also marks the source request as <b>converted</b>, removing it from the New list.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ---------- tiny helpers ---------- */
+const $  = s => document.querySelector(s);
+const fmt = n => 'NPR ' + (Number(n||0)).toFixed(2);
+const toast = (t)=>{ const el=$('#toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',1800); };
+const qp = new URLSearchParams(location.search);
+
+/* ---------- lock/unlock ---------- */
+function setLockFor(ids, locked){
+  ids.forEach(id=>{
+    const el = $(id);
+    if(!el) return;
+    el.readOnly = locked;
+    el.disabled = locked && el.tagName === 'SELECT';
+    el.classList.toggle('locked', locked);
+  });
+}
+function lockCustomerAndItem(locked){
+  setLockFor(['#c_name','#c_phone','#c_email','#c_notes','#i_name','#i_specs','#i_qty','#i_link'], locked);
+  $('#lockNoteC').style.display = locked ? 'block' : 'none';
+  $('#lockNoteI').style.display = locked ? 'block' : 'none';
+}
+
+/* ---------- prefill from ADMIN_PREFILL_REQUEST ---------- */
+let PREFILL = null; // {requestId, refId, customer, items[], lockAll}
+(() => {
+  try{ PREFILL = JSON.parse(localStorage.getItem('ADMIN_PREFILL_REQUEST')||'null'); }catch{}
+  if(!PREFILL) return;
+  const c = PREFILL.customer || {};
+  const it = Array.isArray(PREFILL.items) ? PREFILL.items[0] : {};
+
+  // fill
+  $('#c_name').value  = c.name  || '';
+  $('#c_phone').value = c.phone || '';
+  $('#c_email').value = c.email || '';
+  $('#c_ref').value   = PREFILL.refId ? `Request ${PREFILL.refId}` : '';
+  $('#c_notes').value = c.notes || (c.city ? `City: ${c.city}` : '');
+
+  $('#i_name').value   = it.name  || '';
+  $('#i_specs').value  = it.specs || '';
+  $('#i_qty').value    = Number(it.qty || 1);
+  $('#i_price').value  = Number(it.price || 0);
+  $('#i_weight').value = Number(it.weight || 0);
+  $('#i_link').value   = it.link  || '';
+
+  if (qp.get('locked')==='1' || PREFILL.lockAll) lockCustomerAndItem(true);
+})();
+</script>
+
+<!-- Firestore helper to mark request converted -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAuth, connectAuthEmulator, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { getFirestore, connectFirestoreEmulator, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  const cfg = {
+    apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+    authDomain:"customer-login-e5ecd.firebaseapp.com",
+    projectId:"customer-login-e5ecd",
+    storageBucket:"customer-login-e5ecd.appspot.com",
+    messagingSenderId:"569269085839",
+    appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+  };
+
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  if (["localhost","127.0.0.1"].includes(location.hostname)) {
+    connectAuthEmulator(auth,"http://127.0.0.1:9099",{disableWarnings:true});
+    connectFirestoreEmulator(db,"127.0.0.1",8080);
+  }
+  try{ await signInAnonymously(auth); }catch{}
+
+  // expose one function
+  window.__markRequestConverted = async function(docId){
+    if(!docId) return;
+    try{ await updateDoc(doc(db,'requests',docId), { status:'converted' }); }
+    catch(e){ console.warn('Could not update request:', e?.code||e); }
+  }
+</script>
+
+<script>
+/* ---------- totals ---------- */
+const watch = [
+  '#i_qty','#i_price','#duty_custom','#duty_excise','#delivery_internal',
+  '#shipping_cost','#vat','#service_charge','#discount','#amount_paid','#pay_status'
+];
+document.addEventListener('input', e=>{ if(watch.some(sel=>e.target.matches(sel))) recalc(); });
+
+function recalc(){
+  const qty = Number($('#i_qty').value||1);
+  const price = Number($('#i_price').value||0);
+  const items = qty * price;
+
+  const customDuty = Number($('#duty_custom').value||0);
+  const exciseDuty = Number($('#duty_excise').value||0);
+  const internalDelivery = Number($('#delivery_internal').value||0);
+  const shipping = Number($('#shipping_cost').value||0);
+  const vat = Number($('#vat').value||0);
+  const service = Number($('#service_charge').value||0);
+  const discount = Number($('#discount').value||0);
+  const paid = Number($('#amount_paid').value||0);
+
+  const lines = [
+    ['Items', items],
+    ['Custom Duty', customDuty],
+    ['Excise Duty', exciseDuty],
+    ['Internal Delivery', internalDelivery],
+    ['Shipping', shipping],
+    ['VAT', vat],
+    ['Service Charge', service],
+    ['Discount', -discount]
+  ];
+  const total = lines.reduce((s, [,v]) => s + Number(v||0), 0);
+  const balance = total - paid;
+
+  const box = $('#breakdown'); box.innerHTML = '';
+  lines.forEach(([k,v],i)=>{ if(i && Math.abs(v)<0.0001) return; const d=document.createElement('div'); d.className='line'; d.innerHTML=`<div>${k}</div><div>${fmt(v)}</div>`; box.appendChild(d); });
+  $('#total').textContent = fmt(total);
+  $('#paid').textContent = fmt(paid);
+  $('#balance').textContent = fmt(balance);
+  $('#statusChip').textContent = `Status: ${$('#pay_status').value}`;
+  return { total };
+}
+
+/* ---------- gather & store ---------- */
+function collectForm(){
+  const calc = recalc();
+  const customer = {
+    name: $('#c_name').value.trim(),
+    phone: $('#c_phone').value.trim(),
+    email: $('#c_email').value.trim(),
+    ref: $('#c_ref').value.trim(),
+    notes: $('#c_notes').value.trim()
+  };
+  const item = {
+    name: $('#i_name').value.trim(),
+    specs: $('#i_specs').value.trim(),
+    qty: Number($('#i_qty').value||1),
+    price: Number($('#i_price').value||0),
+    weight: Number($('#i_weight').value||0),
+    link: $('#i_link').value.trim()
+  };
+  const shipping = { mode: $('#ship_mode').value, type: $('#ship_type').value, city: $('#ship_city').value.trim() };
+  const charges  = {
+    custom: Number($('#duty_custom').value||0),
+    excise: Number($('#duty_excise').value||0),
+    internal: Number($('#delivery_internal').value||0),
+    shipping: Number($('#shipping_cost').value||0),
+    vat: Number($('#vat').value||0),
+    service: Number($('#service_charge').value||0),
+    discount: Number($('#discount').value||0)
+  };
+  const payment  = { status: $('#pay_status').value, method: $('#pay_method').value, amount: Number($('#amount_paid').value||0) };
+  const totals   = { items: item.qty*item.price, total: calc.total };
+  return { customer, items:[item], shipping, charges, payment, totals };
+}
+function saveDraft(){ localStorage.setItem('ORDER_BUILDER_DRAFT', JSON.stringify(collectForm())); toast('Draft saved'); }
+function loadDraft(){ const d=JSON.parse(localStorage.getItem('ORDER_BUILDER_DRAFT')||'null'); if(!d) return;
+  const set=(s,v)=>{const el=$(s); if(el) el.value=v;};
+  set('#c_name',d.customer?.name||''); set('#c_phone',d.customer?.phone||''); set('#c_email',d.customer?.email||'');
+  set('#c_ref',d.customer?.ref||''); set('#c_notes',d.customer?.notes||'');
+  set('#i_name',d.items?.[0]?.name||''); set('#i_specs',d.items?.[0]?.specs||''); set('#i_qty',d.items?.[0]?.qty||1);
+  set('#i_price',d.items?.[0]?.price||0); set('#i_weight',d.items?.[0]?.weight||0); set('#i_link',d.items?.[0]?.link||'');
+  set('#ship_mode',d.shipping?.mode||'Air'); set('#ship_type',d.shipping?.type||'Home Delivery'); set('#ship_city',d.shipping?.city||'');
+  set('#pay_status',d.payment?.status||'Awaiting Payment'); set('#pay_method',d.payment?.method||'Cash'); set('#amount_paid',d.payment?.amount||0);
+  set('#duty_custom',d.charges?.custom||0); set('#duty_excise',d.charges?.excise||0); set('#delivery_internal',d.charges?.internal||0);
+  set('#shipping_cost',d.charges?.shipping||0); set('#vat',d.charges?.vat||0); set('#service_charge',d.charges?.service||0); set('#discount',d.charges?.discount||0);
+  recalc();
+}
+function nextOrderId(){ const cur = Number(localStorage.getItem('ADMIN_LAST_ID')||8000) + 1; localStorage.setItem('ADMIN_LAST_ID', String(cur)); return cur; }
+function computePendingCount(){ const list = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]'); return list.filter(o => (o.payment?.status||o.status)==='Awaiting Payment').length; }
+
+/* ===== pushOrder with solid timestamp + 24h expiry ===== */
+function pushOrder(payload, opts = {}){
+  const list = JSON.parse(localStorage.getItem('ADMIN_ORDERS')||'[]');
+  const id = opts.id || nextOrderId();
+  const now = Date.now();
+
+  const rec = {
+    id,
+    customer: payload.customer,
+    items: payload.items,
+    shipping: payload.shipping,
+    charges: payload.charges,
+    payment: payload.payment,
+    totals: payload.totals,
+    status: payload.payment?.status || 'Awaiting Payment',
+    created: now,                      // number (ms) -> avoids “Invalid Date”
+    expiresAt: now + 24*60*60*1000,    // 24h window for payment
+    updated: 'now',
+    source: opts.source || 'Builder',
+    sourceRequestId: PREFILL?.requestId || null
+  };
+
+  list.unshift(rec);
+  localStorage.setItem('ADMIN_ORDERS', JSON.stringify(list));
+  localStorage.setItem('ADMIN_ORDERS_UPDATED', String(now));
+  localStorage.setItem('ADMIN_PENDING_COUNT', String(computePendingCount()));
+  return rec;
+}
+
+/* ---------- buttons ---------- */
+$('#btnSave').addEventListener('click', saveDraft);
+$('#btnGen').addEventListener('click', ()=>{ const id=nextOrderId(); $('#c_ref').value=`GBN-${id}`; toast('ID generated: #'+id); });
+
+/* After creating order: mark request converted (Firestore) + hide locally */
+async function afterCreate(recId){
+  try{
+    if (window.__markRequestConverted && PREFILL?.requestId) {
+      await window.__markRequestConverted(PREFILL.requestId);
+    }
+  }catch{}
+  // Also push to a local hide list so admin-new-orders.html removes it instantly
+  if (PREFILL?.requestId) {
+    const arr = JSON.parse(localStorage.getItem('ADMIN_CONVERTED_RIDS')||'[]');
+    if (!arr.includes(PREFILL.requestId)) arr.push(PREFILL.requestId);
+    localStorage.setItem('ADMIN_CONVERTED_RIDS', JSON.stringify(arr));
+  }
+  localStorage.removeItem('ADMIN_PREFILL_REQUEST');
+  localStorage.setItem('ADMIN_ORDERS_UPDATED', String(Date.now()));
+}
+
+$('#btnPayLink').addEventListener('click', async ()=>{
+  const data = collectForm();
+  data.payment.status = 'Awaiting Payment';
+  const rec = pushOrder(data, {source:'PayLink'});
+  const url = `confirm-order.html?order=${encodeURIComponent(rec.id)}`;
+  const base = location.href.replace(/[^/]+$/,'');
+  $('#payUrl').value = base + url;
+  $('#openBtn').href = url;
+  $('#linkWrap').style.display = 'flex';
+  navigator.clipboard?.writeText($('#payUrl').value).catch(()=>{});
+  toast(`Pay link created for #${rec.id}`);
+  window.open(url,'_blank');
+  await afterCreate(rec.id);
+});
+
+$('#copyBtn').addEventListener('click', ()=> navigator.clipboard?.writeText($('#payUrl').value).then(()=>toast('Link copied')));
+
+$('#btnCreate').addEventListener('click', async ()=>{
+  const data = collectForm();
+  if (data.payment.status !== 'Paid') data.payment.status = 'Awaiting Payment';
+  const rec = pushOrder(data, {source:'Manual'});
+  toast('Order created: #' + rec.id);
+  await afterCreate(rec.id);
+  location.href = 'admin-pending-payments.html?new=' + encodeURIComponent(rec.id);
+});
+
+/* ---------- boot ---------- */
+loadDraft();
+recalc();
+if (qp.get('locked') === '1') lockCustomerAndItem(true);
+</script>
+</body>
+</html>

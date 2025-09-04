@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Confirm Order • GoBuy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+:root{
+  --purple:#7a1ea1; --ink:#ededf0; --muted:#7e8190; --bg:#fafbff; --card:#020203;
+  --ok:#2ecc71; --warn:#e67e22; --line:#ececf3; --shadow:0 12px 24px rgba(27,31,35,.1);
+  --radius:16px;
+}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.page{max-width:760px;margin:16px auto 84px;padding:0 16px}
+.h1{font-weight:900;font-size:28px;letter-spacing:.2px;color:var(--purple);margin:16px 0 12px}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 16px 14px}
+.card h3{margin:0 0 12px;font-size:18px}
+.badges{display:flex;gap:10px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600}
+.badge.warn{background:rgba(230,126,34,.12);color:var(--warn)}
+.btn{cursor:pointer;border:0;background:var(--purple);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 6px 14px rgba(122,30,161,.22)}
+.btn:active{transform:translateY(1px)}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);padding:8px 8px env(safe-area-inset-bottom,0)}
+.nav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;
+  padding:6px 4px 8px;text-decoration:none;color:var(--purple);font-size:12px}
+.nav a .label{opacity:.85}
+.nav a.active .label{font-weight:800}
+.nav a .fa-solid{font-size:18px}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+</style>
+</head>
+<body>
+  <main class="page" id="app">
+    <h1 class="h1">CONFIRM ORDER</h1>
+
+    <section class="card" aria-labelledby="order-title">
+      <h3 id="order-title">Order #<span id="order-id">1234</span></h3>
+
+      <div class="badges">
+        <span class="badge warn"><i class="fa-solid fa-clock"></i>Awaiting Payment</span>
+        <button id="payNow" class="btn" type="button">
+          <i class="fa-solid fa-credit-card"></i> &nbsp;Pay Now
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="nav" role="navigation" aria-label="Bottom">
+    <a href="#" data-route="home"     id="tab-home"><i class="fa-solid fa-house"></i><span class="label">Home</span></a>
+    <a href="#" data-route="explore"  id="tab-explore"><i class="fa-solid fa-compass"></i><span class="label">Explore</span></a>
+    <a href="#" data-route="cart"     id="tab-cart"><i class="fa-solid fa-cart-shopping"></i><span class="label">Cart</span></a>
+    <a href="#" data-route="alerts"   id="tab-alerts"><i class="fa-solid fa-bell"></i><span class="label">Alerts</span></a>
+    <a href="#" data-route="profile"  id="tab-profile"><i class="fa-solid fa-user"></i><span class="label">Profile</span></a>
+  </nav>
+
+<script>
+/* ---------- ROUTING (edit filenames here if needed) ---------- */
+const ROUTES = {
+  home:    'index.html',
+  explore: 'explore.html',
+  cart:    'cart.html',
+  alerts:  'alerts.html',
+  profile: 'profile.html'
+};
+const CHECKOUT_URL = 'checkout.html'; // ← your checkout page (was “payments.html” before)
+
+/* ---------- STATE (example: pull from query or localStorage) ---------- */
+const urlParams = new URLSearchParams(location.search);
+const orderId = urlParams.get('orderId') || localStorage.getItem('currentOrderId') || '1234';
+document.getElementById('order-id').textContent = orderId;
+
+/* ---------- PAY NOW → checkout.html?orderId=XXXX ---------- */
+document.getElementById('payNow').addEventListener('click', () => {
+  // persist for later pages if needed
+  localStorage.setItem('currentOrderId', orderId);
+  // redirect with query
+  location.href = `${CHECKOUT_URL}?orderId=${encodeURIComponent(orderId)}&from=confirm`;
+});
+
+/* ---------- Bottom Nav handlers ---------- */
+function wireNav() {
+  document.querySelectorAll('.nav a').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const key = a.dataset.route;
+      const target = ROUTES[key];
+      if (target) location.href = target;
+    });
+  });
+
+  // mark current tab if URL matches a route
+  const path = location.pathname.split('/').pop().toLowerCase();
+  const currentKey = Object.keys(ROUTES).find(k => ROUTES[k].toLowerCase() === path) || null;
+  if (currentKey) document.querySelector(`#tab-${currentKey}`)?.classList.add('active');
+}
+wireNav();
+</script>
+</body>
+</html>

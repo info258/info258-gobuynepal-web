@@ -1,0 +1,135 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Header */
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-pic {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.chat-user-info {
+  flex: 1;
+}
+
+.chat-username {
+  font-weight: bold;
+}
+
+.chat-status {
+  font-size: 12px;
+  color: gray;
+}
+
+.chat-actions button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+/* Chat messages */
+.chat-messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background: #f8f8f8;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+  font-size: 15px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message-sent {
+  background-color: #7e22ce;
+  color: white;
+  margin-left: auto;
+  text-align: left;
+}
+
+.message-received {
+  background-color: #eee;
+  color: black;
+  text-align: left;
+}
+
+.message.highlight {
+  background-color: #f3f3f3;
+  color: #d97706;
+  font-weight: 500;
+}
+
+/* Input */
+.chat-input {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background: #fff;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.chat-input-buttons {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.chat-input-buttons button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+/* Mobile responsiveness */
+@media screen and (max-width: 480px) {
+  .chat-container {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  .message {
+    font-size: 14px;
+  }
+}

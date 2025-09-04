@@ -1,0 +1,25 @@
+rules_version = "2";
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function sizeUnder(b) { return request.resource != null && request.resource.size < b; }
+
+    match /chats/{uid}/uploads/{file} {
+      allow read: if true;
+      allow write: if isOwner(uid)
+        && sizeUnder(12 * 1024 * 1024)
+        && request.resource.contentType.matches(
+          "^(image/.*|application/pdf|text/plain|application/zip|application/msword|application/vnd.openxmlformats-officedocument.wordprocessingml.document)$"
+        );
+    }
+
+    match /users/{uid}/kyc/{file} {
+      allow read:  if isOwner(uid);
+      allow write: if isOwner(uid) && sizeUnder(8 * 1024 * 1024)
+        && request.resource.contentType.matches("^image/.*$");
+    }
+
+    match /{path=**} { allow read, write: if false; }
+  }
+}

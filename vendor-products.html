@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vendor Products • GoBuy Nepal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--purple:#7a1ea1;--ink:#1f2033;--muted:#7e8190;--bg:#f6f7fb;--card:#fff;--line:#ececf3;--radius:16px;--shadow:0 12px 24px rgba(27,31,35,.06)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{display:flex;min-height:100vh}.aside{width:260px;background:#fff;border-right:1px solid var(--line);padding:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--purple);font-size:20px;margin-bottom:14px}
+.nav a{display:flex;align-items:center;gap:12px;padding:12px 10px;border-radius:12px;color:#4a4d57;text-decoration:none}
+.nav a.active,.nav a:hover{background:#f3e9f9;color:#6d22a2}
+.main{flex:1;padding:18px 22px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.h1{font-size:30px;font-weight:900;margin:8px 0 16px}
+.input{padding:10px 12px;border:1px solid var(--line);border-radius:12px;width:100%}
+.btn{border:0;background:var(--purple);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+.table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.table th,.table td{padding:10px 12px;background:#fff}
+.tag{padding:4px 8px;border-radius:999px;font-size:12px;background:#f0f0f4}
+</style></head><body><div class="wrap">
+<aside class="aside">
+  <div class="brand"><i class="fa-solid fa-store"></i> GoBuy Nepal</div>
+  <nav class="nav">
+    <a href="vendor-dashboard.html"><i class="fa-solid fa-house"></i>Dashboard</a>
+    <a href="vendor-orders.html"><i class="fa-solid fa-clipboard-list"></i>Orders</a>
+    <a class="active" href="vendor-products.html"><i class="fa-solid fa-tags"></i>Products</a>
+    <a href="vendor-payouts.html"><i class="fa-solid fa-wallet"></i>Payouts</a>
+    <a href="vendor-chat.html"><i class="fa-solid fa-comments"></i>Chat</a>
+    <a href="vendor-settings.html"><i class="fa-solid fa-gear"></i>Settings</a>
+  </nav>
+</aside>
+<main class="main">
+  <h1 class="h1">Products</h1>
+
+  <section class="card">
+    <form id="prodForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end">
+      <input type="hidden" id="prodId"/>
+      <div><label>Name</label><input class="input" id="p_name" placeholder="Product name"/></div>
+      <div><label>Price (₹)</label><input class="input" id="p_price" type="number" min="0" step="0.01"/></div>
+      <div><label>Stock</label><input class="input" id="p_stock" type="number" min="0"/></div>
+      <div><label>SKU</label><input class="input" id="p_sku" placeholder="SKU"/></div>
+      <div><button class="btn" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
+    </form>
+  </section>
+
+  <section class="card">
+    <table class="table"><thead><tr><th>Name</th><th>Price</th><th>Stock</th><th>SKU</th><th>Actions</th></tr></thead><tbody id="prodBody"></tbody></table>
+  </section>
+</main>
+</div>
+<script>
+const VID=localStorage.getItem('vendorAuth'); if(!VID){ location.href='vendor-login.html?next=vendor-products.html'; }
+function key(){ return 'vd_products_'+VID; }
+function read(){ return JSON.parse(localStorage.getItem(key())||'[]'); }
+function write(v){ localStorage.setItem(key(), JSON.stringify(v)); }
+const body=document.getElementById('prodBody'); const form=document.getElementById('prodForm');
+function render(){
+  body.innerHTML = read().map(p=>`<tr>
+    <td>${p.name}</td><td>₹${p.price||0}</td><td><span class="tag">${p.stock||0}</span></td><td>${p.sku||''}</td>
+    <td><button class="btn" style="padding:6px 10px" onclick="edit('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn" style="padding:6px 10px;background:#ef4444" onclick="delp('${p.id}')"><i class="fa-solid fa-trash"></i></button></td>
+  </tr>`).join('');
+}
+window.edit=(id)=>{ const p=read().find(x=>x.id===id); if(!p)return; form.prodId.value=p.id; form.p_name.value=p.name; form.p_price.value=p.price; form.p_stock.value=p.stock; form.p_sku.value=p.sku; }
+window.delp=(id)=>{ write(read().filter(x=>x.id!==id)); render(); }
+form.onsubmit=(e)=>{ e.preventDefault(); const id=form.prodId.value || ('P-'+Date.now().toString(36).toUpperCase());
+  const obj={id,name:form.p_name.value.trim(),price:Number(form.p_price.value||0),stock:Number(form.p_stock.value||0),sku:form.p_sku.value.trim()};
+  if(!obj.name){alert('Name required');return;}
+  const list=read(); const i=list.findIndex(x=>x.id===id); if(i>-1)list[i]=obj; else list.push(obj); write(list); form.reset(); form.prodId.value=''; render();
+};
+render();
+</script>
+</body></html>

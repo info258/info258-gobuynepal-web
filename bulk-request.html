@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Bulk Request</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--purple:#7a1ea1;--ink:#1f2033;--muted:#7e8190;--line:#e6e7ef;--bg:#f6f7fb;--radius:14px;--shadow:0 12px 24px rgba(27,31,35,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:980px;margin:28px auto;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.h .left{display:flex;align-items:center;gap:10px}
+.h .t{font-weight:900;font-size:22px;color:#3c3270}
+.b{padding:16px;display:grid;gap:14px}
+label{font-size:14px;color:#3c3270;font-weight:700}
+input,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:2fr 1fr 2fr auto;gap:12px;align-items:end}
+button{cursor:pointer;border:none}
+.btn{background:#d35400;color:#fff;padding:12px 18px;border-radius:999px;font-weight:800}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:#1f2033;padding:8px 12px;border-radius:999px;font-weight:800}
+.btn-ghost:hover{background:#fafbff}
+.note{font-size:13px;color:var(--muted)}
+.success{background:#ecfdf3;border:1px solid #bbf7d0;color:#065f46;padding:12px;border-radius:10px;display:none}
+.item{padding:12px;border:1px dashed var(--line);border-radius:12px;background:#fafbff}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+#toast{position:fixed;inset:auto 16px 16px auto;background:#111;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:9999}
+.badge{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+.ok{color:#065f46;background:#ecfdf3;border-color:#bbf7d0}
+.err{color:#7f1d1d;background:#fee2e2;border-color:#fecaca}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="h">
+      <div class="left">
+        <button class="btn-ghost" type="button" id="backBtn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <i class="fa-solid fa-list" style="color:#7a1ea1"></i>
+        <div class="t">Bulk request</div>
+        <span id="dbBadge" class="badge">DB: checking…</span>
+      </div>
+      <a href="request-order.html" class="btn" style="text-decoration:none;background:#7a1ea1"><i class="fa-solid fa-cart-plus"></i> Single request</a>
+    </div>
+
+    <form class="b" id="bulkForm">
+      <div class="success" id="okMsg">✅ Submitted! Your reference is <b id="refId"></b>.</div>
+
+      <div class="row">
+        <div><label>Full name</label><input name="name" placeholder="Customer name" required></div>
+        <div><label>Phone</label><input name="phone" placeholder="+977-98xxxxxxx" required></div>
+      </div>
+      <div class="row">
+        <div><label>Email</label><input name="email" type="email" placeholder="name@email.com"></div>
+        <div><label>City</label><input name="city" placeholder="Kathmandu"></div>
+      </div>
+      <div><label>Notes / address (optional)</label><textarea name="notes" placeholder="Any special instructions…"></textarea></div>
+
+      <hr style="border:none;border-top:1px solid var(--line)">
+
+      <div class="actions">
+        <button type="button" class="btn-ghost" id="addItem"><i class="fa-solid fa-plus"></i> Add product</button>
+        <div class="note">Add as many product links as you want, then submit once.</div>
+      </div>
+
+      <div id="items"></div>
+
+      <div><button class="btn" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit all</button></div>
+      <div class="note">We’ll review each link and send you a Pay Link if anything is due.</div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- UI (non-module) -->
+<script>
+  const itemsEl = document.getElementById('items');
+  const addBtn  = document.getElementById('addItem');
+  const form    = document.getElementById('bulkForm');
+  const toast   = document.getElementById('toast');
+  const okMsg   = document.getElementById('okMsg');
+  const refBox  = document.getElementById('refId');
+  const backBtn = document.getElementById('backBtn');
+  const dbBadge = document.getElementById('dbBadge');
+
+  backBtn.onclick = (e)=>{ e.preventDefault(); if(history.length>1) history.back(); else location.href='home.html'; };
+  const setBadge = (ok, txt)=>{ dbBadge.classList.remove('ok','err'); dbBadge.classList.add(ok?'ok':'err'); dbBadge.textContent = txt; };
+  const toastMsg = (m)=>{ toast.textContent=m; toast.style.display='block'; setTimeout(()=>toast.style.display='none',2400); };
+
+  function makeItemRow(){
+    const wrap = document.createElement('div'); wrap.className = 'item row3';
+    wrap.innerHTML = `
+      <div><label>Product link</label><input name="plink" placeholder="https://…" required></div>
+      <div><label>Qty</label><input name="qty" type="number" min="1" value="1" required></div>
+      <div><label>Specifications</label><input name="specs" placeholder="Color, size, options…"></div>
+      <button type="button" class="btn-ghost remove"><i class="fa-solid fa-xmark"></i> Remove</button>`;
+    wrap.querySelector('.remove').onclick = (ev)=>{ ev.preventDefault(); wrap.remove(); };
+    return wrap;
+  }
+  itemsEl.append(makeItemRow()); itemsEl.append(makeItemRow());
+  addBtn.onclick = (ev)=>{ ev.preventDefault(); itemsEl.append(makeItemRow()); };
+
+  // Expose for module; guard for duplications
+  window.__bulkUI__ = { itemsEl, form, toastMsg, okMsg, refBox, setBadge, makeItemRow };
+</script>
+
+<!-- Firebase (module) -->
+<script type="module">
+  // ---- Safe hooks (won't crash if previous script failed)
+  const hooks = window.__bulkUI__ || {};
+  const itemsEl = hooks.itemsEl || document.getElementById('items');
+  const form    = hooks.form    || document.getElementById('bulkForm');
+  const toastMsg= hooks.toastMsg|| ((m)=>alert(m));
+  const okMsg   = hooks.okMsg   || document.getElementById('okMsg');
+  const refBox  = hooks.refBox  || document.getElementById('refId');
+  const setBadge= hooks.setBadge|| ((ok,txt)=>{ const el=document.getElementById('dbBadge'); if(el){ el.textContent=txt; }});
+  const makeItemRow = hooks.makeItemRow || (()=>document.createElement('div'));
+
+  // ---- Imports
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInAnonymously, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  import { initializeFirestore, connectFirestoreEmulator, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+  // ---- Config
+  const cfg = {
+    apiKey:"AIzaSyC5BOwwDRg46t2LmWp-z8gOXEoyATioSQM",
+    authDomain:"customer-login-e5ecd.firebaseapp.com",
+    projectId:"customer-login-e5ecd",
+    storageBucket:"customer-login-e5ecd.appspot.com",
+    messagingSenderId:"569269085839",
+    appId:"1:569269085839:web:0192c9f28b8eb24ea2f2fa"
+  };
+
+  // ---- App & Firestore (force long polling = fixes many Windows/VPN issues)
+  const app = getApps().length ? getApp() : initializeApp(cfg);
+  const db  = initializeFirestore(app, { experimentalForceLongPolling:true, useFetchStreams:false });
+  const auth= getAuth(app);
+
+  // ---- Emulator host detection + overrides
+  const url = new URL(location.href);
+  const qp  = url.searchParams;
+  const localish = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+)$/.test(location.hostname) || qp.has('emu');
+  // Override host for Android emulator/webview with: ?emuHost=10.0.2.2 or set localStorage.EMU_HOST
+  const EMU_HOST = (qp.get('emuHost') || localStorage.getItem('EMU_HOST') || '127.0.0.1').trim();
+
+  try{
+    if (localish){
+      connectAuthEmulator(auth, `http://${EMU_HOST}:9099`, { disableWarnings:true });
+      connectFirestoreEmulator(db, EMU_HOST, 8080);
+      console.log('[Bulk] Using emulators at', EMU_HOST);
+    } else {
+      console.log('[Bulk] Using PRODUCTION project (no emulator match for host:', location.hostname, ')');
+    }
+  }catch(e){
+    console.warn('Emulator connection error:', e);
+  }
+
+  // ---- Ensure signed-in (anon ok)
+  onAuthStateChanged(auth, async (user)=>{
+    if (!user){
+      try { await signInAnonymously(auth); }
+      catch(e){ console.warn('Anon sign-in failed:', e); }
+    }
+    const ok = !!auth.currentUser;
+    setBadge(ok, ok ? 'DB: auth OK' : 'DB: auth missing');
+  });
+
+  // ---- Helpers
+  const genRef = ()=> 'BR-' + (Date.now().toString().slice(-6));
+
+  // ---- Submit
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    // Final auth check
+    if (!auth.currentUser){
+      try { await signInAnonymously(auth); } catch {}
+      if (!auth.currentUser){ toastMsg('Auth failed; cannot write.'); return; }
+    }
+
+    const fd = new FormData(form);
+    const customer = {
+      name: fd.get('name')?.trim()||"", phone: fd.get('phone')?.trim()||"",
+      email: fd.get('email')?.trim()||"", city: fd.get('city')?.trim()||"",
+      notes: fd.get('notes')?.trim()||""
+    };
+
+    const items = [];
+    itemsEl.querySelectorAll('.item').forEach(row=>{
+      const link = row.querySelector('input[name="plink"]').value.trim();
+      const qty  = Number(row.querySelector('input[name="qty"]').value||1);
+      const specs= row.querySelector('input[name="specs"]').value.trim();
+      if (link) items.push({ link, qty, specs });
+    });
+    if (!items.length){ toastMsg('Add at least one product link.'); return; }
+
+    try{
+      const refId = genRef();
+      await addDoc(collection(db,"requests"), {
+        refId, type:"bulk", createdAt: serverTimestamp(),
+        status:"new", customer, items, uid: auth.currentUser.uid
+      });
+
+      refBox.textContent = refId;
+      okMsg.style.display='block';
+      toastMsg('Submitted!');
+      form.reset();
+      itemsEl.innerHTML='';
+      itemsEl.append(makeItemRow());
+      setBadge(true, 'DB: write OK');
+    }catch(err){
+      console.error(err);
+      const msg = String(err?.message||'').toLowerCase();
+      if (msg.includes('permission')) {
+        toastMsg('Write blocked by Firestore rules.');
+      } else {
+        toastMsg('Write failed (emulator/connection).');
+      }
+      setBadge(false, 'DB: write blocked');
+    }
+  });
+</script>
+</body>
+</html>

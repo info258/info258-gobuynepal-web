@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vendor Orders • GoBuy Nepal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--purple:#7a1ea1;--ink:#1f2033;--muted:#7e8190;--bg:#f6f7fb;--card:#fff;--line:#ececf3;--radius:16px;--shadow:0 12px 24px rgba(27,31,35,.06)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{display:flex;min-height:100vh}
+.aside{width:260px;background:#fff;border-right:1px solid var(--line);padding:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--purple);font-size:20px;margin-bottom:14px}
+.nav a{display:flex;align-items:center;gap:12px;padding:12px 10px;border-radius:12px;color:#4a4d57;text-decoration:none}
+.nav a.active,.nav a:hover{background:#f3e9f9;color:#6d22a2}
+.main{flex:1;padding:18px 22px}
+.h1{font-size:30px;font-weight:900;margin:8px 0 16px}
+.tabs{display:flex;gap:8px;margin:10px 0 16px}
+.tab{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:12px;cursor:pointer}
+.tab.active{background:#f3e9f9;color:#6d22a2;border-color:#e5d7f4}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.input, select, textarea{padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px;width:100%}
+.h2{font-size:18px;font-weight:900;margin:0 0 10px}
+.btn{border:0;background:var(--purple);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+.table{width:100%;border-collapse:separate;border-spacing:0 8px}
+.table th,.table td{padding:10px 12px;background:#fff}
+.table th{color:#5b5e69;text-align:left}
+.tag{padding:4px 8px;border-radius:999px;font-size:12px;background:#f0f0f4}
+</style></head><body><div class="wrap">
+<aside class="aside">
+  <div class="brand"><i class="fa-solid fa-store"></i> GoBuy Nepal</div>
+  <nav class="nav">
+    <a href="vendor-dashboard.html"><i class="fa-solid fa-house"></i>Dashboard</a>
+    <a class="active" href="vendor-orders.html"><i class="fa-solid fa-clipboard-list"></i>Orders</a>
+    <a href="vendor-products.html"><i class="fa-solid fa-tags"></i>Products</a>
+    <a href="vendor-payouts.html"><i class="fa-solid fa-wallet"></i>Payouts</a>
+    <a href="vendor-chat.html"><i class="fa-solid fa-comments"></i>Chat</a>
+    <a href="vendor-settings.html"><i class="fa-solid fa-gear"></i>Settings</a>
+  </nav>
+</aside>
+<main class="main">
+  <h1 class="h1">Orders</h1>
+
+  <div class="tabs">
+    <button class="tab active" data-pane="inlandPane"><i class="fa-solid fa-truck"></i> Inland Transport</button>
+    <button class="tab" data-pane="exportPane"><i class="fa-solid fa-plane-departure"></i> Export Tracking</button>
+    <button class="tab" data-pane="importPane"><i class="fa-solid fa-box"></i> Import Supervision (read-only)</button>
+  </div>
+
+  <!-- INLAND -->
+  <section id="inlandPane" class="card">
+    <div class="h2">Create / Edit Inland Transport</div>
+    <form id="inlandForm" class="row">
+      <input type="hidden" id="inlandId"/>
+      <div style="flex:1 1 280px">
+        <label>Pickup Address</label>
+        <input class="input" id="in_pickup" placeholder="From"/>
+      </div>
+      <div style="flex:1 1 280px">
+        <label>Delivery Address</label>
+        <input class="input" id="in_delivery" placeholder="To"/>
+      </div>
+      <div style="flex:1 1 160px">
+        <label>Weight (kg)</label>
+        <input class="input" id="in_weight" type="number" min="0" step="0.01" placeholder="0.0"/>
+      </div>
+      <div style="flex:1 1 160px">
+        <label>Price (₹)</label>
+        <input class="input" id="in_price" type="number" min="0" step="0.01" placeholder="0.0"/>
+      </div>
+      <div style="flex:1 1 180px">
+        <label>Status</label>
+        <select id="in_status"><option>Pending</option><option>Picked</option><option>In Transit</option><option>Delivered</option></select>
+      </div>
+      <div style="flex:1 1 100%"><label>Notes</label><textarea id="in_notes" rows="2" class="input" placeholder="Optional"></textarea></div>
+      <div><button class="btn" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Inland Order</button></div>
+    </form>
+
+    <div style="height:12px"></div>
+    <table class="table" id="inlandTable">
+      <thead><tr><th>Order #</th><th>Route</th><th>Weight</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- EXPORT -->
+  <section id="exportPane" class="card" style="display:none">
+    <div class="h2">Create / Edit Export Tracking</div>
+    <form id="exportForm" class="row">
+      <input type="hidden" id="ex_id"/>
+      <div style="flex:1 1 220px"><label>Origin</label><input class="input" id="ex_origin" placeholder="Kathmandu"/></div>
+      <div style="flex:1 1 220px"><label>Destination Country</label><input class="input" id="ex_dest" placeholder="USA"/></div>
+      <div style="flex:1 1 180px"><label>Carrier</label><input class="input" id="ex_carrier" placeholder="DHL/Aramex"/></div>
+      <div style="flex:1 1 220px"><label>Tracking #</label><input class="input" id="ex_track" placeholder="ABC123456"/></div>
+      <div style="flex:1 1 180px"><label>Status</label><select id="ex_status"><option>Label Created</option><option>Picked</option><option>In Air</option><option>Customs</option><option>Delivered</option></select></div>
+      <div style="flex:1 1 180px"><label>ETD</label><input class="input" id="ex_etd" type="date"/></div>
+      <div style="flex:1 1 180px"><label>ETA</label><input class="input" id="ex_eta" type="date"/></div>
+      <div style="flex:1 1 100%"><label>Notes</label><textarea id="ex_notes" rows="2" class="input" placeholder="Optional"></textarea></div>
+      <div><button class="btn" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Export</button></div>
+    </form>
+
+    <div style="height:12px"></div>
+    <table class="table" id="exportTable">
+      <thead><tr><th>Export #</th><th>To</th><th>Carrier</th><th>Tracking</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- IMPORT SUPERVISION (READ-ONLY) -->
+  <section id="importPane" class="card" style="display:none">
+    <div class="h2">Import Supervision (read-only)</div>
+    <p class="sub">These are imports to Nepal that you can monitor. Editing is disabled.</p>
+    <table class="table" id="importTable">
+      <thead><tr><th>Import #</th><th>From</th><th>Product</th><th>Qty</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+</div>
+
+<script>
+/* ===== Auth guard ===== */
+const VID = localStorage.getItem('vendorAuth'); if(!VID){ location.href='vendor-login.html?next=vendor-orders.html'; }
+
+/* ===== Tabs ===== */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['inlandPane','exportPane','importPane'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById(btn.dataset.pane).style.display='block';
+  }
+});
+
+/* ===== Storage helpers ===== */
+function keyOrders(){ return 'vd_orders_'+VID; }
+function readOrders(){ return JSON.parse(localStorage.getItem(keyOrders())||'[]'); }
+function writeOrders(list){ localStorage.setItem(keyOrders(), JSON.stringify(list)); }
+
+/* ===== Inland CRUD ===== */
+const inlandForm = document.getElementById('inlandForm');
+const inlandTBody = document.querySelector('#inlandTable tbody');
+
+function renderInland(){
+  const orders = readOrders().filter(o=>o.type==='inland');
+  inlandTBody.innerHTML = orders.map(o=>`
+    <tr>
+      <td>${o.id}</td>
+      <td>${o.pickup} → ${o.delivery}</td>
+      <td>${o.weight||0} kg</td>
+      <td>₹${(o.price||0)}</td>
+      <td><span class="tag">${o.status}</span></td>
+      <td>
+        <button class="btn" style="padding:6px 10px" onclick="editInland('${o.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn" style="padding:6px 10px;background:#ef4444" onclick="delOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+window.editInland = (id)=>{
+  const o = readOrders().find(x=>x.id===id); if(!o) return;
+  inlandForm.inlandId.value=o.id; inlandForm.in_pickup.value=o.pickup; inlandForm.in_delivery.value=o.delivery;
+  inlandForm.in_weight.value=o.weight||''; inlandForm.in_price.value=o.price||''; inlandForm.in_status.value=o.status||'Pending';
+  inlandForm.in_notes.value=o.notes||'';
+  document.querySelector('[data-pane="inlandPane"]').click();
+};
+window.delOrder = (id)=>{
+  const list = readOrders().filter(x=>x.id!==id); writeOrders(list); renderInland(); renderExport();
+};
+
+inlandForm.onsubmit = (e)=>{
+  e.preventDefault();
+  const id = inlandForm.inlandId.value || ('IN-'+Date.now().toString(36).toUpperCase());
+  const obj = {
+    id, type:'inland', pickup: inlandForm.in_pickup.value.trim(),
+    delivery: inlandForm.in_delivery.value.trim(),
+    weight: Number(inlandForm.in_weight.value||0),
+    price: Number(inlandForm.in_price.value||0),
+    status: inlandForm.in_status.value,
+    notes: inlandForm.in_notes.value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  if(!obj.pickup || !obj.delivery){ alert('Pickup and Delivery are required.'); return; }
+  const list = readOrders(); const idx = list.findIndex(x=>x.id===id);
+  if(idx>-1) list[idx]=obj; else list.push(obj);
+  writeOrders(list); inlandForm.reset(); inlandForm.inlandId.value=''; renderInland();
+};
+
+/* ===== Export CRUD ===== */
+const exportForm = document.getElementById('exportForm');
+const exportTBody = document.querySelector('#exportTable tbody');
+
+function renderExport(){
+  const orders = readOrders().filter(o=>o.type==='export');
+  exportTBody.innerHTML = orders.map(o=>`
+    <tr>
+      <td>${o.id}</td><td>${o.dest}</td><td>${o.carrier||'-'}</td>
+      <td>${o.track||'-'}</td><td><span class="tag">${o.status}</span></td>
+      <td>
+        <button class="btn" style="padding:6px 10px" onclick="editExport('${o.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn" style="padding:6px 10px;background:#ef4444" onclick="delOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+window.editExport = (id)=>{
+  const o = readOrders().find(x=>x.id===id); if(!o) return;
+  exportForm.ex_id.value=o.id; exportForm.ex_origin.value=o.origin||''; exportForm.ex_dest.value=o.dest||'';
+  exportForm.ex_carrier.value=o.carrier||''; exportForm.ex_track.value=o.track||''; exportForm.ex_status.value=o.status||'Label Created';
+  exportForm.ex_etd.value=o.etd||''; exportForm.ex_eta.value=o.eta||''; exportForm.ex_notes.value=o.notes||'';
+  document.querySelector('[data-pane="exportPane"]').click();
+};
+exportForm.onsubmit=(e)=>{
+  e.preventDefault();
+  const id = exportForm.ex_id.value || ('EX-'+Date.now().toString(36).toUpperCase());
+  const obj = {
+    id, type:'export', origin: exportForm.ex_origin.value.trim(),
+    dest: exportForm.ex_dest.value.trim(), carrier: exportForm.ex_carrier.value.trim(),
+    track: exportForm.ex_track.value.trim(), status: exportForm.ex_status.value,
+    etd: exportForm.ex_etd.value, eta: exportForm.ex_eta.value, notes: exportForm.ex_notes.value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  if(!obj.origin || !obj.dest){ alert('Origin and Destination are required.'); return; }
+  const list = readOrders(); const idx = list.findIndex(x=>x.id===id);
+  if(idx>-1) list[idx]=obj; else list.push(obj);
+  writeOrders(list); exportForm.reset(); exportForm.ex_id.value=''; renderExport();
+};
+
+/* ===== Import supervision (read-only) ===== */
+function seedImports(){
+  if(!localStorage.getItem('vd_import_feed')){
+    const seed = [
+      {id:'IM-1001', from:'USA', product:'iPhone 15', qty:4, status:'In Transit'},
+      {id:'IM-1002', from:'China', product:'LED Panels', qty:30, status:'Customs'},
+      {id:'IM-1003', from:'UK', product:'Coffee Machine', qty:6, status:'Delivered'}
+    ];
+    localStorage.setItem('vd_import_feed', JSON.stringify(seed));
+  }
+}
+const importTBody = document.querySelector('#importTable tbody');
+function renderImports(){
+  const list = JSON.parse(localStorage.getItem('vd_import_feed')||'[]');
+  importTBody.innerHTML = list.map(o=>`
+    <tr><td>${o.id}</td><td>${o.from}</td><td>${o.product}</td><td>${o.qty}</td><td><span class="tag">${o.status}</span></td></tr>
+  `).join('');
+}
+
+/* ===== Boot ===== */
+seedImports(); renderInland(); renderExport(); renderImports();
+</script>
+</body></html>

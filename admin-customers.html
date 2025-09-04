@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GoBuy Nepal • Customers</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root{
+  --purple:#7a1ea1; --purple-700:#5b1680;
+  --bg:#f6f7fb; --card:#ffffff; --line:#e6e7ef; --ink:#1f2033; --muted:#7e8190;
+  --ok:#2ecc71; --warn:#ff8a1f; --bad:#e74c3c; --info:#3aa0ff; --gray:#b8bcc8;
+  --shadow:0 12px 24px rgba(27,31,35,0.06); --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media (max-width:1024px){.app{grid-template-columns:72px 1fr}}
+.sidebar{
+  position:sticky; top:0; height:100vh; background:#fff; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:10px; padding:14px 10px;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:8px 8px 14px; text-decoration:none}
+.brand img{width:36px;height:36px;object-fit:contain}
+.brand .t{font-weight:900; letter-spacing:.2px; color:var(--purple)}
+@media (max-width:1024px){ .brand .t{display:none} }
+
+.nav{display:grid; gap:6px; margin-top:8px}
+.nav a{
+  display:grid; grid-template-columns:28px 1fr auto; align-items:center; gap:12px;
+  padding:10px; border-radius:10px; color:#3b3d4d; text-decoration:none;
+}
+.nav a i{font-size:16px; color:var(--purple)}
+.nav a:hover{background:#faf8ff}
+.nav a.active{background:#f2e9ff; color:var(--purple); font-weight:800}
+@media (max-width:1024px){
+  .nav a{grid-template-columns:28px; justify-items:center}
+  .nav a span, .nav a small{display:none}
+}
+.sidebar .spacer{flex:1}
+.logout{color:var(--bad)!important}
+.logout i{color:var(--bad)!important}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:3; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 14px;
+}
+.search{flex:1; display:flex; align-items:center; gap:8px; background:#f3f4f8; border:1px solid var(--line); border-radius:999px; padding:8px 12px}
+.search input{border:none; outline:none; background:transparent; width:100%}
+.k-actions{display:flex; gap:8px; flex-wrap:wrap}
+.k-actions .btn{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
+.k-actions .btn:hover{background:#fafafa}
+.avatar{width:36px;height:36px;border-radius:50%;background:#eee url('https://i.pravatar.cc/72?img=21') center/cover no-repeat;border:1px solid var(--line)}
+
+.content{padding:16px; display:grid; gap:16px}
+.h1{font-weight:900; color:#3c3270}
+
+/* Summary tiles */
+.summary{display:grid; grid-template-columns:repeat(5,1fr); gap:10px}
+@media (max-width:1100px){ .summary{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:560px){ .summary{grid-template-columns:repeat(2,1fr)} }
+.tile{
+  background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px;
+  box-shadow:var(--shadow); display:grid; gap:6px;
+}
+.tile .label{font-size:12px; color:var(--muted)}
+.tile .val{font-weight:900; font-size:24px}
+.t-all{border-left:5px solid var(--purple)}
+.t-active{border-left:5px solid var(--ok)}
+.t-block{border-left:5px solid var(--bad)}
+.t-new{border-left:5px solid var(--info)}
+.t-vip{border-left:5px solid #7b3fe4}
+
+/* Panel & table */
+.panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+.ph{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line)}
+.ph .t{font-weight:900}
+.controls{display:flex; gap:8px; flex-wrap:wrap}
+.controls select,.controls input{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 10px}
+.pb{padding:12px; overflow:auto}
+.table{width:100%; border-collapse:collapse}
+.table th,.table td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap}
+.table th{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+.badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; color:#fff}
+.b-active{background:var(--ok)}
+.b-block{background:var(--bad)}
+.tag{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#efeaff; color:#5b1680; font-weight:700; margin-right:4px}
+.actions{display:flex; gap:6px; flex-wrap:wrap}
+.btn-row{border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 8px; font-size:12px; cursor:pointer}
+.btn-row.view{color:var(--purple)}
+.btn-row.orders{color:#3a7bd5}
+.btn-row.msg{color:#7a1ea1}
+.btn-row.block{color:var(--bad)}
+.btn-row.unblock{color:var(--ok)}
+.btn-row:focus-visible{outline:3px solid rgba(122,30,161,.25)}
+
+/* Drawer */
+.drawer{position:fixed; inset:0; display:none; z-index:1000}
+.drawer.show{display:block}
+.drawer .backdrop{position:absolute; inset:0; background:rgba(0,0,0,.4)}
+.drawer .panel{
+  position:absolute; top:0; right:0; height:100%; width:92%; max-width:520px; background:#fff;
+  border-left:1px solid var(--line); box-shadow:-12px 0 24px rgba(0,0,0,.12); display:flex; flex-direction:column
+}
+.drawer header{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line)}
+.drawer .body{padding:12px 14px; overflow:auto; display:grid; gap:12px}
+.kv{display:grid; grid-template-columns:120px 1fr; gap:8px; font-size:14px}
+.note{display:grid; gap:8px}
+.note textarea{min-height:90px; border:1px solid var(--line); border-radius:10px; padding:8px}
+.order-mini{display:grid; gap:8px}
+.order-mini .row{display:flex; justify-content:space-between; border:1px solid var(--line); border-radius:10px; padding:8px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Admin navigation">
+    <a class="brand" href="admin.html"><img src="assets/icons/gobuynepal-logo.png" alt="GoBuy Nepal"/><div class="t">GoBuy Admin</div></a>
+    <nav class="nav">
+      <a href="admin.html"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+      <a href="admin-orders.html"><i class="fa-solid fa-bag-shopping"></i><span>Orders</span></a>
+      <a href="admin-chat.html"><i class="fa-solid fa-comments"></i><span>Chats</span></a>
+      <a href="admin-open-cases.html"><i class="fa-regular fa-life-ring"></i><span>Cases</span></a>
+      <a class="active" href="admin-customers.html"><i class="fa-regular fa-user"></i><span>Customers</span></a>
+      <a href="admin-analytics.html"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="admin-settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <a class="nav logout" href="index.html"><i class="fa-solid fa-right-from-bracket"></i><span>Sign out</span></a>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+    <header class="topbar">
+      <div class="search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="q" type="search" placeholder="Search customers by name, email, phone…"/>
+      </div>
+      <div class="k-actions">
+        <button class="btn" id="newCustomer"><i class="fa-solid fa-user-plus"></i> New customer</button>
+        <button class="btn" id="exportCsv"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</button>
+        <button class="btn" id="notif"><i class="fa-regular fa-bell"></i></button>
+      </div>
+      <div class="avatar" aria-label="Admin avatar"></div>
+    </header>
+
+    <div class="content">
+      <div class="h1">Customers</div>
+
+      <!-- Summary -->
+      <section class="summary" aria-label="Customer summary">
+        <div class="tile t-all"><div class="label">Total</div><div id="sAll" class="val">0</div></div>
+        <div class="tile t-active"><div class="label">Active</div><div id="sActive" class="val">0</div></div>
+        <div class="tile t-block"><div class="label">Blocked</div><div id="sBlocked" class="val">0</div></div>
+        <div class="tile t-new"><div class="label">New (30d)</div><div id="sNew" class="val">0</div></div>
+        <div class="tile t-vip"><div class="label">VIP</div><div id="sVIP" class="val">0</div></div>
+      </section>
+
+      <!-- Table -->
+      <section class="panel">
+        <div class="ph">
+          <div class="t">All Customers</div>
+          <div class="controls">
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="">All statuses</option>
+              <option value="Active" selected>Active</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+            <select id="segmentFilter" aria-label="Filter by segment">
+              <option value="">All segments</option>
+              <option value="VIP">VIP</option>
+              <option value="New">New</option>
+              <option value="Returning">Returning</option>
+              <option value="At-Risk">At-Risk</option>
+              <option value="High-Spend">High-Spend</option>
+            </select>
+            <select id="sortBy" aria-label="Sort customers">
+              <option value="recent">Recently Active</option>
+              <option value="orders">Orders ↓</option>
+              <option value="spend">Total Spend ↓</option>
+              <option value="name">Name A→Z</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pb">
+          <table class="table" id="custTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Email / Phone</th>
+                <th>Segments</th>
+                <th>Orders</th>
+                <th>Total Spend</th>
+                <th>Status</th>
+                <th>Last Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody><!-- JS fills --></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </section>
+</div>
+
+<!-- Drawer: Customer details -->
+<div id="drawer" class="drawer" aria-hidden="true">
+  <div class="backdrop"></div>
+  <aside class="panel" role="dialog" aria-modal="true" aria-label="Customer details">
+    <header>
+      <div id="dTitle" style="font-weight:900">Customer</div>
+      <button class="btn" id="dClose"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+    <div class="body">
+      <div class="kv"><div>Name</div><div id="dName"></div></div>
+      <div class="kv"><div>Email</div><div id="dEmail"></div></div>
+      <div class="kv"><div>Phone</div><div id="dPhone"></div></div>
+      <div class="kv"><div>Address</div><div id="dAddress"></div></div>
+      <div class="kv"><div>Status</div><div id="dStatus"></div></div>
+      <div class="kv"><div>Segments</div><div id="dSegments"></div></div>
+
+      <div><strong>Recent Orders</strong>
+        <div id="dOrders" class="order-mini"></div>
+      </div>
+
+      <div class="note">
+        <label for="note"><strong>Private note</strong></label>
+        <textarea id="note" placeholder="Add an internal note about this customer…"></textarea>
+        <button class="btn" id="saveNote"><i class="fa-regular fa-floppy-disk"></i> Save note</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ---------------- Seed data ---------------- */
+const SEED_CUSTOMERS = [
+  {id:'u-101', name:'Kriti S', email:'kriti@example.com', phone:'+977-980000001', address:'Pokhara-8', status:'Active',  segments:['New'], orders:2, spend:220.50, lastActive:'2 h', recentOrders:[{id:8101,total:220.50, status:'Awaiting Payment'}]},
+  {id:'u-102', name:'Roshan P', email:'roshan@example.com', phone:'+977-980000002', address:'Kathmandu-4', status:'Active',  segments:['Returning'], orders:6, spend:990.00, lastActive:'5 h', recentOrders:[{id:8102,total:99.00,status:'Paid'}]},
+  {id:'u-103', name:'Mira L',   email:'mira@example.com',   phone:'+977-980000003', address:'Lalitpur-2',  status:'Active',  segments:['High-Spend','VIP'], orders:12, spend:3410.10, lastActive:'1 h', recentOrders:[{id:8103,total:340.10,status:'Shipped'}]},
+  {id:'u-104', name:'Rabin T',  email:'rabin@example.com',  phone:'+977-980000004', address:'Bhaktapur-7',status:'Blocked', segments:['At-Risk'], orders:3, spend:59.99, lastActive:'1 d', recentOrders:[{id:8104,total:59.99,status:'Awaiting Payment'}]},
+  {id:'u-105', name:'Anu R',    email:'anu@example.com',    phone:'+977-980000005', address:'Kathmandu-10',status:'Active',segments:['Returning'], orders:5, spend:190.00, lastActive:'40 min', recentOrders:[{id:8105,total:190.00,status:'Paid'}]},
+  {id:'u-106', name:'Helena Hills', email:'helena@example.com', phone:'+977-980000006', address:'Butwal-3', status:'Active', segments:['VIP','High-Spend'], orders:18, spend:5240.80, lastActive:'10 min', recentOrders:[{id:8120,total:620.00,status:'Paid'}]},
+  {id:'u-107', name:'Anil L', email:'anil@example.com', phone:'+977-980000007', address:'Biratnagar-1', status:'Active', segments:['Returning'], orders:4, spend:420.00, lastActive:'3 h', recentOrders:[{id:8121,total:110.00,status:'Paid'}]}
+];
+
+function loadCustomers(){
+  const local = JSON.parse(localStorage.getItem('ADMIN_CUSTOMERS')||'[]');
+  if(!local.length){ localStorage.setItem('ADMIN_CUSTOMERS', JSON.stringify(SEED_CUSTOMERS)); return SEED_CUSTOMERS.slice(); }
+  return local;
+}
+function saveCustomers(list){ localStorage.setItem('ADMIN_CUSTOMERS', JSON.stringify(list)); }
+
+let CUSTOMERS = loadCustomers();
+
+/* ---------------- Helpers ---------------- */
+const statusBadge = s => `<span class="badge ${s==='Active'?'b-active':'b-block'}">${s}</span>`;
+const segChips = segs => (segs||[]).map(s=>`<span class="tag">${s}</span>`).join(' ');
+const money = n => `NPR ${Number(n||0).toFixed(2)}`;
+
+function sortCustomers(list, mode){
+  const a = list.slice();
+  if(mode==='orders') a.sort((x,y)=>y.orders-x.orders);
+  else if(mode==='spend') a.sort((x,y)=>y.spend-x.spend);
+  else if(mode==='name') a.sort((x,y)=>x.name.localeCompare(y.name));
+  else /* recent */ a.sort((x,y)=> (x.lastActive||'').toString().localeCompare((y.lastActive||'').toString()));
+  return a;
+}
+
+/* ---------------- Summary ---------------- */
+function renderSummary(){
+  const all = CUSTOMERS.length;
+  const active = CUSTOMERS.filter(c=>c.status==='Active').length;
+  const blocked= CUSTOMERS.filter(c=>c.status==='Blocked').length;
+  const new30  = CUSTOMERS.filter(c=>c.segments.includes('New')).length;
+  const vip    = CUSTOMERS.filter(c=>c.segments.includes('VIP')).length;
+  document.getElementById('sAll').textContent=all;
+  document.getElementById('sActive').textContent=active;
+  document.getElementById('sBlocked').textContent=blocked;
+  document.getElementById('sNew').textContent=new30;
+  document.getElementById('sVIP').textContent=vip;
+}
+
+/* ---------------- Table ---------------- */
+const tbody = document.querySelector('#custTable tbody');
+
+function renderTable(){
+  const q  = document.getElementById('q').value.trim().toLowerCase();
+  const sf = document.getElementById('statusFilter').value;
+  const gf = document.getElementById('segmentFilter').value;
+  const sort = document.getElementById('sortBy').value;
+
+  const rows = sortCustomers(CUSTOMERS, sort)
+    .filter(c => (!sf || c.status===sf))
+    .filter(c => (!gf || (c.segments||[]).includes(gf)))
+    .filter(c => (c.name + c.email + c.phone).toLowerCase().includes(q));
+
+  tbody.innerHTML = '';
+  rows.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><a href="#" data-view="${c.id}">${c.name}</a></td>
+      <td><div>${c.email}</div><div style="color:var(--muted);font-size:12px">${c.phone}</div></td>
+      <td>${segChips(c.segments)}</td>
+      <td>${c.orders}</td>
+      <td>${money(c.spend)}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>${c.lastActive} ago</td>
+      <td class="actions">
+        <button class="btn-row view" data-view="${c.id}"><i class="fa-regular fa-eye"></i> View</button>
+        <button class="btn-row orders" onclick="location.href='admin-orders.html?customer=${encodeURIComponent(c.name)}'"><i class="fa-solid fa-bag-shopping"></i> Orders</button>
+        <button class="btn-row msg" onclick="location.href='admin-chat.html?user=${encodeURIComponent(c.name)}'"><i class="fa-regular fa-message"></i> Message</button>
+        ${c.status==='Active'
+          ? `<button class="btn-row block" data-block="${c.id}"><i class="fa-regular fa-circle-xmark"></i> Block</button>`
+          : `<button class="btn-row unblock" data-unblock="${c.id}"><i class="fa-solid fa-unlock"></i> Unblock</button>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ---------------- Events ---------------- */
+document.getElementById('q').addEventListener('input', renderTable);
+document.getElementById('statusFilter').addEventListener('change', renderTable);
+document.getElementById('segmentFilter').addEventListener('change', renderTable);
+document.getElementById('sortBy').addEventListener('change', renderTable);
+
+tbody.addEventListener('click', e=>{
+  const v = e.target.closest('[data-view]'); if(v){ openDrawer(v.getAttribute('data-view')); return; }
+  const b = e.target.closest('[data-block]'); if(b){ toggleBlock(b.getAttribute('data-block'), true); return; }
+  const u = e.target.closest('[data-unblock]'); if(u){ toggleBlock(u.getAttribute('data-unblock'), false); return; }
+});
+
+function toggleBlock(id, block){
+  const c = CUSTOMERS.find(x=>x.id===id); if(!c) return;
+  c.status = block ? 'Blocked' : 'Active';
+  saveCustomers(CUSTOMERS);
+  renderSummary();
+  renderTable();
+}
+
+/* ---------------- Drawer ---------------- */
+const drawer = document.getElementById('drawer');
+drawer.querySelector('.backdrop').addEventListener('click', ()=>drawer.classList.remove('show'));
+document.getElementById('dClose').addEventListener('click', ()=>drawer.classList.remove('show'));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') drawer.classList.remove('show'); });
+
+function openDrawer(id){
+  const c = CUSTOMERS.find(x=>x.id===id); if(!c) return;
+  drawer.classList.add('show'); drawer.setAttribute('aria-hidden','false');
+  document.getElementById('dTitle').textContent = c.name;
+  document.getElementById('dName').textContent  = c.name;
+  document.getElementById('dEmail').textContent = c.email;
+  document.getElementById('dPhone').textContent = c.phone;
+  document.getElementById('dAddress').textContent = c.address || '—';
+  document.getElementById('dStatus').innerHTML = statusBadge(c.status);
+  document.getElementById('dSegments').innerHTML = segChips(c.segments);
+
+  const list = document.getElementById('dOrders');
+  list.innerHTML = '';
+  (c.recentOrders||[]).forEach(o=>{
+    const div = document.createElement('div');
+    div.className='row';
+    div.innerHTML = `<div>#${o.id}</div><div>${money(o.total)}</div><div>${o.status}</div>`;
+    list.appendChild(div);
+  });
+
+  document.getElementById('saveNote').onclick = ()=>{
+    const t = document.getElementById('note');
+    const val = t.value.trim(); if(!val) return alert('Note is empty.');
+    alert('Saved note for ' + c.name + ': ' + val);
+    t.value = '';
+  };
+}
+
+/* ---------------- Topbar buttons ---------------- */
+document.getElementById('newCustomer').addEventListener('click', ()=> location.href='admin-customer-new.html');
+document.getElementById('notif').addEventListener('click', ()=> location.href='admin-notifications.html');
+
+document.getElementById('exportCsv').addEventListener('click', ()=>{
+  // export current filtered view
+  const rows = [...document.querySelectorAll('#custTable tbody tr')].map(tr=>[...tr.children].map(td=>td.innerText.replace(/\s+/g,' ').trim()));
+  const header = ['Customer','Email/Phone','Segments','Orders','Total Spend','Status','Last Active'];
+  const csv = [header.join(','), ...rows.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5],r[6]].map(v=>`"${v.replace(/"/g,'""')}"`).join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'customers.csv'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* ---------------- Boot ---------------- */
+renderSummary();
+renderTable();
+</script>
+</body>
+</html>
