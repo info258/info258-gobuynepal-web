@@ -113,6 +113,7 @@
 
     async function isAdmin(uid){
       const s = await getDoc(doc(db,'admins',uid));
+      console.log('isAdmin()', { uid, exists: s.exists(), data: s.data() }); // helpful debug
       return s.exists() && s.data().active === true;
     }
 
@@ -162,7 +163,6 @@
         location.href = DEST;
 
       } catch (e1) {
-        // If user not found AND we are on emulator AND creds equal default admin, auto-create + mark admin
         const code = e1?.code || '';
         const canAutoCreate = localish && email === DEFAULT_ADMIN_EMAIL && pass === DEFAULT_ADMIN_PASS;
 
@@ -181,8 +181,10 @@
           console.error(e1);
           if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
             showErr('Invalid email or password.');
+          } else if (code === 'permission-denied') {
+            showErr('Login failed. Firestore permission denied when checking admin record.');
           } else if (code === 'auth/network-request-failed') {
-            showErr('Network error. Check emulator/Internet.');
+            showErr('Network error. Check connection/emulator.');
           } else {
             showErr('Login failed. ' + code);
           }
